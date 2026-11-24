@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  ScaleCommerce\VideoOptimizer\:
+    resource: '../Classes/*'
+
+  # Public so GeneralUtility::makeInstance() (zero-arg ItemsProcessors) resolves it through the
+  # container with its constructor dependencies and the autowired logger.
+  ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient:
+    public: true

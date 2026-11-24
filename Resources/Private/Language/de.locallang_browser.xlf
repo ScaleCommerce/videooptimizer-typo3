@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_browser.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header>
+            <author>Scale Commerce</author>
+            <source-language>en</source-language>
+            <author-email/>
+        </header>
+        <body>
+            <trans-unit id="choose" approved="yes">
+                <source>Choose video</source>
+                <target>Video auswählen</target>
+            </trans-unit>
+            <trans-unit id="remove" approved="yes">
+                <source>Remove</source>
+                <target>Entfernen</target>
+            </trans-unit>
+            <trans-unit id="empty" approved="yes">
+                <source>No video selected – demo video is used</source>
+                <target>Kein Video ausgewählt – das Demo-Video wird verwendet</target>
+            </trans-unit>
+            <trans-unit id="modalTitle" approved="yes">
+                <source>Choose video</source>
+                <target>Video auswählen</target>
+            </trans-unit>
+            <trans-unit id="library" approved="yes">
+                <source>Library</source>
+                <target>Bibliothek</target>
+            </trans-unit>
+            <trans-unit id="allLibraries" approved="yes">
+                <source>All libraries</source>
+                <target>Alle Bibliotheken</target>
+            </trans-unit>
+            <trans-unit id="search" approved="yes">
+                <source>Search videos</source>
+                <target>Videos suchen</target>
+            </trans-unit>
+            <trans-unit id="searchPlaceholder" approved="yes">
+                <source>Search by title …</source>
+                <target>Nach Titel suchen …</target>
+            </trans-unit>
+            <trans-unit id="readyOnly" approved="yes">
+                <source>Ready only</source>
+                <target>Nur fertige</target>
+            </trans-unit>
+            <trans-unit id="noResults" approved="yes">
+                <source>No videos found.</source>
+                <target>Keine Videos gefunden.</target>
+            </trans-unit>
+            <trans-unit id="loading" approved="yes">
+                <source>Loading videos …</source>
+                <target>Videos werden geladen …</target>
+            </trans-unit>
+            <trans-unit id="error" approved="yes">
+                <source>The videos could not be loaded.</source>
+                <target>Die Videos konnten nicht geladen werden.</target>
+            </trans-unit>
+            <trans-unit id="retry" approved="yes">
+                <source>Retry</source>
+                <target>Erneut versuchen</target>
+            </trans-unit>
+            <trans-unit id="processing" approved="yes">
+                <source>Processing</source>
+                <target>Wird verarbeitet</target>
+            </trans-unit>
+            <trans-unit id="errorStatus" approved="yes">
+                <source>Error</source>
+                <target>Fehler</target>
+            </trans-unit>
+            <trans-unit id="close" approved="yes">
+                <source>Close</source>
+                <target>Schließen</target>
+            </trans-unit>
+            <trans-unit id="selected" approved="yes">
+                <source>Selected video</source>
+                <target>Ausgewähltes Video</target>
+            </trans-unit>
+            <trans-unit id="unknownVideo" approved="yes">
+                <source>Video not found in the library</source>
+                <target>Video in der Bibliothek nicht gefunden</target>
+            </trans-unit>
+            <trans-unit id="libLabel" approved="yes">
+                <source>Library</source>
+                <target>Bibliothek</target>
+            </trans-unit>
+            <trans-unit id="libAll" approved="yes">
+                <source>All libraries</source>
+                <target>Alle Bibliotheken</target>
+            </trans-unit>
+            <trans-unit id="libFilter" approved="yes">
+                <source>Filter libraries …</source>
+                <target>Bibliotheken filtern …</target>
+            </trans-unit>
+            <trans-unit id="libNoMatch" approved="yes">
+                <source>No library matches the filter.</source>
+                <target>Keine Bibliothek entspricht dem Filter.</target>
+            </trans-unit>
+            <trans-unit id="libVideos" approved="yes">
+                <source>%d videos</source>
+                <target>%d Videos</target>
+            </trans-unit>
+            <trans-unit id="libVideo" approved="yes">
+                <source>%d video</source>
+                <target>%d Video</target>
+            </trans-unit>
+            <trans-unit id="libDeliveryOnly" approved="yes">
+                <source>delivery only</source>
+                <target>nur Auslieferung</target>
+            </trans-unit>
+            <trans-unit id="libError" approved="yes">
+                <source>The libraries could not be loaded. The stored selection is kept when you save.</source>
+                <target>Die Bibliotheken konnten nicht geladen werden. Die gespeicherte Auswahl bleibt beim Speichern erhalten.</target>
+            </trans-unit>
+            <trans-unit id="libUnknown" approved="yes">
+                <source>Stored library:</source>
+                <target>Gespeicherte Bibliothek:</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

@@ -1,0 +1,21 @@
+# Demo page: renders every content element of colPos 0 of the current page.
+# Real sites define their own page template and only depend on scalecommerce/videooptimizer.
+lib.content = CONTENT
+lib.content {
+    table = tt_content
+    select {
+        pidInList = this
+        orderBy = sorting
+        where = {#colPos}=0
+    }
+}
+
+page = PAGE
+page {
+    meta.viewport = width=device-width, initial-scale=1
+    10 = FLUIDTEMPLATE
+    10 {
+        templateName = Default
+        templateRootPaths.10 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
+    }
+}

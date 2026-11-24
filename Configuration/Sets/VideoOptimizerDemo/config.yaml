@@ -1,0 +1,4 @@
+name: scalecommerce/videooptimizer-demo
+label: VideoOptimizer demo page
+dependencies:
+  - scalecommerce/videooptimizer

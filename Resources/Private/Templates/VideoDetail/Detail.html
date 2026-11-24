@@ -1,0 +1,31 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <div class="vo-sample vo-sample--detail">
+        <f:render partial="Error" arguments="{error: error}" />
+
+        <f:if condition="{video}">
+            <div class="vo-detail">
+                <f:if condition="{video.processing}">
+                    <f:then><f:render partial="Processing" arguments="{video: video}" /></f:then>
+                    <f:else>
+                        <f:if condition="{embed}">
+                            <f:render partial="Player" arguments="{embed: embed}" />
+                        </f:if>
+                    </f:else>
+                </f:if>
+
+                <dl class="vo-detail__meta">
+                    <div class="vo-meta-row"><dt><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:detail.title" /></dt><dd>{video.title_label}</dd></div>
+                    <f:if condition="{video.duration_label}"><div class="vo-meta-row"><dt><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:detail.duration" /></dt><dd>{video.duration_label}</dd></div></f:if>
+                    <f:if condition="{video.resolution}"><div class="vo-meta-row"><dt><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:detail.resolution" /></dt><dd>{video.resolution}</dd></div></f:if>
+                    <div class="vo-meta-row"><dt><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:detail.views" /></dt><dd>{video.views}</dd></div>
+                    <f:if condition="{video.created_at}"><div class="vo-meta-row"><dt><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:detail.created" /></dt><dd><f:format.date date="{video.created_at}" format="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:date.format')}" /></dd></div></f:if>
+                </dl>
+            </div>
+        </f:if>
+    </div>
+</f:section>
+</html>

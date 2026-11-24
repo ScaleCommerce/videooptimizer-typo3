@@ -1,0 +1,12 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>Only the body content: TYPO3 renders the document shell, title and meta tags (see the demo set's setup.typoscript). CSS/JS are loaded by the content element templates via f:asset.*.</f:comment>
+<main class="page-content">
+    <header class="vo-page-intro">
+        <h1>VideoOptimizer &mdash; TYPO3 CMS integration samples</h1>
+        <p>Five content elements (hero, single, grid, list, detail) rendered live from the videooptimizer.eu API. Each is a content element you can add to any page in the backend.</p>
+    </header>
+    <f:format.raw>
+        <f:cObject typoscriptObjectPath="lib.content" />
+    </f:format.raw>
+</main>
+</html>

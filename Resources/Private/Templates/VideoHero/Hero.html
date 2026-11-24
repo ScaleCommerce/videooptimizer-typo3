@@ -1,0 +1,54 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <f:render partial="Error" arguments="{error: error}" />
+
+    <f:if condition="{video}">
+        <section class="vo-hero vo-hero--overlay-{hero.overlay} vo-hero--height-{hero.height} vo-hero--align-{hero.align}" aria-labelledby="vo-hero-title-{elementUid}">
+            <f:if condition="{video.poster_src}">
+                <img class="vo-hero__poster" src="{video.poster_src}" alt="" aria-hidden="true" fetchpriority="high"
+                     <f:if condition="{video.dimensions}">width="{video.dimensions.width}" height="{video.dimensions.height}"</f:if> />
+            </f:if>
+            <f:if condition="{embedUrl}">
+                <iframe class="vo-hero__media" src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"
+                        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            </f:if>
+            <div class="vo-hero__overlay"></div>
+            <div class="vo-hero__content">
+                <p class="vo-hero__eyebrow">{hero.eyebrow}</p>
+                <h2 class="vo-hero__title" id="vo-hero-title-{elementUid}">{video.title_label}</h2>
+                <p class="vo-hero__sub<f:if condition="{hero.subtitle}"> vo-hero__sub--custom</f:if>">
+                    <f:if condition="{hero.subtitle}">
+                        <f:then>{hero.subtitle}</f:then>
+                        <f:else>
+                            <f:if condition="{video.duration_label}"><span>{video.duration_label}</span><span class="vo-sep" aria-hidden="true">&middot;</span></f:if>
+                            <f:if condition="{video.resolution}"><span>{video.resolution}</span><span class="vo-sep" aria-hidden="true">&middot;</span></f:if>
+                            <span><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.views" arguments="{0: video.views}" /></span>
+                        </f:else>
+                    </f:if>
+                </p>
+                <f:if condition="{video.processing}">
+                    <f:then><p class="vo-hero__sub"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.processing" /></p></f:then>
+                    <f:else>
+                        <f:variable name="ctaLabel"><f:if condition="{hero.ctaLabel}"><f:then>{hero.ctaLabel}</f:then><f:else><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:hero.watch" /></f:else></f:if></f:variable>
+                        <f:if condition="{hero.ctaMode} == 'newtab' && {video.embed_src}">
+                            <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener">{ctaLabel} &#9654;</a>
+                        </f:if>
+                        <f:if condition="{hero.ctaMode} == 'lightbox' && {video.embed_src}">
+                            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" defer="1" />
+                            <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener"
+                               data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}"
+                               data-vo-close-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close')}">{ctaLabel} &#9654;</a>
+                        </f:if>
+                        <f:if condition="{hero.ctaMode} == 'link'">
+                            <f:link.typolink parameter="{hero.ctaLink}" class="vo-hero__cta">{ctaLabel}</f:link.typolink>
+                        </f:if>
+                    </f:else>
+                </f:if>
+            </div>
+        </section>
+    </f:if>
+</f:section>
+</html>

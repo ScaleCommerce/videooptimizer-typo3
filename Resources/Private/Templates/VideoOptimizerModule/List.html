@@ -1,0 +1,184 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <h1><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.title" /></h1>
+    <p class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.intro" /></p>
+
+    <f:if condition="{errorMessage}">
+        <div class="alert alert-danger" role="alert">{errorMessage}</div>
+    </f:if>
+
+    <f:if condition="{savings.compression.videos}">
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100"><div class="card-body">
+                    <div class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.savings.videos" /></div>
+                    <div class="fs-4 fw-semibold"><f:format.number decimals="0" decimalSeparator="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:format.decimalSeparator')}" thousandsSeparator="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:format.thousandsSeparator')}">{savings.compression.videos}</f:format.number></div>
+                </div></div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100"><div class="card-body">
+                    <div class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.savings.storage" /></div>
+                    <div class="fs-4 fw-semibold"><f:format.number decimals="1" decimalSeparator="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:format.decimalSeparator')}" thousandsSeparator="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:format.thousandsSeparator')}">{savings.compression.reduced_percent}</f:format.number> %</div>
+                </div></div>
+            </div>
+            <f:if condition="{savings.traffic_available}">
+                <f:if condition="{savings.cdn.saved_bytes}">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.savings.cdn" /></div>
+                            <div class="fs-4 fw-semibold"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.savings.bytes" arguments="{0: savings.cdn.saved_bytes}" /></div>
+                        </div></div>
+                    </div>
+                </f:if>
+            </f:if>
+        </div>
+    </f:if>
+
+    <div class="table-fit">
+        <table class="table table-hover vo-table">
+            <thead>
+                <tr>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.table.name" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.table.videos" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.table.codec" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.table.resolutions" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.table.managed" /></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <f:for each="{libraryRows}" as="library">
+                    <tr>
+                        <td>
+                            <strong>{library.name}</strong>
+                            <f:if condition="{library.description}">
+                                <div class="small text-body-secondary">{library.description}</div>
+                            </f:if>
+                        </td>
+                        <td>{library.video_count}</td>
+                        <td>{library.codec}</td>
+                        <td>{library.resolutions}</td>
+                        <td>
+                            <f:if condition="{library.media_managed}">
+                                <f:then><span class="badge text-bg-success"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.managed.yes" /></span></f:then>
+                                <f:else><span class="badge text-bg-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.managed.no" /></span></f:else>
+                            </f:if>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a href="{library.videosUrl}" class="btn btn-default btn-sm">
+                                <core:icon identifier="actions-video" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.row.openVideos" />
+                            </a>
+                        </td>
+                    </tr>
+                    <tr class="vo-manage-row">
+                        <td colspan="6">
+                            <details class="vo-details">
+                                <summary><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.row.manage" /></summary>
+                                <div class="card card-body bg-body-tertiary mt-2">
+                                    <form action="{library.updateUrl}" method="post" class="row g-3">
+                                        <input type="hidden" name="libraryId" value="{library.id}">
+                                        <input type="hidden" name="formToken" value="{library.updateToken}">
+                                        <div class="col-md-3">
+                                            <label for="vo-edit-name-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.name" /></label>
+                                            <input type="text" id="vo-edit-name-{library.id}" name="name" value="{library.name}" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="vo-edit-description-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.description" /></label>
+                                            <input type="text" id="vo-edit-description-{library.id}" name="description" value="{library.description}" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="vo-edit-codec-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.codec" /></label>
+                                            <select id="vo-edit-codec-{library.id}" name="codec" class="form-select">
+                                                <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
+                                                <f:for each="{library.availableCodecs}" as="codecKey">
+                                                    <option value="{codecKey}" selected="{library.codec == codecKey ? 'selected' : ''}">{codecKey}</option>
+                                                </f:for>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="vo-edit-resolutions-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.resolutions" /></label>
+                                            <select id="vo-edit-resolutions-{library.id}" name="resolutions[]" multiple size="4" class="form-select">
+                                                <f:for each="{library.resolutionOptions}" as="resolutionOption">
+                                                    <option value="{resolutionOption.value}" selected="{resolutionOption.selected ? 'selected' : ''}">{resolutionOption.value}</option>
+                                                </f:for>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 d-flex flex-wrap align-items-center gap-3">
+                                            <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.submit" /></button>
+                                            <span class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.hint" /></span>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    <!-- Reprocess needs media-managed storage; delivery-only libraries answer with 400 -->
+                                    <f:if condition="{library.media_managed}">
+                                        <form action="{library.reprocessUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                            <input type="hidden" name="libraryId" value="{library.id}">
+                                            <input type="hidden" name="formToken" value="{library.reprocessToken}">
+                                            <button type="submit" class="btn btn-warning btn-sm"><core:icon identifier="actions-refresh" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.submit" /></button>
+                                        </form>
+                                    </f:if>
+                                    <form action="{library.deleteUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                        <input type="hidden" name="libraryId" value="{library.id}">
+                                        <input type="hidden" name="formToken" value="{library.deleteToken}">
+                                        <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.delete.submit" /></button>
+                                    </form>
+                                </div>
+                            </details>
+                        </td>
+                    </tr>
+                </f:for>
+                <f:if condition="{libraryRows}"><f:else>
+                    <tr>
+                        <td colspan="6" class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.empty" /></td>
+                    </tr>
+                </f:else></f:if>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="h4 mt-4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.title" /></h2>
+    <div class="card card-body bg-body-tertiary">
+        <form action="{createUrl}" method="post" class="row g-3">
+            <input type="hidden" name="formToken" value="{createToken}">
+            <div class="col-md-3">
+                <label for="vo-lib-name" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.name" /></label>
+                <input type="text" id="vo-lib-name" name="name" required class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="vo-lib-description" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.description" /></label>
+                <input type="text" id="vo-lib-description" name="description" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="vo-lib-codec" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.codec" /></label>
+                <select id="vo-lib-codec" name="codec" class="form-select">
+                    <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
+                    <f:for each="{encodings.codecs}" as="encoding">
+                        <option value="{encoding.key}">{encoding.label}</option>
+                    </f:for>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="vo-lib-resolutions" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.resolutions" /></label>
+                <select id="vo-lib-resolutions" name="resolutions[]" multiple size="4" class="form-select">
+                    <f:for each="{encodings.resolutions}" as="resolution">
+                        <option value="{resolution.key}">{resolution.label}</option>
+                    </f:for>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.submit" /></button>
+            </div>
+        </form>
+    </div>
+    <p class="small text-body-secondary mt-2"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.hint" /></p>
+</f:section>
+
+</html>

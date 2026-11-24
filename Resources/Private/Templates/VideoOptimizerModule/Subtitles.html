@@ -1,0 +1,102 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <h1><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.title" arguments="{0: videoTitle}" /></h1>
+    <p class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.intro" /></p>
+
+    <f:if condition="{errorMessage}">
+        <div class="alert alert-danger" role="alert">{errorMessage}</div>
+    </f:if>
+
+    <div class="table-fit">
+        <table class="table table-striped table-hover vo-table">
+            <thead>
+                <tr>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.table.language" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.table.kind" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.table.default" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.table.cues" /></th>
+                    <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.table.format" /></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <f:for each="{tracks}" as="track">
+                    <tr>
+                        <td>
+                            <strong>{track.label}</strong>
+                            <span class="text-body-secondary">({track.language})</span>
+                        </td>
+                        <td>{track.kind}</td>
+                        <td>
+                            <f:if condition="{track.is_default}">
+                                <span class="badge text-bg-success"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:common.yes" /></span>
+                            </f:if>
+                        </td>
+                        <td>{track.cue_count}</td>
+                        <td>{track.source_format}</td>
+                        <td class="text-end">
+                            <form action="{deleteSubtitleUrl}" method="post" class="d-inline" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                <input type="hidden" name="libraryId" value="{libraryId}">
+                                <input type="hidden" name="videoUuid" value="{videoUuid}">
+                                <input type="hidden" name="formToken" value="{deleteSubtitleToken}">
+                                <input type="hidden" name="language" value="{track.language}">
+                                <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.delete.submit" /></button>
+                            </form>
+                        </td>
+                    </tr>
+                </f:for>
+                <f:if condition="{tracks}"><f:else>
+                    <tr>
+                        <td colspan="6" class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.empty" /></td>
+                    </tr>
+                </f:else></f:if>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="h4 mt-4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.title" /></h2>
+    <div class="card card-body bg-body-tertiary">
+        <form action="{uploadSubtitleUrl}" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+            <input type="hidden" name="libraryId" value="{libraryId}">
+            <input type="hidden" name="videoUuid" value="{videoUuid}">
+            <input type="hidden" name="formToken" value="{uploadSubtitleToken}">
+            <div class="col-md-3">
+                <label for="vo-sub-file" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.file" /></label>
+                <input type="file" id="vo-sub-file" name="file" accept=".srt,.vtt" required class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="vo-sub-language" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.language" /></label>
+                <select id="vo-sub-language" name="language" required class="form-select">
+                    <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.languageChoose" /></option>
+                    <f:for each="{languages}" as="language">
+                        <option value="{language.code}">{language.label} ({language.code})</option>
+                    </f:for>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="vo-sub-kind" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.kind" /></label>
+                <select id="vo-sub-kind" name="kind" class="form-select">
+                    <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.kind.auto" /></option>
+                    <option value="subtitles"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.kind.subtitles" /></option>
+                    <option value="captions"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.kind.captions" /></option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-center gap-3">
+                <div class="form-check mb-0">
+                    <input type="checkbox" id="vo-sub-default" name="isDefault" value="1" class="form-check-input">
+                    <label for="vo-sub-default" class="form-check-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.default" /></label>
+                </div>
+                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.upload.submit" /></button>
+            </div>
+        </form>
+    </div>
+</f:section>
+
+</html>

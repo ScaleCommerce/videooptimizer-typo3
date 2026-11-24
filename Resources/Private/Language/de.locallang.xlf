@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang.xlf" product-name="videooptimizer">
+        <body>
+            <trans-unit id="vo_ct.videohero.label">
+                <source>Video Hero</source>
+                <target>Video-Hero</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videohero.description">
+                <source>Full-bleed hero section with a background video.</source>
+                <target>Bildschirmbreiter Hero-Bereich mit Hintergrundvideo.</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosingle.label">
+                <source>Video Single</source>
+                <target>Einzelvideo</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosingle.description">
+                <source>A single video player with its title.</source>
+                <target>Ein einzelner Videoplayer mit Titel.</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videogrid.label">
+                <source>Video Grid</source>
+                <target>Video-Raster</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videogrid.description">
+                <source>A responsive grid of videos from the library.</source>
+                <target>Ein responsives Raster mit Videos aus der Bibliothek.</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videolist.label">
+                <source>Video List</source>
+                <target>Video-Liste</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videolist.description">
+                <source>A compact list of videos from the library.</source>
+                <target>Eine kompakte Liste mit Videos aus der Bibliothek.</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videodetail.label">
+                <source>Video Detail</source>
+                <target>Video-Detail</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videodetail.description">
+                <source>A single video with embed player and metadata.</source>
+                <target>Ein einzelnes Video mit Player und Metadaten.</target>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.label">
+                <source>Video</source>
+                <target>Video</target>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.description">
+                <source>Choose a video from the library selected above. With "All libraries", videos are grouped by library. Leave empty to use the default demo video.</source>
+                <target>Wählen Sie ein Video aus der oben gewählten Bibliothek. Bei „Alle Bibliotheken“ sind die Videos nach Bibliothek gruppiert. Leer lassen, um das Demo-Video zu verwenden.</target>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.default">
+                <source>-- Choose a video (empty: demo video) --</source>
+                <target>-- Video wählen (leer: Demo-Video) --</target>
+            </trans-unit>
+            <trans-unit id="vo_library_id.label">
+                <source>Library</source>
+                <target>Bibliothek</target>
+            </trans-unit>
+            <trans-unit id="vo_library_id.description">
+                <source>Click a library tile. Grid and list show the videos of this library; the video browser of single, hero and detail elements opens with this library. Select "All libraries" for no restriction.</source>
+                <target>Klicken Sie auf eine Bibliothek. Raster und Liste zeigen die Videos dieser Bibliothek; die Videoauswahl von Einzelvideo, Hero und Detail öffnet sich mit dieser Bibliothek. „Alle Bibliotheken“ hebt die Einschränkung auf.</target>
+            </trans-unit>
+            <trans-unit id="vo_library_id.default">
+                <source>-- All libraries --</source>
+                <target>-- Alle Bibliotheken --</target>
+            </trans-unit>
+            <trans-unit id="vo_player.div">
+                <source>Player options</source>
+                <target>Player-Optionen</target>
+            </trans-unit>
+            <trans-unit id="vo_player.autoplay">
+                <source>Autoplay</source>
+                <target>Autoplay</target>
+            </trans-unit>
+            <trans-unit id="vo_player.loop">
+                <source>Loop</source>
+                <target>Schleife</target>
+            </trans-unit>
+            <trans-unit id="vo_player.muted">
+                <source>Muted</source>
+                <target>Stumm</target>
+            </trans-unit>
+            <trans-unit id="vo_player.controls">
+                <source>Show player controls</source>
+                <target>Player-Steuerung anzeigen</target>
+            </trans-unit>
+            <trans-unit id="vo_player.start_time">
+                <source>Start position (seconds)</source>
+                <target>Startposition (Sekunden)</target>
+            </trans-unit>
+            <trans-unit id="vo_player.fit_cover">
+                <source>Cover (fill area, crop instead of letterbox)</source>
+                <target>Cover (Fläche füllen, beschneiden statt Balken)</target>
+            </trans-unit>
+            <trans-unit id="vo_player.subtitle_lang">
+                <source>Subtitle language</source>
+                <target>Untertitelsprache</target>
+            </trans-unit>
+            <trans-unit id="vo_player.subtitle_lang.default">
+                <source>-- Player default --</source>
+                <target>-- Player-Standard --</target>
+            </trans-unit>
+            <trans-unit id="vo_hero.div">
+                <source>Hero</source>
+                <target>Hero</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_eyebrow.label">
+                <source>Eyebrow text (empty = "VideoOptimizer")</source>
+                <target>Dachzeile (leer = „VideoOptimizer“)</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_subtitle.label">
+                <source>Subtitle</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_subtitle.description">
+                <source>Replaces the automatic line (duration, resolution, views). Empty = automatic.</source>
+                <target>Ersetzt die automatische Zeile (Dauer, Auflösung, Aufrufe). Leer = automatisch.</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_label.label">
+                <source>Button label</source>
+                <target>Button-Beschriftung</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_label.placeholder">
+                <source>Watch video</source>
+                <target>Video ansehen</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.label">
+                <source>Button action</source>
+                <target>Button-Aktion</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.newtab">
+                <source>Open player in a new tab</source>
+                <target>Player in neuem Tab öffnen</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.lightbox">
+                <source>Open video in lightbox</source>
+                <target>Video in Lightbox öffnen</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.link">
+                <source>Link to a page or URL</source>
+                <target>Auf Seite oder URL verlinken</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.none">
+                <source>No button</source>
+                <target>Kein Button</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_link.label">
+                <source>Button link</source>
+                <target>Button-Link</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.label">
+                <source>Overlay strength</source>
+                <target>Abdunklung</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.none">
+                <source>None</source>
+                <target>Keine</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.light">
+                <source>Light</source>
+                <target>Leicht</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.medium">
+                <source>Medium (default)</source>
+                <target>Mittel (Standard)</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.strong">
+                <source>Strong</source>
+                <target>Stark</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.label">
+                <source>Height</source>
+                <target>Höhe</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.compact">
+                <source>Compact (about 50% of the viewport)</source>
+                <target>Kompakt (ca. 50 % der Fensterhöhe)</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.default">
+                <source>Default (440 px)</source>
+                <target>Standard (440 px)</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.full">
+                <source>Full screen (100% of the viewport)</source>
+                <target>Vollbild (100 % der Fensterhöhe)</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.label">
+                <source>Text alignment</source>
+                <target>Textausrichtung</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.left">
+                <source>Left</source>
+                <target>Links</target>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.center">
+                <source>Centered</source>
+                <target>Zentriert</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

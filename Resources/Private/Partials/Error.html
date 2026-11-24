@@ -1,0 +1,9 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>error is only set for developers / logged-in backend users (see AbstractVideoController::errorForTemplate).</f:comment>
+<f:if condition="{error}">
+    <div class="vo-notice" role="alert">
+        <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:error.{error.code}" />
+        <f:if condition="{error.detail}"> ({error.detail})</f:if>
+    </div>
+</f:if>
+</html>

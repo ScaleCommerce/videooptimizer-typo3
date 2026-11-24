@@ -1,0 +1,48 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <h1><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.title" arguments="{0: videoTitle}" /></h1>
+    <p class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.intro" /></p>
+
+    <f:if condition="{errorMessage}">
+        <div class="alert alert-danger" role="alert">{errorMessage}</div>
+    </f:if>
+
+    <f:if condition="{currentThumbnail}">
+        <div class="mb-4">
+            <div class="small text-body-secondary mb-1"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.current" /></div>
+            <img src="{currentThumbnail}" alt="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.current')}" class="img-fluid rounded border vo-thumb-current">
+        </div>
+    </f:if>
+
+    <f:if condition="{thumbnails}">
+        <div class="row g-3">
+            <f:for each="{thumbnails}" as="frame">
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <form action="{setThumbnailUrl}" method="post" class="card h-100">
+                        <input type="hidden" name="libraryId" value="{libraryId}">
+                        <input type="hidden" name="videoUuid" value="{videoUuid}">
+                        <input type="hidden" name="formToken" value="{setThumbnailToken}">
+                        <input type="hidden" name="index" value="{frame.index}">
+                        <img src="{frame.url}" alt="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.frame', arguments: {0: frame.index})}" class="card-img-top" loading="lazy">
+                        <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                            <span class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.frame" arguments="{0: frame.index}" /></span>
+                            <button type="submit" class="btn btn-primary btn-sm"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.set" /></button>
+                        </div>
+                    </form>
+                </div>
+            </f:for>
+        </div>
+    </f:if>
+    <f:if condition="{thumbnails}"><f:else>
+        <p class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:thumbnail.empty" /></p>
+    </f:else></f:if>
+</f:section>
+
+</html>

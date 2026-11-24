@@ -1,0 +1,134 @@
+/* Library picker: tile grid in the content element form. */
+typo3-videooptimizer-library-picker {
+  display: block;
+  max-width: 960px;
+}
+
+.vo-libpicker-filter {
+  max-width: 320px;
+  margin-bottom: .5rem;
+}
+
+.vo-libpicker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 160px));
+  gap: .5rem;
+}
+
+.vo-lib-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+  padding: .4rem;
+  border: 2px solid var(--typo3-input-border-color, #bebebe);
+  border-radius: var(--typo3-input-border-radius, 4px);
+  background: var(--typo3-input-bg, transparent);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vo-lib-tile[hidden] {
+  display: none;
+}
+
+.vo-lib-tile:hover {
+  background: rgba(128, 128, 128, .12);
+}
+
+.vo-lib-tile:focus-visible {
+  outline: 3px solid var(--typo3-state-primary-bg, #0078e6);
+  outline-offset: 1px;
+}
+
+.vo-lib-tile.is-selected {
+  border-color: var(--typo3-state-primary-bg, #0078e6);
+  background: color-mix(in srgb, var(--typo3-state-primary-bg, #0078e6) 12%, transparent);
+}
+
+.vo-lib-mosaic {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(128, 128, 128, .25);
+}
+
+.vo-lib-mosaic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 1 thumbnail fills the tile; 2 side by side; 3: first one spans both columns' height. */
+.vo-lib-mosaic--0,
+.vo-lib-mosaic--1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.vo-lib-mosaic--2 {
+  grid-template-rows: 1fr;
+}
+
+.vo-lib-mosaic--3 img:first-child {
+  grid-row: span 2;
+}
+
+.vo-lib-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .6;
+}
+
+.vo-lib-check {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--typo3-state-primary-bg, #0078e6);
+  color: var(--typo3-state-primary-color, #fff);
+}
+
+.vo-lib-tile.is-selected .vo-lib-check {
+  display: flex;
+}
+
+.vo-lib-name {
+  overflow: hidden;
+  font-weight: 600;
+  font-size: .9em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vo-lib-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  align-items: center;
+  min-height: 1.4em;
+  font-size: .8em;
+  opacity: .85;
+}
+
+.vo-libpicker-empty,
+.vo-libpicker-note {
+  margin: .5rem 0 0;
+}
+
+.vo-libpicker-empty[hidden] {
+  display: none;
+}

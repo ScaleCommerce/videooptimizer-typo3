@@ -1,0 +1,7 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>Responsive player. embed.src is validated in the controller (https, videooptimizer.eu); embed.aspect is digits/digits.</f:comment>
+<div class="vo-player-wrap"<f:if condition="{embed.aspect}"> style="{f:asset.styleAttr(value: 'aspect-ratio: {embed.aspect}')}"</f:if>>
+    <iframe class="vo-player" src="{embed.src}" title="{embed.title}" loading="lazy"
+            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+</div>
+</html>

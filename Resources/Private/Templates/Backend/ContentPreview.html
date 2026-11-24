@@ -1,0 +1,65 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<div class="vo-pv">
+    <f:if condition="{mode} == 'video'">
+        <f:then>
+            <f:if condition="{noVideo}">
+                <f:then><p class="vo-pv__note"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:no_video"/></p></f:then>
+                <f:else>
+                    <f:if condition="{error}">
+                        <f:then><p class="vo-pv__note vo-pv__note--error"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:api_error"/> <code>{uuid}</code></p></f:then>
+                        <f:else>
+                            <div class="vo-pv__row">
+                                <f:if condition="{video.thumbnail}">
+                                    <img class="vo-pv__thumb" src="{video.thumbnail}" width="160" alt="" loading="lazy">
+                                </f:if>
+                                <div class="vo-pv__body">
+                                    <div class="vo-pv__title"><strong>{video.title}</strong>
+                                        <f:if condition="{video.badge}"><span class="badge badge-{video.badgeClass}"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:status.{video.badge}"/></span></f:if>
+                                    </div>
+                                    <div class="vo-pv__meta">
+                                        <f:if condition="{video.duration}"><span>{video.duration}</span></f:if>
+                                        <f:if condition="{video.library}"><span>{video.library}</span></f:if>
+                                    </div>
+                                    <f:if condition="{demo}"><p class="vo-pv__note"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:demo_video"/></p></f:if>
+                                    <f:if condition="{options}">
+                                        <ul class="vo-pv__tags">
+                                            <f:for each="{options}" as="option"><li><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:opt.{option.key}"/><f:if condition="{option.value}"> {option.value}</f:if></li></f:for>
+                                        </ul>
+                                    </f:if>
+                                    <f:if condition="{hero}">
+                                        <ul class="vo-pv__tags vo-pv__tags--hero">
+                                            <f:for each="{hero}" as="field"><li><strong>{field.label}:</strong> {field.value}</li></f:for>
+                                        </ul>
+                                    </f:if>
+                                </div>
+                            </div>
+                        </f:else>
+                    </f:if>
+                </f:else>
+            </f:if>
+        </f:then>
+        <f:else if="{mode} == 'collection'">
+            <p class="vo-pv__meta">
+                <strong><f:if condition="{libraryName}"><f:then>{libraryName}</f:then><f:else><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:all_libraries"/></f:else></f:if></strong>
+                <f:if condition="{error}">
+                    <f:then><span class="vo-pv__note vo-pv__note--error"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:api_error_short"/></span></f:then>
+                    <f:else><span><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:video_count" arguments="{0: count}"/></span></f:else>
+                </f:if>
+            </p>
+            <f:if condition="{videos}">
+                <div class="vo-pv__thumbs">
+                    <f:for each="{videos}" as="item">
+                        <f:if condition="{item.thumbnail}">
+                            <f:then><img class="vo-pv__thumb vo-pv__thumb--small" src="{item.thumbnail}" width="96" alt="{item.title}" title="{item.title}" loading="lazy"></f:then>
+                            <f:else><span class="vo-pv__thumb vo-pv__thumb--small vo-pv__thumb--empty">{item.title}</span></f:else>
+                        </f:if>
+                    </f:for>
+                </div>
+            </f:if>
+        </f:else>
+        <f:else>
+            <p class="vo-pv__note vo-pv__note--error"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:api_error_short"/></p>
+        </f:else>
+    </f:if>
+</div>
+</html>

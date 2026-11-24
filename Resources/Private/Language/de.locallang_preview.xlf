@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header/>
+        <body>
+            <trans-unit id="no_video" approved="yes">
+                <source>No video selected</source>
+                <target>Kein Video ausgewählt</target>
+            </trans-unit>
+            <trans-unit id="demo_video" approved="yes">
+                <source>Demo video (no video selected; the demo video from the extension configuration is used)</source>
+                <target>Demo-Video (kein Video ausgewählt; es wird das Demo-Video aus der Extension-Konfiguration verwendet)</target>
+            </trans-unit>
+            <trans-unit id="api_error" approved="yes">
+                <source>The video could not be loaded from VideoOptimizer:</source>
+                <target>Das Video konnte nicht von VideoOptimizer geladen werden:</target>
+            </trans-unit>
+            <trans-unit id="api_error_short" approved="yes">
+                <source>VideoOptimizer is currently not reachable</source>
+                <target>VideoOptimizer ist derzeit nicht erreichbar</target>
+            </trans-unit>
+            <trans-unit id="all_libraries" approved="yes">
+                <source>All libraries</source>
+                <target>Alle Bibliotheken</target>
+            </trans-unit>
+            <trans-unit id="video_count" approved="yes">
+                <source>%s videos</source>
+                <target>%s Videos</target>
+            </trans-unit>
+            <trans-unit id="status.processing" approved="yes">
+                <source>Processing</source>
+                <target>Wird verarbeitet</target>
+            </trans-unit>
+            <trans-unit id="status.error" approved="yes">
+                <source>Error</source>
+                <target>Fehler</target>
+            </trans-unit>
+            <trans-unit id="opt.autoplay" approved="yes">
+                <source>Autoplay</source>
+                <target>Autoplay</target>
+            </trans-unit>
+            <trans-unit id="opt.loop" approved="yes">
+                <source>Loop</source>
+                <target>Schleife</target>
+            </trans-unit>
+            <trans-unit id="opt.muted" approved="yes">
+                <source>Muted</source>
+                <target>Stumm</target>
+            </trans-unit>
+            <trans-unit id="opt.fit_cover" approved="yes">
+                <source>Fit: cover</source>
+                <target>Anpassung: Cover</target>
+            </trans-unit>
+            <trans-unit id="opt.controls_off" approved="yes">
+                <source>Controls off</source>
+                <target>Steuerung aus</target>
+            </trans-unit>
+            <trans-unit id="opt.start" approved="yes">
+                <source>Start at</source>
+                <target>Start bei</target>
+            </trans-unit>
+            <trans-unit id="opt.subtitles" approved="yes">
+                <source>Subtitles:</source>
+                <target>Untertitel:</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

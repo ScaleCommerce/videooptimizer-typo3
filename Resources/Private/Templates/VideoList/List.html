@@ -1,0 +1,65 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" defer="1" />
+    <div class="vo-sample vo-sample--list">
+        <f:render partial="Error" arguments="{error: error}" />
+
+        <f:if condition="{videos}">
+            <p class="vo-sample__hint"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:list.hint" arguments="{0: count}" /></p>
+            <f:variable name="closeLabel"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close" /></f:variable>
+            <ul class="vo-list">
+                <f:for each="{videos}" as="video">
+                    <f:if condition="{video.embed_src}">
+                        <li class="vo-list__item">
+                            <f:if condition="{video.processing}">
+                                <f:then>
+                                    <span class="vo-list__thumb">
+                                        <f:if condition="{video.poster_src}">
+                                            <img src="{video.poster_src}" alt="" width="640" height="360" loading="lazy" decoding="async" />
+                                        </f:if>
+                                    </span>
+                                    <span class="vo-list__body">
+                                        <span class="vo-list__title">{video.title_label}</span>
+                                        <span class="vo-list__meta"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.processing" /></span>
+                                    </span>
+                                </f:then>
+                                <f:else>
+                                    <a class="vo-list__thumb" href="{video.embed_src}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"
+                                       data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}">
+                                        <f:if condition="{video.poster_src}">
+                                            <img src="{video.poster_src}" alt="" width="640" height="360" loading="lazy" decoding="async" />
+                                        </f:if>
+                                    </a>
+                                    <span class="vo-list__body">
+                                        <a class="vo-list__title" href="{video.embed_src}" target="_blank" rel="noopener"
+                                           data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}">{video.title_label}</a>
+                                        <span class="vo-list__meta">
+                                            <f:if condition="{video.duration_label}"><span>{video.duration_label}</span><span class="vo-sep" aria-hidden="true">&middot;</span></f:if>
+                                            <span><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.views" arguments="{0: video.views}" /></span>
+                                            <f:if condition="{video.resolution}"><span class="vo-sep" aria-hidden="true">&middot;</span><span>{video.resolution}</span></f:if>
+                                        </span>
+                                    </span>
+                                </f:else>
+                            </f:if>
+                        </li>
+                    </f:if>
+                </f:for>
+            </ul>
+        </f:if>
+
+        <f:if condition="{nextCursor} || {cursor}">
+            <nav class="vo-pagination" aria-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:list.pagination')}">
+                <f:if condition="{cursor}">
+                    <f:link.action action="list" class="vo-pagination__link"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:list.first" /></f:link.action>
+                </f:if>
+                <f:if condition="{nextCursor}">
+                    <f:link.action action="list" arguments="{cursor: nextCursor}" class="vo-pagination__link" rel="next"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:list.next" /></f:link.action>
+                </f:if>
+            </nav>
+        </f:if>
+    </div>
+</f:section>
+</html>

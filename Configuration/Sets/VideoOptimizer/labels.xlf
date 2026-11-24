@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Configuration/Sets/VideoOptimizer/labels.xlf" product-name="videooptimizer">
+    <header/>
+    <body>
+      <trans-unit id="label">
+        <source>VideoOptimizer content elements</source>
+      </trans-unit>
+      <trans-unit id="categories.videooptimizer">
+        <source>VideoOptimizer</source>
+      </trans-unit>
+      <trans-unit id="settings.videooptimizer.structuredData">
+        <source>Output schema.org VideoObject structured data (JSON-LD)</source>
+      </trans-unit>
+      <trans-unit id="settings.description.videooptimizer.structuredData">
+        <source>Adds JSON-LD for hero, single and detail elements (one VideoObject per video) and an ItemList for grid and list elements.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

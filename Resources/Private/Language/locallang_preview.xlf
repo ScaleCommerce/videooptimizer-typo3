@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header/>
+        <body>
+            <trans-unit id="no_video">
+                <source>No video selected</source>
+            </trans-unit>
+            <trans-unit id="demo_video">
+                <source>Demo video (no video selected; the demo video from the extension configuration is used)</source>
+            </trans-unit>
+            <trans-unit id="api_error">
+                <source>The video could not be loaded from VideoOptimizer:</source>
+            </trans-unit>
+            <trans-unit id="api_error_short">
+                <source>VideoOptimizer is currently not reachable</source>
+            </trans-unit>
+            <trans-unit id="all_libraries">
+                <source>All libraries</source>
+            </trans-unit>
+            <trans-unit id="video_count">
+                <source>%s videos</source>
+            </trans-unit>
+            <trans-unit id="status.processing">
+                <source>Processing</source>
+            </trans-unit>
+            <trans-unit id="status.error">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="opt.autoplay">
+                <source>Autoplay</source>
+            </trans-unit>
+            <trans-unit id="opt.loop">
+                <source>Loop</source>
+            </trans-unit>
+            <trans-unit id="opt.muted">
+                <source>Muted</source>
+            </trans-unit>
+            <trans-unit id="opt.fit_cover">
+                <source>Fit: cover</source>
+            </trans-unit>
+            <trans-unit id="opt.controls_off">
+                <source>Controls off</source>
+            </trans-unit>
+            <trans-unit id="opt.start">
+                <source>Start at</source>
+            </trans-unit>
+            <trans-unit id="opt.subtitles">
+                <source>Subtitles:</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

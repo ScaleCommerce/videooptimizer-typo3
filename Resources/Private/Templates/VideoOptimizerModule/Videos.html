@@ -1,0 +1,200 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <div{f:if(condition: hasProcessing, then: ' data-vo-auto-refresh="1"')}>
+        <h1>
+            {library.name}
+            <f:if condition="{hasProcessing}">
+                <small class="text-warning fs-6 fw-normal"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.processingNote" /></small>
+            </f:if>
+        </h1>
+        <p class="text-body-secondary">
+            <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.summary" arguments="{0: count, 1: library.codec, 2: library.resolutions}" />
+            <f:if condition="{library.media_managed}">
+                <f:then>&middot; <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.summary.managed" /></f:then>
+                <f:else>&middot; <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.summary.deliveryOnly" /></f:else>
+            </f:if>
+        </p>
+
+        <f:if condition="{errorMessage}">
+            <div class="alert alert-danger" role="alert">{errorMessage}</div>
+        </f:if>
+
+        <form method="get" action="" class="row g-2 align-items-center mb-3">
+            <f:if condition="{routeToken}"><input type="hidden" name="token" value="{routeToken}"></f:if>
+            <input type="hidden" name="libraryId" value="{libraryId}">
+            <div class="col-auto">
+                <label for="vo-tag-filter" class="col-form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.filter.label" /></label>
+            </div>
+            <div class="col-auto">
+                <input type="text" id="vo-tag-filter" name="tagFilter" value="{tagFilter}" list="vo-all-tags" placeholder="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.filter.placeholder')}" class="form-control vo-filter-input">
+                <datalist id="vo-all-tags">
+                    <f:for each="{allTags}" as="tag"><option value="{tag}"></option></f:for>
+                </datalist>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-default"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.filter.submit" /></button>
+                <f:if condition="{tagFilter}">
+                    <a href="{videosUrl}" class="btn btn-link"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.filter.clear" /></a>
+                </f:if>
+            </div>
+        </form>
+
+        <div class="table-fit">
+            <table class="table table-hover vo-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.table.title" /></th>
+                        <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.table.status" /></th>
+                        <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.table.duration" /></th>
+                        <th><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.table.tags" /></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <f:for each="{videoRows}" as="video">
+                        <tr>
+                            <td class="vo-thumb-cell">
+                                <f:if condition="{video.thumbnailUrl}">
+                                    <img src="{video.thumbnailUrl}" alt="" class="img-fluid rounded" loading="lazy">
+                                </f:if>
+                            </td>
+                            <td>
+                                <strong>{video.title}</strong>
+                                <f:if condition="{video.metadata}">
+                                    <div class="small text-body-secondary text-break" title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.title')}">{video.metadata}</div>
+                                </f:if>
+                            </td>
+                            <td><span class="badge {video.statusClass}">{video.status}</span></td>
+                            <td>{video.duration}</td>
+                            <td class="text-body-secondary">{video.tags}</td>
+                            <td class="text-end text-nowrap">
+                                <!-- Thumbnail selection needs media-managed storage; delivery-only libraries answer with 400 -->
+                                <f:if condition="{library.media_managed}">
+                                    <a href="{video.thumbnailPickerUrl}" class="btn btn-default btn-sm"><core:icon identifier="actions-image" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.row.thumbnail" /></a>
+                                </f:if>
+                                <a href="{video.subtitlesUrl}" class="btn btn-default btn-sm"><core:icon identifier="actions-comment" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.row.subtitles" /></a>
+                            </td>
+                        </tr>
+                        <tr class="vo-manage-row">
+                            <td colspan="6">
+                                <details class="vo-details">
+                                    <summary><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.row.manage" /></summary>
+                                    <div class="card card-body bg-body-tertiary mt-2 vstack gap-3">
+                                        <form action="{video.renameUrl}" method="post" class="row g-2 align-items-end">
+                                            <input type="hidden" name="libraryId" value="{libraryId}">
+                                            <input type="hidden" name="videoUuid" value="{video.uuid}">
+                                            <input type="hidden" name="formToken" value="{video.renameToken}">
+                                            <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <div class="col">
+                                                <label for="vo-rename-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.rename.label" /></label>
+                                                <input type="text" id="vo-rename-{video.uuid}" name="title" value="{video.title}" class="form-control">
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.rename.submit" /></button>
+                                            </div>
+                                        </form>
+                                        <form action="{video.setTagsUrl}" method="post" class="row g-2 align-items-end">
+                                            <input type="hidden" name="libraryId" value="{libraryId}">
+                                            <input type="hidden" name="videoUuid" value="{video.uuid}">
+                                            <input type="hidden" name="formToken" value="{video.setTagsToken}">
+                                            <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <div class="col">
+                                                <label for="vo-tags-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.tags.label" /></label>
+                                                <input type="text" id="vo-tags-{video.uuid}" name="tags" value="{video.tags}" list="vo-all-tags" class="form-control">
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.tags.submit" /></button>
+                                            </div>
+                                        </form>
+                                        <form action="{video.deleteVideoUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                            <input type="hidden" name="libraryId" value="{libraryId}">
+                                            <input type="hidden" name="videoUuid" value="{video.uuid}">
+                                            <input type="hidden" name="formToken" value="{video.deleteVideoToken}">
+                                            <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.delete.submit" /></button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                    </f:for>
+                    <f:if condition="{videoRows}"><f:else>
+                        <tr>
+                            <td colspan="6" class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.empty" /></td>
+                        </tr>
+                    </f:else></f:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <f:if condition="{library.media_managed}">
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <h2 class="h4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.upload.title" /></h2>
+                <form action="{uploadUrl}" method="post" enctype="multipart/form-data" class="card card-body bg-body-tertiary vstack gap-3">
+                    <input type="hidden" name="libraryId" value="{libraryId}">
+                    <input type="hidden" name="formToken" value="{uploadToken}">
+                    <div>
+                        <label for="vo-upload-file" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.upload.file" /></label>
+                        <input type="file" id="vo-upload-file" name="file" accept="video/*,audio/*" required class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-upload-title" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.title" /></label>
+                        <input type="text" id="vo-upload-title" name="title" class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-upload-tags" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.tags" /></label>
+                        <input type="text" id="vo-upload-tags" name="tags" list="vo-all-tags" class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-upload-metadata" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.metadata" /></label>
+                        <textarea id="vo-upload-metadata" name="metadata" rows="3" placeholder="campaign: summer-2026&#10;category: hero-video" class="form-control"></textarea>
+                        <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.metadataHelp" /></div>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary"><core:icon identifier="actions-upload" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.upload.submit" /></button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="h4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.ingest.title" /></h2>
+                <form action="{ingestUrl}" method="post" class="card card-body bg-body-tertiary vstack gap-3">
+                    <input type="hidden" name="libraryId" value="{libraryId}">
+                    <input type="hidden" name="formToken" value="{ingestToken}">
+                    <div>
+                        <label for="vo-ingest-url" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.ingest.url" /></label>
+                        <input type="url" id="vo-ingest-url" name="sourceUrl" placeholder="https://example.com/video.mp4" required class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-ingest-title" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.title" /></label>
+                        <input type="text" id="vo-ingest-title" name="title" class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-ingest-tags" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.tags" /></label>
+                        <input type="text" id="vo-ingest-tags" name="tags" list="vo-all-tags" class="form-control">
+                    </div>
+                    <div>
+                        <label for="vo-ingest-metadata" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.metadata" /></label>
+                        <textarea id="vo-ingest-metadata" name="metadata" rows="3" placeholder="campaign: summer-2026&#10;category: hero-video" class="form-control"></textarea>
+                        <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.form.metadataHelp" /></div>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-default"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.ingest.submit" /></button>
+                    </div>
+                </form>
+                <p class="small text-body-secondary mt-2"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.ingest.hint" /></p>
+            </div>
+        </div>
+    </f:if>
+</f:section>
+
+</html>

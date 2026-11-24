@@ -1,0 +1,54 @@
+{
+    "name": "scalecommerce/videooptimizer-typo3",
+    "description": "Integrates ScaleCommerce VideoOptimizer into TYPO3: pick, upload and manage CDN-delivered videos in the backend and embed them with five ready-to-use content elements.",
+    "type": "typo3-cms-extension",
+    "license": "MIT",
+    "keywords": [
+        "typo3",
+        "typo3-extension",
+        "video",
+        "videooptimizer",
+        "cms",
+        "hls",
+        "cdn"
+    ],
+    "homepage": "https://videooptimizer.eu/",
+    "authors": [
+        {
+            "name": "ScaleCommerce GmbH",
+            "homepage": "https://scale.sc/"
+        }
+    ],
+    "support": {
+        "docs": "https://api.videooptimizer.eu/",
+        "issues": "https://github.com/ScaleCommerce/videooptimizer-typo3/issues",
+        "source": "https://github.com/ScaleCommerce/videooptimizer-typo3"
+    },
+    "require": {
+        "php": "^8.4",
+        "guzzlehttp/guzzle": "^7.16 || ^8.3",
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-core": "^14.3",
+        "typo3/cms-extbase": "^14.3",
+        "typo3/cms-fluid": "^14.3",
+        "typo3/cms-fluid-styled-content": "^14.3",
+        "typo3/cms-frontend": "^14.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "ScaleCommerce\\VideoOptimizer\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "videooptimizer"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        }
+    }
+}

@@ -1,0 +1,14 @@
+.vo-pv { font-size: 12px; line-height: 1.4; }
+.vo-pv__row { display: flex; gap: 12px; align-items: flex-start; }
+.vo-pv__thumb { flex: 0 0 auto; width: 160px; max-width: 40%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 3px; background: rgba(128, 128, 128, .25); }
+.vo-pv__thumb--small { width: 96px; max-width: 100%; }
+.vo-pv__thumb--empty { display: inline-flex; align-items: center; justify-content: center; padding: 2px; font-size: 10px; overflow: hidden; box-sizing: border-box; }
+.vo-pv__thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.vo-pv__body { min-width: 0; }
+.vo-pv__title { overflow-wrap: anywhere; }
+.vo-pv__meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 2px 0; opacity: .8; }
+.vo-pv__note { margin: 4px 0 0; opacity: .8; font-style: italic; }
+.vo-pv__note--error { color: var(--bs-danger, #c83c3c); opacity: 1; }
+.vo-pv__tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }
+.vo-pv__tags li { padding: 0 6px; border: 1px solid rgba(128, 128, 128, .5); border-radius: 10px; font-size: 11px; }
+.vo-pv__tags--hero li { border-style: dashed; }

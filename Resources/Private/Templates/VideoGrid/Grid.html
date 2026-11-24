@@ -1,0 +1,22 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" defer="1" />
+    <div class="vo-sample vo-sample--grid">
+        <f:render partial="Error" arguments="{error: error}" />
+
+        <f:if condition="{videos}">
+            <p class="vo-sample__hint"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:grid.hint" arguments="{0: count}" /></p>
+            <div class="vo-grid">
+                <f:for each="{videos}" as="video">
+                    <f:if condition="{video.embed_src}">
+                        <f:render partial="Card" arguments="{video: video}" />
+                    </f:if>
+                </f:for>
+            </div>
+        </f:if>
+    </div>
+</f:section>
+</html>

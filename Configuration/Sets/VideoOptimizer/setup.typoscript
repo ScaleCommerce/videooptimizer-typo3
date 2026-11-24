@@ -1,0 +1,19 @@
+# Rendering of the VideoOptimizer content elements.
+#
+# ExtensionUtility::configurePlugin() (ext_localconf.php) already registers
+# tt_content.<CType> =< lib.contentElement (+ 20 = EXTBASEPLUGIN) for every plugin, so the
+# standard fluid_styled_content frame and (escaped) header rendering is used. Only the hero
+# differs: its header is not rendered by the frame, the hero template builds its own title.
+tt_content.videooptimizer_videohero {
+    templateName = ContentElementHero
+    templateRootPaths.20 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
+}
+
+# Extbase view paths for all VideoOptimizer plugins. Add higher indexes in your own set to override templates.
+plugin.tx_videooptimizer {
+    view {
+        templateRootPaths.0 = EXT:videooptimizer/Resources/Private/Templates/
+        partialRootPaths.0 = EXT:videooptimizer/Resources/Private/Partials/
+        layoutRootPaths.0 = EXT:videooptimizer/Resources/Private/Layouts/
+    }
+}

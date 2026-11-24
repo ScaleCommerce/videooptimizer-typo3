@@ -1,0 +1,23 @@
+/* VideoOptimizer backend module: only what TYPO3's Bootstrap classes do not cover. */
+.vo-thumb-cell {
+    width: 7rem;
+}
+
+.vo-thumb-current {
+    max-width: 26rem;
+}
+
+.vo-filter-input {
+    min-width: 16rem;
+}
+
+.vo-table > tbody > tr.vo-manage-row > td {
+    padding-top: 0;
+    background: transparent;
+}
+
+.vo-details > summary {
+    cursor: pointer;
+    color: var(--bs-secondary-color);
+    user-select: none;
+}

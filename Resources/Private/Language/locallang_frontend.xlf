@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header/>
+        <body>
+            <trans-unit id="error.no_video">
+                <source>No video selected. Pick one in the "Video" field of this content element, or set a demo video UUID in the extension configuration.</source>
+            </trans-unit>
+            <trans-unit id="error.no_token">
+                <source>No VideoOptimizer API token configured. Set it in the extension configuration (apiToken) or in the environment variable VO_API_TOKEN.</source>
+            </trans-unit>
+            <trans-unit id="error.api">
+                <source>The video could not be loaded from VideoOptimizer.</source>
+            </trans-unit>
+            <trans-unit id="video.fallback_title">
+                <source>Video %s</source>
+            </trans-unit>
+            <trans-unit id="video.unavailable">
+                <source>This video is currently unavailable.</source>
+            </trans-unit>
+            <trans-unit id="video.processing">
+                <source>Video is being processed</source>
+            </trans-unit>
+            <trans-unit id="video.views">
+                <source>%d views</source>
+            </trans-unit>
+            <trans-unit id="video.open">
+                <source>Open %s</source>
+            </trans-unit>
+            <trans-unit id="video.play_label">
+                <source>Play %s</source>
+            </trans-unit>
+            <trans-unit id="grid.hint">
+                <source>Showing %d videos. Click a card to open the player.</source>
+            </trans-unit>
+            <trans-unit id="list.hint">
+                <source>%d videos from videooptimizer.eu</source>
+            </trans-unit>
+            <trans-unit id="list.next">
+                <source>Next videos</source>
+            </trans-unit>
+            <trans-unit id="list.first">
+                <source>Back to first page</source>
+            </trans-unit>
+            <trans-unit id="list.pagination">
+                <source>Video list pages</source>
+            </trans-unit>
+            <trans-unit id="hero.watch">
+                <source>Watch video</source>
+            </trans-unit>
+            <trans-unit id="lightbox.close">
+                <source>Close video</source>
+            </trans-unit>
+            <trans-unit id="detail.title">
+                <source>Title</source>
+            </trans-unit>
+            <trans-unit id="detail.duration">
+                <source>Duration</source>
+            </trans-unit>
+            <trans-unit id="detail.resolution">
+                <source>Resolution</source>
+            </trans-unit>
+            <trans-unit id="detail.views">
+                <source>Views</source>
+            </trans-unit>
+            <trans-unit id="detail.created">
+                <source>Created</source>
+            </trans-unit>
+            <trans-unit id="date.format">
+                <source>Y-m-d H:i</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

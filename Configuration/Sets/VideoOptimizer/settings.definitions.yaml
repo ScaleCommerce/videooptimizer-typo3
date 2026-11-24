@@ -1,0 +1,8 @@
+categories:
+  videooptimizer: ~
+
+settings:
+  videooptimizer.structuredData:
+    type: bool
+    default: true
+    category: videooptimizer

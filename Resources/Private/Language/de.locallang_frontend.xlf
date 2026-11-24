@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header/>
+        <body>
+            <trans-unit id="error.no_video" approved="yes">
+                <source>No video selected. Pick one in the "Video" field of this content element, or set a demo video UUID in the extension configuration.</source>
+                <target>Kein Video ausgewählt. Wählen Sie im Feld "Video" dieses Inhaltselements eines aus oder hinterlegen Sie in der Extension-Konfiguration eine Demo-Video-UUID.</target>
+            </trans-unit>
+            <trans-unit id="error.no_token" approved="yes">
+                <source>No VideoOptimizer API token configured. Set it in the extension configuration (apiToken) or in the environment variable VO_API_TOKEN.</source>
+                <target>Kein VideoOptimizer-API-Token konfiguriert. Hinterlegen Sie es in der Extension-Konfiguration (apiToken) oder in der Umgebungsvariable VO_API_TOKEN.</target>
+            </trans-unit>
+            <trans-unit id="error.api" approved="yes">
+                <source>The video could not be loaded from VideoOptimizer.</source>
+                <target>Das Video konnte nicht von VideoOptimizer geladen werden.</target>
+            </trans-unit>
+            <trans-unit id="video.fallback_title" approved="yes">
+                <source>Video %s</source>
+                <target>Video %s</target>
+            </trans-unit>
+            <trans-unit id="video.unavailable" approved="yes">
+                <source>This video is currently unavailable.</source>
+                <target>Dieses Video ist derzeit nicht verfügbar.</target>
+            </trans-unit>
+            <trans-unit id="video.processing" approved="yes">
+                <source>Video is being processed</source>
+                <target>Video wird verarbeitet</target>
+            </trans-unit>
+            <trans-unit id="video.views" approved="yes">
+                <source>%d views</source>
+                <target>%d Aufrufe</target>
+            </trans-unit>
+            <trans-unit id="video.open" approved="yes">
+                <source>Open %s</source>
+                <target>%s öffnen</target>
+            </trans-unit>
+            <trans-unit id="video.play_label" approved="yes">
+                <source>Play %s</source>
+                <target>%s abspielen</target>
+            </trans-unit>
+            <trans-unit id="grid.hint" approved="yes">
+                <source>Showing %d videos. Click a card to open the player.</source>
+                <target>%d Videos angezeigt. Klicken Sie auf eine Karte, um den Player zu öffnen.</target>
+            </trans-unit>
+            <trans-unit id="list.hint" approved="yes">
+                <source>%d videos from videooptimizer.eu</source>
+                <target>%d Videos von videooptimizer.eu</target>
+            </trans-unit>
+            <trans-unit id="list.next" approved="yes">
+                <source>Next videos</source>
+                <target>Weitere Videos</target>
+            </trans-unit>
+            <trans-unit id="list.first" approved="yes">
+                <source>Back to first page</source>
+                <target>Zurück zur ersten Seite</target>
+            </trans-unit>
+            <trans-unit id="list.pagination" approved="yes">
+                <source>Video list pages</source>
+                <target>Seiten der Videoliste</target>
+            </trans-unit>
+            <trans-unit id="hero.watch" approved="yes">
+                <source>Watch video</source>
+                <target>Video ansehen</target>
+            </trans-unit>
+            <trans-unit id="lightbox.close" approved="yes">
+                <source>Close video</source>
+                <target>Video schließen</target>
+            </trans-unit>
+            <trans-unit id="detail.title" approved="yes">
+                <source>Title</source>
+                <target>Titel</target>
+            </trans-unit>
+            <trans-unit id="detail.duration" approved="yes">
+                <source>Duration</source>
+                <target>Dauer</target>
+            </trans-unit>
+            <trans-unit id="detail.resolution" approved="yes">
+                <source>Resolution</source>
+                <target>Auflösung</target>
+            </trans-unit>
+            <trans-unit id="detail.views" approved="yes">
+                <source>Views</source>
+                <target>Aufrufe</target>
+            </trans-unit>
+            <trans-unit id="detail.created" approved="yes">
+                <source>Created</source>
+                <target>Erstellt</target>
+            </trans-unit>
+            <trans-unit id="date.format" approved="yes">
+                <source>Y-m-d H:i</source>
+                <target>d.m.Y H:i</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

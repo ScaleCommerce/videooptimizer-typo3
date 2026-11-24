@@ -1,0 +1,4 @@
+name: scalecommerce/videooptimizer
+label: VideoOptimizer content elements
+dependencies:
+  - typo3/fluid-styled-content

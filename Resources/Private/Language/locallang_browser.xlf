@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_browser.xlf" date="2026-11-24T00:00:00.000Z" product-name="videooptimizer">
+        <header>
+            <author>Scale Commerce</author>
+            <source-language>en</source-language>
+            <author-email/>
+        </header>
+        <body>
+            <trans-unit id="choose" approved="yes">
+                <source>Choose video</source>
+            </trans-unit>
+            <trans-unit id="remove" approved="yes">
+                <source>Remove</source>
+            </trans-unit>
+            <trans-unit id="empty" approved="yes">
+                <source>No video selected – demo video is used</source>
+            </trans-unit>
+            <trans-unit id="modalTitle" approved="yes">
+                <source>Choose video</source>
+            </trans-unit>
+            <trans-unit id="library" approved="yes">
+                <source>Library</source>
+            </trans-unit>
+            <trans-unit id="allLibraries" approved="yes">
+                <source>All libraries</source>
+            </trans-unit>
+            <trans-unit id="search" approved="yes">
+                <source>Search videos</source>
+            </trans-unit>
+            <trans-unit id="searchPlaceholder" approved="yes">
+                <source>Search by title …</source>
+            </trans-unit>
+            <trans-unit id="readyOnly" approved="yes">
+                <source>Ready only</source>
+            </trans-unit>
+            <trans-unit id="noResults" approved="yes">
+                <source>No videos found.</source>
+            </trans-unit>
+            <trans-unit id="loading" approved="yes">
+                <source>Loading videos …</source>
+            </trans-unit>
+            <trans-unit id="error" approved="yes">
+                <source>The videos could not be loaded.</source>
+            </trans-unit>
+            <trans-unit id="retry" approved="yes">
+                <source>Retry</source>
+            </trans-unit>
+            <trans-unit id="processing" approved="yes">
+                <source>Processing</source>
+            </trans-unit>
+            <trans-unit id="errorStatus" approved="yes">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="close" approved="yes">
+                <source>Close</source>
+            </trans-unit>
+            <trans-unit id="selected" approved="yes">
+                <source>Selected video</source>
+            </trans-unit>
+            <trans-unit id="unknownVideo" approved="yes">
+                <source>Video not found in the library</source>
+            </trans-unit>
+            <trans-unit id="libLabel" approved="yes">
+                <source>Library</source>
+            </trans-unit>
+            <trans-unit id="libAll" approved="yes">
+                <source>All libraries</source>
+            </trans-unit>
+            <trans-unit id="libFilter" approved="yes">
+                <source>Filter libraries …</source>
+            </trans-unit>
+            <trans-unit id="libNoMatch" approved="yes">
+                <source>No library matches the filter.</source>
+            </trans-unit>
+            <trans-unit id="libVideos" approved="yes">
+                <source>%d videos</source>
+            </trans-unit>
+            <trans-unit id="libVideo" approved="yes">
+                <source>%d video</source>
+            </trans-unit>
+            <trans-unit id="libDeliveryOnly" approved="yes">
+                <source>delivery only</source>
+            </trans-unit>
+            <trans-unit id="libError" approved="yes">
+                <source>The libraries could not be loaded. The stored selection is kept when you save.</source>
+            </trans-unit>
+            <trans-unit id="libUnknown" approved="yes">
+                <source>Stored library:</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

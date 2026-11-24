@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang.xlf" date="2026-10-01T00:00:00.000Z" product-name="videooptimizer">
+        <header>
+            <author>Scale Commerce</author>
+            <source-language>en</source-language>
+            <author-email/>
+        </header>
+        <body>
+            <trans-unit id="vo_ct.videohero.label">
+                <source>Video Hero</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videohero.description">
+                <source>Full-bleed hero section with a background video.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosingle.label">
+                <source>Video Single</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosingle.description">
+                <source>A single video player with its title.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videogrid.label">
+                <source>Video Grid</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videogrid.description">
+                <source>A responsive grid of videos from the library.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videolist.label">
+                <source>Video List</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videolist.description">
+                <source>A compact list of videos from the library.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videodetail.label">
+                <source>Video Detail</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videodetail.description">
+                <source>A single video with embed player and metadata.</source>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.label">
+                <source>Video</source>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.description">
+                <source>Choose a video from the library selected above. With "All libraries", videos are grouped by library. Leave empty to use the default demo video.</source>
+            </trans-unit>
+            <trans-unit id="vo_video_uuid.default">
+                <source>-- Choose a video (empty: demo video) --</source>
+            </trans-unit>
+            <trans-unit id="vo_library_id.label">
+                <source>Library</source>
+            </trans-unit>
+            <trans-unit id="vo_library_id.description">
+                <source>Click a library tile. Grid and list show the videos of this library; the video browser of single, hero and detail elements opens with this library. Select "All libraries" for no restriction.</source>
+            </trans-unit>
+            <trans-unit id="vo_library_id.default">
+                <source>-- All libraries --</source>
+            </trans-unit>
+            <trans-unit id="vo_player.div">
+                <source>Player options</source>
+            </trans-unit>
+            <trans-unit id="vo_player.autoplay">
+                <source>Autoplay</source>
+            </trans-unit>
+            <trans-unit id="vo_player.loop">
+                <source>Loop</source>
+            </trans-unit>
+            <trans-unit id="vo_player.muted">
+                <source>Muted</source>
+            </trans-unit>
+            <trans-unit id="vo_player.controls">
+                <source>Show player controls</source>
+            </trans-unit>
+            <trans-unit id="vo_player.start_time">
+                <source>Start position (seconds)</source>
+            </trans-unit>
+            <trans-unit id="vo_player.fit_cover">
+                <source>Cover (fill area, crop instead of letterbox)</source>
+            </trans-unit>
+            <trans-unit id="vo_player.subtitle_lang">
+                <source>Subtitle language</source>
+            </trans-unit>
+            <trans-unit id="vo_player.subtitle_lang.default">
+                <source>-- Player default --</source>
+            </trans-unit>
+            <trans-unit id="vo_hero.div">
+                <source>Hero</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_eyebrow.label">
+                <source>Eyebrow text (empty = "VideoOptimizer")</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_subtitle.label">
+                <source>Subtitle</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_subtitle.description">
+                <source>Replaces the automatic line (duration, resolution, views). Empty = automatic.</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_label.label">
+                <source>Button label</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_label.placeholder">
+                <source>Watch video</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.label">
+                <source>Button action</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.newtab">
+                <source>Open player in a new tab</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.lightbox">
+                <source>Open video in lightbox</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.link">
+                <source>Link to a page or URL</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_mode.none">
+                <source>No button</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_cta_link.label">
+                <source>Button link</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.label">
+                <source>Overlay strength</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.none">
+                <source>None</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.light">
+                <source>Light</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.medium">
+                <source>Medium (default)</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_overlay.strong">
+                <source>Strong</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.label">
+                <source>Height</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.compact">
+                <source>Compact (about 50% of the viewport)</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.default">
+                <source>Default (440 px)</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_height.full">
+                <source>Full screen (100% of the viewport)</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.label">
+                <source>Text alignment</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.left">
+                <source>Left</source>
+            </trans-unit>
+            <trans-unit id="vo_hero_align.center">
+                <source>Centered</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

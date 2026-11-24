@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf" date="2026-10-11T00:00:00.000Z" product-name="videooptimizer">
+        <header>
+            <author>Scale Commerce</author>
+            <source-language>en</source-language>
+            <author-email/>
+        </header>
+        <body>
+            <trans-unit id="mlang_tabs_tab">
+                <source>VideoOptimizer</source>
+            </trans-unit>
+            <trans-unit id="mlang_labels_tabdescr">
+                <source>Manage VideoOptimizer libraries and upload videos.</source>
+            </trans-unit>
+            <trans-unit id="mlang_labels_tablabel">
+                <source>VideoOptimizer</source>
+            </trans-unit>
+            <trans-unit id="perm.header">
+                <source>VideoOptimizer module</source>
+            </trans-unit>
+            <trans-unit id="perm.manage">
+                <source>Manage libraries and videos</source>
+            </trans-unit>
+            <trans-unit id="perm.manage.description">
+                <source>Create/update libraries, rename and tag videos, set thumbnails, manage subtitles.</source>
+            </trans-unit>
+            <trans-unit id="perm.upload">
+                <source>Upload and ingest videos</source>
+            </trans-unit>
+            <trans-unit id="perm.upload.description">
+                <source>Upload video files and ingest videos from a URL.</source>
+            </trans-unit>
+            <trans-unit id="perm.delete">
+                <source>Delete and reprocess</source>
+            </trans-unit>
+            <trans-unit id="perm.delete.description">
+                <source>Delete libraries, videos and subtitle tracks; re-encode libraries.</source>
+            </trans-unit>
+            <trans-unit id="confirm.title">
+                <source>Please confirm</source>
+            </trans-unit>
+            <trans-unit id="common.yes">
+                <source>yes</source>
+            </trans-unit>
+            <trans-unit id="nav.backToLibraries">
+                <source>All libraries</source>
+            </trans-unit>
+            <trans-unit id="nav.backToVideos">
+                <source>Back to videos</source>
+            </trans-unit>
+            <trans-unit id="list.title">
+                <source>VideoOptimizer libraries</source>
+            </trans-unit>
+            <trans-unit id="list.intro">
+                <source>Libraries of your VideoOptimizer organization. Create a new library or open an existing one to upload videos.</source>
+            </trans-unit>
+            <trans-unit id="list.savings.videos">
+                <source>Videos compressed</source>
+            </trans-unit>
+            <trans-unit id="list.savings.storage">
+                <source>Storage saved</source>
+            </trans-unit>
+            <trans-unit id="list.savings.cdn">
+                <source>CDN traffic saved</source>
+            </trans-unit>
+            <trans-unit id="list.savings.bytes">
+                <source>%s bytes</source>
+            </trans-unit>
+            <trans-unit id="list.table.name">
+                <source>Name</source>
+            </trans-unit>
+            <trans-unit id="list.table.videos">
+                <source>Videos</source>
+            </trans-unit>
+            <trans-unit id="list.table.codec">
+                <source>Codec</source>
+            </trans-unit>
+            <trans-unit id="list.table.resolutions">
+                <source>Resolutions</source>
+            </trans-unit>
+            <trans-unit id="list.table.managed">
+                <source>Media management</source>
+            </trans-unit>
+            <trans-unit id="list.managed.yes">
+                <source>Managed by VideoOptimizer</source>
+            </trans-unit>
+            <trans-unit id="list.managed.no">
+                <source>Delivery only</source>
+            </trans-unit>
+            <trans-unit id="list.row.openVideos">
+                <source>Videos &amp; upload</source>
+            </trans-unit>
+            <trans-unit id="list.row.manage">
+                <source>Manage (edit, reprocess, delete)</source>
+            </trans-unit>
+            <trans-unit id="list.codecDefault">
+                <source>default</source>
+            </trans-unit>
+            <trans-unit id="list.edit.name">
+                <source>Name</source>
+            </trans-unit>
+            <trans-unit id="list.edit.description">
+                <source>Description</source>
+            </trans-unit>
+            <trans-unit id="list.edit.codec">
+                <source>Codec</source>
+            </trans-unit>
+            <trans-unit id="list.edit.resolutions">
+                <source>Resolutions</source>
+            </trans-unit>
+            <trans-unit id="list.edit.submit">
+                <source>Save changes</source>
+            </trans-unit>
+            <trans-unit id="list.edit.hint">
+                <source>(empty fields are left unchanged, except the description which is cleared)</source>
+            </trans-unit>
+            <trans-unit id="list.reprocess.submit">
+                <source>Reprocess all videos</source>
+            </trans-unit>
+            <trans-unit id="list.reprocess.confirm">
+                <source>Re-encode all videos of this library?</source>
+            </trans-unit>
+            <trans-unit id="list.delete.submit">
+                <source>Delete library</source>
+            </trans-unit>
+            <trans-unit id="list.delete.confirm">
+                <source>Delete this library including ALL of its videos? This cannot be undone.</source>
+            </trans-unit>
+            <trans-unit id="list.empty">
+                <source>No libraries found in your organization.</source>
+            </trans-unit>
+            <trans-unit id="list.create.title">
+                <source>Create a new library</source>
+            </trans-unit>
+            <trans-unit id="list.create.name">
+                <source>Name *</source>
+            </trans-unit>
+            <trans-unit id="list.create.description">
+                <source>Description</source>
+            </trans-unit>
+            <trans-unit id="list.create.codec">
+                <source>Codec</source>
+            </trans-unit>
+            <trans-unit id="list.create.resolutions">
+                <source>Resolutions (ctrl/cmd-click for multiple)</source>
+            </trans-unit>
+            <trans-unit id="list.create.submit">
+                <source>Create library</source>
+            </trans-unit>
+            <trans-unit id="list.create.hint">
+                <source>Leave codec/resolutions empty to use the platform defaults. CDN delivery is provisioned automatically.</source>
+            </trans-unit>
+            <trans-unit id="videos.processingNote">
+                <source>(encoding in progress – page refreshes every 10 s while idle)</source>
+            </trans-unit>
+            <trans-unit id="videos.summary">
+                <source>%1$d video(s) · codec %2$s · resolutions %3$s</source>
+            </trans-unit>
+            <trans-unit id="videos.summary.managed">
+                <source>media managed (uploads + remote ingest available)</source>
+            </trans-unit>
+            <trans-unit id="videos.summary.deliveryOnly">
+                <source>delivery only (no uploads)</source>
+            </trans-unit>
+            <trans-unit id="videos.error.libraryNotFound">
+                <source>Library not found (anymore) in your organization.</source>
+            </trans-unit>
+            <trans-unit id="videos.fallbackTitle">
+                <source>Video %s</source>
+            </trans-unit>
+            <trans-unit id="videos.filter.label">
+                <source>Filter by tag (comma-separated):</source>
+            </trans-unit>
+            <trans-unit id="videos.filter.placeholder">
+                <source>e.g. promo,webinar</source>
+            </trans-unit>
+            <trans-unit id="videos.filter.submit">
+                <source>Filter</source>
+            </trans-unit>
+            <trans-unit id="videos.filter.clear">
+                <source>Clear</source>
+            </trans-unit>
+            <trans-unit id="videos.table.title">
+                <source>Title</source>
+            </trans-unit>
+            <trans-unit id="videos.table.status">
+                <source>Status</source>
+            </trans-unit>
+            <trans-unit id="videos.table.duration">
+                <source>Duration</source>
+            </trans-unit>
+            <trans-unit id="videos.table.tags">
+                <source>Tags</source>
+            </trans-unit>
+            <trans-unit id="videos.status.ready">
+                <source>Ready</source>
+            </trans-unit>
+            <trans-unit id="videos.status.processing">
+                <source>Processing</source>
+            </trans-unit>
+            <trans-unit id="videos.status.error">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="videos.status.unknown">
+                <source>Unknown</source>
+            </trans-unit>
+            <trans-unit id="videos.metadata.title">
+                <source>Metadata</source>
+            </trans-unit>
+            <trans-unit id="videos.row.thumbnail">
+                <source>Thumbnail</source>
+            </trans-unit>
+            <trans-unit id="videos.row.subtitles">
+                <source>Subtitles</source>
+            </trans-unit>
+            <trans-unit id="videos.row.manage">
+                <source>Rename / tags / delete</source>
+            </trans-unit>
+            <trans-unit id="videos.rename.label">
+                <source>New title</source>
+            </trans-unit>
+            <trans-unit id="videos.rename.submit">
+                <source>Rename</source>
+            </trans-unit>
+            <trans-unit id="videos.tags.label">
+                <source>Tags (comma-separated, replaces the current set)</source>
+            </trans-unit>
+            <trans-unit id="videos.tags.submit">
+                <source>Save tags</source>
+            </trans-unit>
+            <trans-unit id="videos.delete.submit">
+                <source>Delete video</source>
+            </trans-unit>
+            <trans-unit id="videos.delete.confirm">
+                <source>Delete this video? This cannot be undone.</source>
+            </trans-unit>
+            <trans-unit id="videos.empty">
+                <source>No videos in this library yet.</source>
+            </trans-unit>
+            <trans-unit id="videos.upload.title">
+                <source>Upload a video file</source>
+            </trans-unit>
+            <trans-unit id="videos.upload.file">
+                <source>Video file *</source>
+            </trans-unit>
+            <trans-unit id="videos.upload.submit">
+                <source>Upload &amp; queue encoding</source>
+            </trans-unit>
+            <trans-unit id="videos.form.title">
+                <source>Title</source>
+            </trans-unit>
+            <trans-unit id="videos.form.tags">
+                <source>Tags (comma-separated)</source>
+            </trans-unit>
+            <trans-unit id="videos.form.metadata">
+                <source>Metadata (one 'key: value' pair per line, max 10)</source>
+            </trans-unit>
+            <trans-unit id="videos.form.metadataHelp">
+                <source>Keys: lowercase letters, numbers and the characters _ . - (max 40 chars). Values: max 64 chars.</source>
+            </trans-unit>
+            <trans-unit id="videos.ingest.title">
+                <source>Ingest from a public URL</source>
+            </trans-unit>
+            <trans-unit id="videos.ingest.url">
+                <source>Source URL (https) *</source>
+            </trans-unit>
+            <trans-unit id="videos.ingest.submit">
+                <source>Start ingest</source>
+            </trans-unit>
+            <trans-unit id="videos.ingest.hint">
+                <source>The platform downloads the file server-side and queues it for encoding.</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.docTitle">
+                <source>Thumbnail</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.title">
+                <source>Thumbnail – %s</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.intro">
+                <source>Pick one of the auto-generated frames. It is used as the poster image in hero elements and as the card preview in grid/list elements.</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.current">
+                <source>Current thumbnail</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.frame">
+                <source>Frame %s</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.set">
+                <source>Set as thumbnail</source>
+            </trans-unit>
+            <trans-unit id="thumbnail.empty">
+                <source>No frames available yet – thumbnail frames are generated once the video is ready.</source>
+            </trans-unit>
+            <trans-unit id="subtitles.docTitle">
+                <source>Subtitles</source>
+            </trans-unit>
+            <trans-unit id="subtitles.title">
+                <source>Subtitles – %s</source>
+            </trans-unit>
+            <trans-unit id="subtitles.intro">
+                <source>Upload or replace .srt / .vtt files (max 2 MB). Tracks are selectable in the player and can be forced per content element via the subtitle language setting.</source>
+            </trans-unit>
+            <trans-unit id="subtitles.table.language">
+                <source>Language</source>
+            </trans-unit>
+            <trans-unit id="subtitles.table.kind">
+                <source>Kind</source>
+            </trans-unit>
+            <trans-unit id="subtitles.table.default">
+                <source>Default</source>
+            </trans-unit>
+            <trans-unit id="subtitles.table.cues">
+                <source>Cues</source>
+            </trans-unit>
+            <trans-unit id="subtitles.table.format">
+                <source>Format</source>
+            </trans-unit>
+            <trans-unit id="subtitles.delete.submit">
+                <source>Delete</source>
+            </trans-unit>
+            <trans-unit id="subtitles.delete.confirm">
+                <source>Delete this subtitle track?</source>
+            </trans-unit>
+            <trans-unit id="subtitles.empty">
+                <source>No subtitle tracks yet.</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.title">
+                <source>Upload / replace a track</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.file">
+                <source>Subtitle file (.srt / .vtt) *</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.language">
+                <source>Language (BCP-47) *</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.languageChoose">
+                <source>— choose —</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind">
+                <source>Kind</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.auto">
+                <source>auto</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.subtitles">
+                <source>subtitles</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.captions">
+                <source>captions</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.default">
+                <source>Default track</source>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.submit">
+                <source>Upload</source>
+            </trans-unit>
+            <trans-unit id="flash.invalidToken">
+                <source>Invalid or expired form token. Please try again.</source>
+            </trans-unit>
+            <trans-unit id="flash.notPost">
+                <source>This action requires a POST request.</source>
+            </trans-unit>
+            <trans-unit id="flash.noPermission">
+                <source>You do not have permission to perform this action.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.nameRequired">
+                <source>Please enter a name for the new library.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.created">
+                <source>Library "%1$s" created (%2$s…).</source>
+            </trans-unit>
+            <trans-unit id="flash.library.updated">
+                <source>Library "%s" updated.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.nothingToUpdate">
+                <source>Nothing to update.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.deleted">
+                <source>Library %s… deleted, including all of its videos.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessNotManaged">
+                <source>Reprocessing is only available for media-managed libraries.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessQueued">
+                <source>Reprocessing started: %d video(s) queued.</source>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessStarted">
+                <source>Reprocessing started for the library.</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.noFile">
+                <source>No file received. Please choose a video file and try again.</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.notManaged">
+                <source>Uploads are only available for media-managed libraries.</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.badType">
+                <source>Unsupported file type. Allowed: %s.</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.badSize">
+                <source>The video file is empty or larger than 5 GiB.</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.notVideo">
+                <source>The file does not look like a video (detected type: %s).</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.unknownType">
+                <source>unknown</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.done">
+                <source>"%1$s" uploaded to the library and queued for encoding (video %2$s…).</source>
+            </trans-unit>
+            <trans-unit id="flash.upload.staging">
+                <source>The uploaded file could not be staged for transfer.</source>
+            </trans-unit>
+            <trans-unit id="flash.ingest.invalidUrl">
+                <source>Please provide a public https:// source URL (no credentials, no internal or IP-literal addresses).</source>
+            </trans-unit>
+            <trans-unit id="flash.ingest.notManaged">
+                <source>Remote ingest is only available for media-managed libraries.</source>
+            </trans-unit>
+            <trans-unit id="flash.ingest.done">
+                <source>Ingest started (video %s…). The platform downloads the source and queues encoding.</source>
+            </trans-unit>
+            <trans-unit id="flash.video.titleRequired">
+                <source>Please enter a new title.</source>
+            </trans-unit>
+            <trans-unit id="flash.video.renamed">
+                <source>Video renamed to "%s".</source>
+            </trans-unit>
+            <trans-unit id="flash.video.tagsUpdated">
+                <source>Tags updated (empty list clears all tags).</source>
+            </trans-unit>
+            <trans-unit id="flash.video.deleted">
+                <source>Video %s… deleted.</source>
+            </trans-unit>
+            <trans-unit id="flash.thumbnail.notManaged">
+                <source>Thumbnails can only be changed in media-managed libraries.</source>
+            </trans-unit>
+            <trans-unit id="flash.thumbnail.set">
+                <source>Frame %d set as the video thumbnail.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.languageRequired">
+                <source>Please choose a subtitle language.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.noFile">
+                <source>No file received. Please choose a .srt or .vtt file.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.badType">
+                <source>Only .srt and .vtt subtitle files are supported.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.badSize">
+                <source>The subtitle file is empty or larger than 2 MB.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.uploaded">
+                <source>Subtitle for %s uploaded.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.languageMissing">
+                <source>Missing subtitle language.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.deleted">
+                <source>Subtitle for %s deleted.</source>
+            </trans-unit>
+            <trans-unit id="format.decimalSeparator">
+                <source>.</source>
+            </trans-unit>
+            <trans-unit id="format.thousandsSeparator">
+                <source>,</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

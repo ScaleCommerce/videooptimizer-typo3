@@ -1,0 +1,8 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<div class="vo-processing" role="status">
+    <f:if condition="{video.poster_src}">
+        <img class="vo-processing__poster" src="{video.poster_src}" alt="" width="640" height="360" loading="lazy" decoding="async" />
+    </f:if>
+    <span class="vo-processing__label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.processing" /></span>
+</div>
+</html>

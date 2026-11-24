@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:videooptimizer/Resources/Private/Language/de.locallang_mod.xlf" date="2026-10-11T00:00:00.000Z" product-name="videooptimizer">
+        <header>
+            <author>Scale Commerce</author>
+            <source-language>en</source-language>
+            <author-email/>
+        </header>
+        <body>
+            <trans-unit id="mlang_tabs_tab">
+                <source>VideoOptimizer</source>
+                <target>VideoOptimizer</target>
+            </trans-unit>
+            <trans-unit id="mlang_labels_tabdescr">
+                <source>Manage VideoOptimizer libraries and upload videos.</source>
+                <target>VideoOptimizer-Bibliotheken verwalten und Videos hochladen.</target>
+            </trans-unit>
+            <trans-unit id="mlang_labels_tablabel">
+                <source>VideoOptimizer</source>
+                <target>VideoOptimizer</target>
+            </trans-unit>
+            <trans-unit id="perm.header">
+                <source>VideoOptimizer module</source>
+                <target>VideoOptimizer-Modul</target>
+            </trans-unit>
+            <trans-unit id="perm.manage">
+                <source>Manage libraries and videos</source>
+                <target>Bibliotheken und Videos verwalten</target>
+            </trans-unit>
+            <trans-unit id="perm.manage.description">
+                <source>Create/update libraries, rename and tag videos, set thumbnails, manage subtitles.</source>
+                <target>Bibliotheken anlegen/aktualisieren, Videos umbenennen und mit Tags versehen, Vorschaubilder festlegen, Untertitel verwalten.</target>
+            </trans-unit>
+            <trans-unit id="perm.upload">
+                <source>Upload and ingest videos</source>
+                <target>Videos hochladen und importieren</target>
+            </trans-unit>
+            <trans-unit id="perm.upload.description">
+                <source>Upload video files and ingest videos from a URL.</source>
+                <target>Videodateien hochladen und Videos per URL importieren.</target>
+            </trans-unit>
+            <trans-unit id="perm.delete">
+                <source>Delete and reprocess</source>
+                <target>Löschen und neu verarbeiten</target>
+            </trans-unit>
+            <trans-unit id="perm.delete.description">
+                <source>Delete libraries, videos and subtitle tracks; re-encode libraries.</source>
+                <target>Bibliotheken, Videos und Untertitelspuren löschen; Bibliotheken neu kodieren.</target>
+            </trans-unit>
+            <trans-unit id="confirm.title">
+                <source>Please confirm</source>
+                <target>Bitte bestätigen</target>
+            </trans-unit>
+            <trans-unit id="common.yes">
+                <source>yes</source>
+                <target>ja</target>
+            </trans-unit>
+            <trans-unit id="nav.backToLibraries">
+                <source>All libraries</source>
+                <target>Alle Bibliotheken</target>
+            </trans-unit>
+            <trans-unit id="nav.backToVideos">
+                <source>Back to videos</source>
+                <target>Zurück zu den Videos</target>
+            </trans-unit>
+            <trans-unit id="list.title">
+                <source>VideoOptimizer libraries</source>
+                <target>VideoOptimizer-Bibliotheken</target>
+            </trans-unit>
+            <trans-unit id="list.intro">
+                <source>Libraries of your VideoOptimizer organization. Create a new library or open an existing one to upload videos.</source>
+                <target>Bibliotheken Ihrer VideoOptimizer-Organisation. Legen Sie eine neue Bibliothek an oder öffnen Sie eine vorhandene, um Videos hochzuladen.</target>
+            </trans-unit>
+            <trans-unit id="list.savings.videos">
+                <source>Videos compressed</source>
+                <target>Komprimierte Videos</target>
+            </trans-unit>
+            <trans-unit id="list.savings.storage">
+                <source>Storage saved</source>
+                <target>Gesparter Speicher</target>
+            </trans-unit>
+            <trans-unit id="list.savings.cdn">
+                <source>CDN traffic saved</source>
+                <target>Gesparter CDN-Traffic</target>
+            </trans-unit>
+            <trans-unit id="list.savings.bytes">
+                <source>%s bytes</source>
+                <target>%s Byte</target>
+            </trans-unit>
+            <trans-unit id="list.table.name">
+                <source>Name</source>
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="list.table.videos">
+                <source>Videos</source>
+                <target>Videos</target>
+            </trans-unit>
+            <trans-unit id="list.table.codec">
+                <source>Codec</source>
+                <target>Codec</target>
+            </trans-unit>
+            <trans-unit id="list.table.resolutions">
+                <source>Resolutions</source>
+                <target>Auflösungen</target>
+            </trans-unit>
+            <trans-unit id="list.table.managed">
+                <source>Media management</source>
+                <target>Medienverwaltung</target>
+            </trans-unit>
+            <trans-unit id="list.managed.yes">
+                <source>Managed by VideoOptimizer</source>
+                <target>Durch VideoOptimizer</target>
+            </trans-unit>
+            <trans-unit id="list.managed.no">
+                <source>Delivery only</source>
+                <target>Nur Auslieferung</target>
+            </trans-unit>
+            <trans-unit id="list.row.openVideos">
+                <source>Videos &amp; upload</source>
+                <target>Videos &amp; Upload</target>
+            </trans-unit>
+            <trans-unit id="list.row.manage">
+                <source>Manage (edit, reprocess, delete)</source>
+                <target>Verwalten (bearbeiten, neu verarbeiten, löschen)</target>
+            </trans-unit>
+            <trans-unit id="list.codecDefault">
+                <source>default</source>
+                <target>Standard</target>
+            </trans-unit>
+            <trans-unit id="list.edit.name">
+                <source>Name</source>
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="list.edit.description">
+                <source>Description</source>
+                <target>Beschreibung</target>
+            </trans-unit>
+            <trans-unit id="list.edit.codec">
+                <source>Codec</source>
+                <target>Codec</target>
+            </trans-unit>
+            <trans-unit id="list.edit.resolutions">
+                <source>Resolutions</source>
+                <target>Auflösungen</target>
+            </trans-unit>
+            <trans-unit id="list.edit.submit">
+                <source>Save changes</source>
+                <target>Änderungen speichern</target>
+            </trans-unit>
+            <trans-unit id="list.edit.hint">
+                <source>(empty fields are left unchanged, except the description which is cleared)</source>
+                <target>(Leere Felder bleiben unverändert, nur die Beschreibung wird dann geleert.)</target>
+            </trans-unit>
+            <trans-unit id="list.reprocess.submit">
+                <source>Reprocess all videos</source>
+                <target>Alle Videos neu verarbeiten</target>
+            </trans-unit>
+            <trans-unit id="list.reprocess.confirm">
+                <source>Re-encode all videos of this library?</source>
+                <target>Alle Videos dieser Bibliothek neu kodieren?</target>
+            </trans-unit>
+            <trans-unit id="list.delete.submit">
+                <source>Delete library</source>
+                <target>Bibliothek löschen</target>
+            </trans-unit>
+            <trans-unit id="list.delete.confirm">
+                <source>Delete this library including ALL of its videos? This cannot be undone.</source>
+                <target>Diese Bibliothek einschließlich ALLER Videos löschen? Dies kann nicht rückgängig gemacht werden.</target>
+            </trans-unit>
+            <trans-unit id="list.empty">
+                <source>No libraries found in your organization.</source>
+                <target>In Ihrer Organisation wurden keine Bibliotheken gefunden.</target>
+            </trans-unit>
+            <trans-unit id="list.create.title">
+                <source>Create a new library</source>
+                <target>Neue Bibliothek anlegen</target>
+            </trans-unit>
+            <trans-unit id="list.create.name">
+                <source>Name *</source>
+                <target>Name *</target>
+            </trans-unit>
+            <trans-unit id="list.create.description">
+                <source>Description</source>
+                <target>Beschreibung</target>
+            </trans-unit>
+            <trans-unit id="list.create.codec">
+                <source>Codec</source>
+                <target>Codec</target>
+            </trans-unit>
+            <trans-unit id="list.create.resolutions">
+                <source>Resolutions (ctrl/cmd-click for multiple)</source>
+                <target>Auflösungen (Mehrfachauswahl mit Strg/Cmd-Klick)</target>
+            </trans-unit>
+            <trans-unit id="list.create.submit">
+                <source>Create library</source>
+                <target>Bibliothek anlegen</target>
+            </trans-unit>
+            <trans-unit id="list.create.hint">
+                <source>Leave codec/resolutions empty to use the platform defaults. CDN delivery is provisioned automatically.</source>
+                <target>Lassen Sie Codec und Auflösungen leer, um die Standardwerte der Plattform zu verwenden. Die CDN-Auslieferung wird automatisch eingerichtet.</target>
+            </trans-unit>
+            <trans-unit id="videos.processingNote">
+                <source>(encoding in progress – page refreshes every 10 s while idle)</source>
+                <target>(Kodierung läuft – die Seite aktualisiert sich im Ruhezustand alle 10 s)</target>
+            </trans-unit>
+            <trans-unit id="videos.summary">
+                <source>%1$d video(s) · codec %2$s · resolutions %3$s</source>
+                <target>%1$d Video(s) · Codec %2$s · Auflösungen %3$s</target>
+            </trans-unit>
+            <trans-unit id="videos.summary.managed">
+                <source>media managed (uploads + remote ingest available)</source>
+                <target>Medienverwaltung durch VideoOptimizer (Upload und Import per URL verfügbar)</target>
+            </trans-unit>
+            <trans-unit id="videos.summary.deliveryOnly">
+                <source>delivery only (no uploads)</source>
+                <target>nur Auslieferung (kein Upload)</target>
+            </trans-unit>
+            <trans-unit id="videos.error.libraryNotFound">
+                <source>Library not found (anymore) in your organization.</source>
+                <target>Die Bibliothek wurde in Ihrer Organisation nicht (mehr) gefunden.</target>
+            </trans-unit>
+            <trans-unit id="videos.fallbackTitle">
+                <source>Video %s</source>
+                <target>Video %s</target>
+            </trans-unit>
+            <trans-unit id="videos.filter.label">
+                <source>Filter by tag (comma-separated):</source>
+                <target>Nach Tag filtern (kommagetrennt):</target>
+            </trans-unit>
+            <trans-unit id="videos.filter.placeholder">
+                <source>e.g. promo,webinar</source>
+                <target>z. B. promo,webinar</target>
+            </trans-unit>
+            <trans-unit id="videos.filter.submit">
+                <source>Filter</source>
+                <target>Filtern</target>
+            </trans-unit>
+            <trans-unit id="videos.filter.clear">
+                <source>Clear</source>
+                <target>Zurücksetzen</target>
+            </trans-unit>
+            <trans-unit id="videos.table.title">
+                <source>Title</source>
+                <target>Titel</target>
+            </trans-unit>
+            <trans-unit id="videos.table.status">
+                <source>Status</source>
+                <target>Status</target>
+            </trans-unit>
+            <trans-unit id="videos.table.duration">
+                <source>Duration</source>
+                <target>Dauer</target>
+            </trans-unit>
+            <trans-unit id="videos.table.tags">
+                <source>Tags</source>
+                <target>Tags</target>
+            </trans-unit>
+            <trans-unit id="videos.status.ready">
+                <source>Ready</source>
+                <target>Bereit</target>
+            </trans-unit>
+            <trans-unit id="videos.status.processing">
+                <source>Processing</source>
+                <target>Wird verarbeitet</target>
+            </trans-unit>
+            <trans-unit id="videos.status.error">
+                <source>Error</source>
+                <target>Fehler</target>
+            </trans-unit>
+            <trans-unit id="videos.status.unknown">
+                <source>Unknown</source>
+                <target>Unbekannt</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.title">
+                <source>Metadata</source>
+                <target>Metadaten</target>
+            </trans-unit>
+            <trans-unit id="videos.row.thumbnail">
+                <source>Thumbnail</source>
+                <target>Vorschaubild</target>
+            </trans-unit>
+            <trans-unit id="videos.row.subtitles">
+                <source>Subtitles</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="videos.row.manage">
+                <source>Rename / tags / delete</source>
+                <target>Umbenennen / Tags / Löschen</target>
+            </trans-unit>
+            <trans-unit id="videos.rename.label">
+                <source>New title</source>
+                <target>Neuer Titel</target>
+            </trans-unit>
+            <trans-unit id="videos.rename.submit">
+                <source>Rename</source>
+                <target>Umbenennen</target>
+            </trans-unit>
+            <trans-unit id="videos.tags.label">
+                <source>Tags (comma-separated, replaces the current set)</source>
+                <target>Tags (kommagetrennt, ersetzt die bisherigen Tags)</target>
+            </trans-unit>
+            <trans-unit id="videos.tags.submit">
+                <source>Save tags</source>
+                <target>Tags speichern</target>
+            </trans-unit>
+            <trans-unit id="videos.delete.submit">
+                <source>Delete video</source>
+                <target>Video löschen</target>
+            </trans-unit>
+            <trans-unit id="videos.delete.confirm">
+                <source>Delete this video? This cannot be undone.</source>
+                <target>Dieses Video löschen? Dies kann nicht rückgängig gemacht werden.</target>
+            </trans-unit>
+            <trans-unit id="videos.empty">
+                <source>No videos in this library yet.</source>
+                <target>Diese Bibliothek enthält noch keine Videos.</target>
+            </trans-unit>
+            <trans-unit id="videos.upload.title">
+                <source>Upload a video file</source>
+                <target>Videodatei hochladen</target>
+            </trans-unit>
+            <trans-unit id="videos.upload.file">
+                <source>Video file *</source>
+                <target>Videodatei *</target>
+            </trans-unit>
+            <trans-unit id="videos.upload.submit">
+                <source>Upload &amp; queue encoding</source>
+                <target>Hochladen und Kodierung starten</target>
+            </trans-unit>
+            <trans-unit id="videos.form.title">
+                <source>Title</source>
+                <target>Titel</target>
+            </trans-unit>
+            <trans-unit id="videos.form.tags">
+                <source>Tags (comma-separated)</source>
+                <target>Tags (kommagetrennt)</target>
+            </trans-unit>
+            <trans-unit id="videos.form.metadata">
+                <source>Metadata (one 'key: value' pair per line, max 10)</source>
+                <target>Metadaten (ein Paar „Schlüssel: Wert“ pro Zeile, max. 10)</target>
+            </trans-unit>
+            <trans-unit id="videos.form.metadataHelp">
+                <source>Keys: lowercase letters, numbers and the characters _ . - (max 40 chars). Values: max 64 chars.</source>
+                <target>Schlüssel: Kleinbuchstaben, Ziffern und die Zeichen _ . - (max. 40 Zeichen). Werte: max. 64 Zeichen.</target>
+            </trans-unit>
+            <trans-unit id="videos.ingest.title">
+                <source>Ingest from a public URL</source>
+                <target>Von öffentlicher URL importieren</target>
+            </trans-unit>
+            <trans-unit id="videos.ingest.url">
+                <source>Source URL (https) *</source>
+                <target>Quell-URL (https) *</target>
+            </trans-unit>
+            <trans-unit id="videos.ingest.submit">
+                <source>Start ingest</source>
+                <target>Import starten</target>
+            </trans-unit>
+            <trans-unit id="videos.ingest.hint">
+                <source>The platform downloads the file server-side and queues it for encoding.</source>
+                <target>Die Plattform lädt die Datei serverseitig herunter und stellt sie in die Kodierungswarteschlange.</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.docTitle">
+                <source>Thumbnail</source>
+                <target>Vorschaubild</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.title">
+                <source>Thumbnail – %s</source>
+                <target>Vorschaubild – %s</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.intro">
+                <source>Pick one of the auto-generated frames. It is used as the poster image in hero elements and as the card preview in grid/list elements.</source>
+                <target>Wählen Sie eines der automatisch erzeugten Einzelbilder. Es dient als Posterbild in Hero-Elementen und als Kartenvorschau in Raster- und Listenelementen.</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.current">
+                <source>Current thumbnail</source>
+                <target>Aktuelles Vorschaubild</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.frame">
+                <source>Frame %s</source>
+                <target>Bild %s</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.set">
+                <source>Set as thumbnail</source>
+                <target>Als Vorschaubild festlegen</target>
+            </trans-unit>
+            <trans-unit id="thumbnail.empty">
+                <source>No frames available yet – thumbnail frames are generated once the video is ready.</source>
+                <target>Noch keine Bilder verfügbar – die Vorschaubilder werden erzeugt, sobald das Video bereit ist.</target>
+            </trans-unit>
+            <trans-unit id="subtitles.docTitle">
+                <source>Subtitles</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="subtitles.title">
+                <source>Subtitles – %s</source>
+                <target>Untertitel – %s</target>
+            </trans-unit>
+            <trans-unit id="subtitles.intro">
+                <source>Upload or replace .srt / .vtt files (max 2 MB). Tracks are selectable in the player and can be forced per content element via the subtitle language setting.</source>
+                <target>Laden Sie .srt- oder .vtt-Dateien hoch oder ersetzen Sie sie (max. 2 MB). Die Spuren sind im Player wählbar und lassen sich pro Inhaltselement über die Untertitelsprache fest vorgeben.</target>
+            </trans-unit>
+            <trans-unit id="subtitles.table.language">
+                <source>Language</source>
+                <target>Sprache</target>
+            </trans-unit>
+            <trans-unit id="subtitles.table.kind">
+                <source>Kind</source>
+                <target>Art</target>
+            </trans-unit>
+            <trans-unit id="subtitles.table.default">
+                <source>Default</source>
+                <target>Standard</target>
+            </trans-unit>
+            <trans-unit id="subtitles.table.cues">
+                <source>Cues</source>
+                <target>Einblendungen</target>
+            </trans-unit>
+            <trans-unit id="subtitles.table.format">
+                <source>Format</source>
+                <target>Format</target>
+            </trans-unit>
+            <trans-unit id="subtitles.delete.submit">
+                <source>Delete</source>
+                <target>Löschen</target>
+            </trans-unit>
+            <trans-unit id="subtitles.delete.confirm">
+                <source>Delete this subtitle track?</source>
+                <target>Diese Untertitelspur löschen?</target>
+            </trans-unit>
+            <trans-unit id="subtitles.empty">
+                <source>No subtitle tracks yet.</source>
+                <target>Noch keine Untertitelspuren vorhanden.</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.title">
+                <source>Upload / replace a track</source>
+                <target>Spur hochladen / ersetzen</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.file">
+                <source>Subtitle file (.srt / .vtt) *</source>
+                <target>Untertiteldatei (.srt / .vtt) *</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.language">
+                <source>Language (BCP-47) *</source>
+                <target>Sprache (BCP 47) *</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.languageChoose">
+                <source>— choose —</source>
+                <target>— auswählen —</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind">
+                <source>Kind</source>
+                <target>Art</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.auto">
+                <source>auto</source>
+                <target>automatisch</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.subtitles">
+                <source>subtitles</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.kind.captions">
+                <source>captions</source>
+                <target>Hörgeschädigten-Untertitel (Captions)</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.default">
+                <source>Default track</source>
+                <target>Standardspur</target>
+            </trans-unit>
+            <trans-unit id="subtitles.upload.submit">
+                <source>Upload</source>
+                <target>Hochladen</target>
+            </trans-unit>
+            <trans-unit id="flash.invalidToken">
+                <source>Invalid or expired form token. Please try again.</source>
+                <target>Ungültiges oder abgelaufenes Formular-Token. Bitte versuchen Sie es erneut.</target>
+            </trans-unit>
+            <trans-unit id="flash.notPost">
+                <source>This action requires a POST request.</source>
+                <target>Diese Aktion erfordert eine POST-Anfrage.</target>
+            </trans-unit>
+            <trans-unit id="flash.noPermission">
+                <source>You do not have permission to perform this action.</source>
+                <target>Sie haben keine Berechtigung für diese Aktion.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.nameRequired">
+                <source>Please enter a name for the new library.</source>
+                <target>Bitte geben Sie einen Namen für die neue Bibliothek ein.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.created">
+                <source>Library "%1$s" created (%2$s…).</source>
+                <target>Bibliothek „%1$s“ angelegt (%2$s…).</target>
+            </trans-unit>
+            <trans-unit id="flash.library.updated">
+                <source>Library "%s" updated.</source>
+                <target>Bibliothek „%s“ aktualisiert.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.nothingToUpdate">
+                <source>Nothing to update.</source>
+                <target>Keine Änderungen vorhanden.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.deleted">
+                <source>Library %s… deleted, including all of its videos.</source>
+                <target>Bibliothek %s… einschließlich aller Videos gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessNotManaged">
+                <source>Reprocessing is only available for media-managed libraries.</source>
+                <target>Die Neuverarbeitung ist nur für Bibliotheken mit Medienverwaltung durch VideoOptimizer verfügbar.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessQueued">
+                <source>Reprocessing started: %d video(s) queued.</source>
+                <target>Neuverarbeitung gestartet: %d Video(s) in der Warteschlange.</target>
+            </trans-unit>
+            <trans-unit id="flash.library.reprocessStarted">
+                <source>Reprocessing started for the library.</source>
+                <target>Die Neuverarbeitung der Bibliothek wurde gestartet.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.noFile">
+                <source>No file received. Please choose a video file and try again.</source>
+                <target>Keine Datei empfangen. Bitte wählen Sie eine Videodatei aus und versuchen Sie es erneut.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.notManaged">
+                <source>Uploads are only available for media-managed libraries.</source>
+                <target>Uploads sind nur für Bibliotheken mit Medienverwaltung durch VideoOptimizer verfügbar.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.badType">
+                <source>Unsupported file type. Allowed: %s.</source>
+                <target>Nicht unterstützter Dateityp. Erlaubt: %s.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.badSize">
+                <source>The video file is empty or larger than 5 GiB.</source>
+                <target>Die Videodatei ist leer oder größer als 5 GiB.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.notVideo">
+                <source>The file does not look like a video (detected type: %s).</source>
+                <target>Die Datei scheint kein Video zu sein (erkannter Typ: %s).</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.unknownType">
+                <source>unknown</source>
+                <target>unbekannt</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.done">
+                <source>"%1$s" uploaded to the library and queued for encoding (video %2$s…).</source>
+                <target>„%1$s“ in die Bibliothek hochgeladen und zur Kodierung eingeplant (Video %2$s…).</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.staging">
+                <source>The uploaded file could not be staged for transfer.</source>
+                <target>Die hochgeladene Datei konnte nicht für die Übertragung bereitgestellt werden.</target>
+            </trans-unit>
+            <trans-unit id="flash.ingest.invalidUrl">
+                <source>Please provide a public https:// source URL (no credentials, no internal or IP-literal addresses).</source>
+                <target>Bitte geben Sie eine öffentliche https://-Quell-URL an (ohne Zugangsdaten, ohne interne Adressen oder IP-Adressen).</target>
+            </trans-unit>
+            <trans-unit id="flash.ingest.notManaged">
+                <source>Remote ingest is only available for media-managed libraries.</source>
+                <target>Der Import per URL ist nur für Bibliotheken mit Medienverwaltung durch VideoOptimizer verfügbar.</target>
+            </trans-unit>
+            <trans-unit id="flash.ingest.done">
+                <source>Ingest started (video %s…). The platform downloads the source and queues encoding.</source>
+                <target>Import gestartet (Video %s…). Die Plattform lädt die Quelle herunter und startet die Kodierung.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.titleRequired">
+                <source>Please enter a new title.</source>
+                <target>Bitte geben Sie einen neuen Titel ein.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.renamed">
+                <source>Video renamed to "%s".</source>
+                <target>Video in „%s“ umbenannt.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.tagsUpdated">
+                <source>Tags updated (empty list clears all tags).</source>
+                <target>Tags aktualisiert (eine leere Liste entfernt alle Tags).</target>
+            </trans-unit>
+            <trans-unit id="flash.video.deleted">
+                <source>Video %s… deleted.</source>
+                <target>Video %s… gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="flash.thumbnail.notManaged">
+                <source>Thumbnails can only be changed in media-managed libraries.</source>
+                <target>Vorschaubilder lassen sich nur in Bibliotheken mit Medienverwaltung durch VideoOptimizer ändern.</target>
+            </trans-unit>
+            <trans-unit id="flash.thumbnail.set">
+                <source>Frame %d set as the video thumbnail.</source>
+                <target>Bild %d als Vorschaubild festgelegt.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.languageRequired">
+                <source>Please choose a subtitle language.</source>
+                <target>Bitte wählen Sie eine Untertitelsprache aus.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.noFile">
+                <source>No file received. Please choose a .srt or .vtt file.</source>
+                <target>Keine Datei empfangen. Bitte wählen Sie eine .srt- oder .vtt-Datei aus.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.badType">
+                <source>Only .srt and .vtt subtitle files are supported.</source>
+                <target>Es werden nur Untertiteldateien im Format .srt und .vtt unterstützt.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.badSize">
+                <source>The subtitle file is empty or larger than 2 MB.</source>
+                <target>Die Untertiteldatei ist leer oder größer als 2 MB.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.uploaded">
+                <source>Subtitle for %s uploaded.</source>
+                <target>Untertitel für %s hochgeladen.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.languageMissing">
+                <source>Missing subtitle language.</source>
+                <target>Die Untertitelsprache fehlt.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitle.deleted">
+                <source>Subtitle for %s deleted.</source>
+                <target>Untertitel für %s gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="format.decimalSeparator">
+                <source>.</source>
+                <target>,</target>
+            </trans-unit>
+            <trans-unit id="format.thousandsSeparator">
+                <source>,</source>
+                <target>.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
