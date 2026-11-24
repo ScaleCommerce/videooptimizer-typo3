@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-24
+
 ### Fixed
 - The new-content-element wizard showed the group of the five elements as "video" (the raw key); it is
   now labelled "Video" (English and German).
@@ -69,6 +71,7 @@ Initial public release for **TYPO3 14.3 LTS** and **PHP 8.4/8.5**.
 - Visitors never see API error details; pages showing them to backend users are not cached.
 - Webhook: HMAC-SHA256 signature, 5-minute replay window, duplicate detection, 1 MiB body limit.
 
-[Unreleased]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ScaleCommerce/videooptimizer-typo3/releases/tag/v1.0.0
