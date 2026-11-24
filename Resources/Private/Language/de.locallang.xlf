@@ -50,10 +50,6 @@
                 <source>Choose a video from the library selected above. With "All libraries", videos are grouped by library. Leave empty to use the default demo video.</source>
                 <target>Wählen Sie ein Video aus der oben gewählten Bibliothek. Bei „Alle Bibliotheken“ sind die Videos nach Bibliothek gruppiert. Leer lassen, um das Demo-Video zu verwenden.</target>
             </trans-unit>
-            <trans-unit id="vo_video_uuid.default">
-                <source>-- Choose a video (empty: demo video) --</source>
-                <target>-- Video wählen (leer: Demo-Video) --</target>
-            </trans-unit>
             <trans-unit id="vo_library_id.label">
                 <source>Library</source>
                 <target>Bibliothek</target>
@@ -61,10 +57,6 @@
             <trans-unit id="vo_library_id.description">
                 <source>Click a library tile. Grid and list show the videos of this library; the video browser of single, hero and detail elements opens with this library. Select "All libraries" for no restriction.</source>
                 <target>Klicken Sie auf eine Bibliothek. Raster und Liste zeigen die Videos dieser Bibliothek; die Videoauswahl von Einzelvideo, Hero und Detail öffnet sich mit dieser Bibliothek. „Alle Bibliotheken“ hebt die Einschränkung auf.</target>
-            </trans-unit>
-            <trans-unit id="vo_library_id.default">
-                <source>-- All libraries --</source>
-                <target>-- Alle Bibliotheken --</target>
             </trans-unit>
             <trans-unit id="vo_player.div">
                 <source>Player options</source>

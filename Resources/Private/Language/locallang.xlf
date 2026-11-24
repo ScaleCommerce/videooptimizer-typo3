@@ -43,17 +43,11 @@
             <trans-unit id="vo_video_uuid.description">
                 <source>Choose a video from the library selected above. With "All libraries", videos are grouped by library. Leave empty to use the default demo video.</source>
             </trans-unit>
-            <trans-unit id="vo_video_uuid.default">
-                <source>-- Choose a video (empty: demo video) --</source>
-            </trans-unit>
             <trans-unit id="vo_library_id.label">
                 <source>Library</source>
             </trans-unit>
             <trans-unit id="vo_library_id.description">
                 <source>Click a library tile. Grid and list show the videos of this library; the video browser of single, hero and detail elements opens with this library. Select "All libraries" for no restriction.</source>
-            </trans-unit>
-            <trans-unit id="vo_library_id.default">
-                <source>-- All libraries --</source>
             </trans-unit>
             <trans-unit id="vo_player.div">
                 <source>Player options</source>

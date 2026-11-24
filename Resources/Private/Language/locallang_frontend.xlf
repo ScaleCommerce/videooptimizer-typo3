@@ -15,9 +15,6 @@
             <trans-unit id="video.fallback_title">
                 <source>Video %s</source>
             </trans-unit>
-            <trans-unit id="video.unavailable">
-                <source>This video is currently unavailable.</source>
-            </trans-unit>
             <trans-unit id="video.processing">
                 <source>Video is being processed</source>
             </trans-unit>
@@ -26,9 +23,6 @@
             </trans-unit>
             <trans-unit id="video.open">
                 <source>Open %s</source>
-            </trans-unit>
-            <trans-unit id="video.play_label">
-                <source>Play %s</source>
             </trans-unit>
             <trans-unit id="grid.hint">
                 <source>Showing %d videos. Click a card to open the player.</source>

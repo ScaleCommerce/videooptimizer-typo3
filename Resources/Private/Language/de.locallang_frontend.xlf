@@ -19,10 +19,6 @@
                 <source>Video %s</source>
                 <target>Video %s</target>
             </trans-unit>
-            <trans-unit id="video.unavailable" approved="yes">
-                <source>This video is currently unavailable.</source>
-                <target>Dieses Video ist derzeit nicht verfügbar.</target>
-            </trans-unit>
             <trans-unit id="video.processing" approved="yes">
                 <source>Video is being processed</source>
                 <target>Video wird verarbeitet</target>
@@ -34,10 +30,6 @@
             <trans-unit id="video.open" approved="yes">
                 <source>Open %s</source>
                 <target>%s öffnen</target>
-            </trans-unit>
-            <trans-unit id="video.play_label" approved="yes">
-                <source>Play %s</source>
-                <target>%s abspielen</target>
             </trans-unit>
             <trans-unit id="grid.hint" approved="yes">
                 <source>Showing %d videos. Click a card to open the player.</source>

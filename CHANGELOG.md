@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-24
+
+### Removed
+- Unused translation labels (English and German): `vo_video_uuid.default` and `vo_library_id.default`
+  (both fields use the visual pickers instead of select boxes) and the frontend labels
+  `video.unavailable` and `video.play_label`. No visible change.
+
 ## [1.0.0] - 2026-11-24
 
 Initial public release for **TYPO3 14.3 LTS** and **PHP 8.4/8.5**.
@@ -53,5 +60,6 @@ Initial public release for **TYPO3 14.3 LTS** and **PHP 8.4/8.5**.
 - Visitors never see API error details; pages showing them to backend users are not cached.
 - Webhook: HMAC-SHA256 signature, 5-minute replay window, duplicate detection, 1 MiB body limit.
 
-[Unreleased]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ScaleCommerce/videooptimizer-typo3/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ScaleCommerce/videooptimizer-typo3/releases/tag/v1.0.0
