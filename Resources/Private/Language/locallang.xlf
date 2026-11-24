@@ -7,6 +7,9 @@
             <author-email/>
         </header>
         <body>
+            <trans-unit id="vo_group.video">
+                <source>Video</source>
+            </trans-unit>
             <trans-unit id="vo_ct.videohero.label">
                 <source>Video Hero</source>
             </trans-unit>

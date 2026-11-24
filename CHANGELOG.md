@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- The new-content-element wizard showed the group of the five elements as "video" (the raw key); it is
+  now labelled "Video" (English and German).
+
+### Changed
+- README: menu paths for TYPO3 14 (System → Settings, Sites → Setup, Content → Layout, System → Maintenance),
+  exact field names for the backend user group permissions, and the site set removal step when
+  uninstalling.
+
 ## [1.0.1] - 2026-11-24
 
 ### Removed

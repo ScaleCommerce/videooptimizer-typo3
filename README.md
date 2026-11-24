@@ -17,8 +17,8 @@
 
 Give your editors adaptive, CDN-streamed video without ever leaving TYPO3. This extension adds **five
 ready-to-use content elements** (hero, single video, grid, list, detail), a **visual library and video
-picker**, a **backend module** to manage libraries, videos, thumbnails and subtitles, and **page-module
-previews** — while the organization's API token stays on the server. Editors just pick a video and
+picker**, a **backend module** to manage libraries, videos, thumbnails and subtitles, and **previews in the
+page layout** — while the organization's API token stays on the server. Editors just pick a video and
 publish.
 
 > Built and maintained by **[ScaleCommerce GmbH](https://scale.sc/)**, the team behind
@@ -45,8 +45,8 @@ publish.
 - 🛠️ **Backend module** — create, edit, reprocess and delete libraries; upload videos or import them
   from a public `https://` URL; rename, tag and delete videos; pick thumbnails; upload subtitles
   (`.vtt`/`.srt`). Native TYPO3 look, English and German.
-- 👀 **Page-module previews** — every element shows its poster, title, duration, library and the options
-  that differ from the defaults.
+- 👀 **Previews in the page layout** (Content → Layout) — every element shows its poster, title, duration,
+  library and the options that differ from the defaults.
 - 🔎 **SEO built in** — schema.org `VideoObject` / `ItemList` structured data (JSON-LD), one entry per
   video, switchable per site.
 - ⚡ **Fast and resilient** — API responses cached with stale-while-error, page-cache tags per video,
@@ -88,7 +88,7 @@ Compared to serving `.mp4` files from your own TYPO3 installation or embedding Y
 |---|---|
 | TYPO3 | 14.3 LTS, Composer mode |
 | PHP | 8.4 or 8.5 |
-| Extensions | `fluid_styled_content` (required by the site set) |
+| Extensions | `fluid_styled_content` (installed as a dependency; the site set builds on it) |
 | A VideoOptimizer account | grab an API token (`vp_…`) at [videooptimizer.eu](https://videooptimizer.eu/) → Organization → API tokens |
 
 The token needs the `library:view` permission (the extension lists videos across all libraries). Uploads,
@@ -102,16 +102,17 @@ URL import, reprocessing and thumbnail changes require a library that is managed
    composer require scalecommerce/videooptimizer-typo3
    vendor/bin/typo3 extension:setup
    ```
-2. **Add your token.** **Admin Tools → Settings → Extension Configuration → videooptimizer** → `apiToken`
-   — or set the environment variable `VO_API_TOKEN` (see [Configuration](#configuration)).
-3. **Add the site set.** **Site Management → Sites → edit your site → Sets**: add
-   **VideoOptimizer content elements** (`scalecommerce/videooptimizer`). Or in `config/sites/<site>/config.yaml`:
+2. **Add your token.** **System → Settings → Extension Configuration → videooptimizer** → *API token* —
+   or set the environment variable `VO_API_TOKEN` (see [Configuration](#configuration)).
+3. **Add the site set.** **Sites → Setup**, edit your site, tab *General*, field *Sets for this Site*: add
+   **VideoOptimizer content elements** (`scalecommerce/videooptimizer`) and save. Or in
+   `config/sites/<site>/config.yaml`:
    ```yaml
    dependencies:
      - scalecommerce/videooptimizer
    ```
-4. **Place a video.** In the Page module, create a new content element from the **Video** group, pick a
-   library and a video, save.
+4. **Place a video.** In **Content → Layout**, click *Create new content*, choose an element from the
+   **Video** group, pick a library and a video, save.
 5. **Manage videos.** Open **System → VideoOptimizer** to create libraries, upload videos and maintain
    thumbnails and subtitles.
 
@@ -120,15 +121,15 @@ use them) — no build step, no TypoScript to include.
 
 <div align="center">
 
-![The Page module with previews of the hero, single and grid elements](https://raw.githubusercontent.com/ScaleCommerce/videooptimizer-typo3/main/docs/screenshots/page-module-preview.jpg)
+![Content → Layout with previews of the hero, single and grid elements](https://raw.githubusercontent.com/ScaleCommerce/videooptimizer-typo3/main/docs/screenshots/page-module-preview.jpg)
 
-<sub>Page-module previews: poster, title, duration and library at a glance.</sub>
+<sub>Previews in Content → Layout: poster, title, duration and library at a glance.</sub>
 
 </div>
 
 ## Configuration
 
-**Extension configuration** (Admin Tools → Settings → Extension Configuration → videooptimizer):
+**Extension configuration** (System → Settings → Extension Configuration → videooptimizer):
 
 | Setting | Environment variable | Description |
 |---|---|---|
@@ -163,15 +164,17 @@ Keep a tag-capable backend — cache invalidation works with tags.
 
 ### Permissions
 
-Admins can do everything. For editor groups (**System → Backend Users → Backend user groups**):
+Admins can do everything. For editors, edit their backend user group (`be_groups` record, e.g. via the
+*Backend Users* module):
 
-| Where | Grant | Allows |
+| Tab → field | Grant | Allows |
 |---|---|---|
-| Modules | **System → VideoOptimizer** | Open the backend module (read-only without the options below) |
-| Custom module options → VideoOptimizer | **Manage libraries and videos** | Create/edit libraries, rename and tag videos, thumbnails, subtitles |
+| Module Permissions → *Allowed modules* | **VideoOptimizer** | Open the backend module (read-only without the options below) |
+| Module Permissions → *Custom module options* → VideoOptimizer module | **Manage libraries and videos** | Create/edit libraries, rename and tag videos, thumbnails, subtitles |
 | | **Upload and ingest videos** | File upload and URL import |
 | | **Delete and reprocess** | Delete libraries, videos and subtitles; reprocess a library |
-| Tables (modify) | `tt_content` — and, if the group restricts content types, the five VideoOptimizer types | Use the content elements |
+| Record Permissions → *Table permissions* | modify `tt_content` | Use the content elements |
+| Record Permissions → *Explicitly allow field values* | the five VideoOptimizer types (only if the group restricts content types) | Insert the content elements |
 
 Every change in the module is a `POST` with a form token; the module never exposes the API token.
 
@@ -247,8 +250,8 @@ Pages that show videos are cached by TYPO3 like any other page. To refresh them 
 - **Webhook (recommended).** In the VideoOptimizer app, create a webhook under **Organization → Webhooks**
   with the URL `https://<your-site>/videooptimizer/webhook` and put its secret into `webhookSecret`.
   `video.*` events then flush the cached API data and exactly the pages tagged with that video.
-- **Polling fallback.** Run the console command periodically (cron, or the TYPO3 scheduler task
-  *Execute console commands* if `typo3/cms-scheduler` is installed):
+- **Polling fallback.** Run the console command periodically — via cron, or with `typo3/cms-scheduler` and its
+  task for console commands:
   ```bash
   vendor/bin/typo3 videooptimizer:cache:refresh           # flush pages of changed/removed videos
   vendor/bin/typo3 videooptimizer:cache:refresh --dry-run # only report
@@ -290,15 +293,18 @@ vendor/bin/typo3 cache:flush
 
 ## Uninstalling
 
-Remove the VideoOptimizer content elements from your pages first, then:
+1. Remove the VideoOptimizer content elements from your pages.
+2. Remove the site set **VideoOptimizer content elements** from every site (**Sites → Setup**, field
+   *Sets for this Site*, or the `dependencies` in `config/sites/<site>/config.yaml`), so the site
+   configuration keeps no reference to a set that no longer exists.
+3. Remove the package:
+   ```bash
+   composer remove scalecommerce/videooptimizer-typo3
+   vendor/bin/typo3 cache:flush
+   ```
 
-```bash
-composer remove scalecommerce/videooptimizer-typo3
-vendor/bin/typo3 cache:flush
-```
-
-The `vo_*` columns of `tt_content` stay in the database until you remove them via **Admin Tools →
-Maintenance → Analyze Database Structure**.
+The `vo_*` columns of `tt_content` stay in the database until you remove them via **System → Maintenance →
+Analyze Database Structure**.
 
 ## 🔐 How it works
 
@@ -323,12 +329,12 @@ mention VideoOptimizer in your privacy policy and conclude a data processing agr
 
 ## Development
 
-The extension is developed in a Docker-based TYPO3 environment (`videooptimizer-typo3-dev`, with
-`just start` / `just setup` / `just demo`). Code style: PSR-12, strict types; backend JavaScript is plain
-ES modules (no build step), styles are plain CSS.
+Code style: PSR-12, strict types; backend JavaScript is plain ES modules (no build step), styles are plain
+CSS. The extension ships an optional demo site set (`scalecommerce/videooptimizer-demo`) and the console
+command `videooptimizer:demo` (Development context only), which place all five elements on the root page.
 
 Automated tests (unit tests for the API client, functional render tests) are planned; until then,
-changes are verified against the demo page and the backend module of the dev environment.
+changes are verified manually against a demo installation.
 
 ## Contributing
 

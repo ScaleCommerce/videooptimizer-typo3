@@ -134,6 +134,15 @@ $recordTypes = [
     ['value' => 'videooptimizer_videodetail', 'icon' => 'videooptimizer-videodetail', 'label' => 'vo_ct.videodetail', 'showItem' => $showItemVideo],
 ];
 
+// Label of the "Video" group in the new-content-element wizard (without it TYPO3 shows the raw key "video").
+ExtensionManagementUtility::addTcaSelectItemGroup(
+    'tt_content',
+    'CType',
+    'video',
+    'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_group.video',
+    'bottom'
+);
+
 foreach ($recordTypes as $type) {
     ExtensionManagementUtility::addRecordType(
         [
