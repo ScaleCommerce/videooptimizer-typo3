@@ -172,6 +172,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
             'thumbnail' => $thumb,
             'duration' => $this->duration($video['duration'] ?? null),
             'badge' => $badge,
+            'reason' => $badge === 'error' ? VideoOptimizerClient::errorReason($video) : '',
             'badgeClass' => $badge === 'error' ? 'danger' : 'warning',
         ];
     }

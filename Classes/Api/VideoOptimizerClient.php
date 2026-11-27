@@ -43,6 +43,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     /** Lifetime of negative entries (remembered failures / empty results). */
     private const NEGATIVE_TTL = 30;
     private const MAX_ERROR_MESSAGE_LENGTH = 200;
+    private const MAX_FAILURE_REASON_LENGTH = 300;
 
     /**
      * Files at or above this size use the presigned multipart flow
@@ -642,6 +643,22 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $uuid = $this->assertUuid($uuid, 'video ID');
         $this->request('DELETE', '/videos/' . rawurlencode($uuid));
         $this->flushTags('vo_video_' . $uuid, 'vo_lists', 'vo_libraries');
+    }
+
+    /**
+     * Readable failure reason of a failed video (`error` string of `GET /videos/{uuid}`), '' when there is none.
+     *
+     * @param array<string, mixed> $video
+     */
+    public static function errorReason(array $video): string
+    {
+        $error = $video['error'] ?? null;
+        if (!is_string($error)) {
+            return '';
+        }
+        $text = preg_replace('/[\x00-\x1F\x7F\s]+/u', ' ', strip_tags($error)) ?? '';
+
+        return mb_substr(trim($text), 0, self::MAX_FAILURE_REASON_LENGTH);
     }
 
     /**

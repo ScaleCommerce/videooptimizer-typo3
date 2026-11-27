@@ -85,4 +85,15 @@ final class VideoOptimizerClientTest extends TestCase
         self::assertSame([], $this->client([self::json(['data' => []])])->listThumbnails(self::UUID));
         self::assertSame([], $this->client([self::json(['data' => ['thumbnails' => 'x']])])->listThumbnails(self::UUID));
     }
+
+    #[Test]
+    public function readsTheFailureReasonOfAVideo(): void
+    {
+        self::assertSame('Download failed: HTTP 404', VideoOptimizerClient::errorReason(['status' => 'failed', 'error' => ' Download failed: HTTP 404 ']));
+        self::assertSame('Bad file', VideoOptimizerClient::errorReason(['error' => "<b>Bad</b>\n file"]));
+        self::assertSame('', VideoOptimizerClient::errorReason(['error' => null]));
+        self::assertSame('', VideoOptimizerClient::errorReason(['error' => true]));
+        self::assertSame('', VideoOptimizerClient::errorReason([]));
+        self::assertSame(300, mb_strlen(VideoOptimizerClient::errorReason(['error' => str_repeat('x', 1000)])));
+    }
 }

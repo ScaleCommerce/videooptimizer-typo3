@@ -120,6 +120,9 @@ class VideoBrowserElement extends HTMLElement {
       if (badge) {
         body.append(badge);
       }
+      if (video.error && video.error_message) {
+        body.append(el('span', 'vo-card-meta', video.error_message));
+      }
     }
     this.card.append(thumb, body);
   }
@@ -140,7 +143,11 @@ class VideoBrowserElement extends HTMLElement {
 
   statusBadge(video) {
     if (video.error) {
-      return el('span', 'badge badge-danger vo-badge', this.labels.errorStatus);
+      const failed = el('span', 'badge badge-danger vo-badge', this.labels.errorStatus);
+      if (video.error_message) {
+        failed.title = video.error_message;
+      }
+      return failed;
     }
     if (!video.ready) {
       return el('span', 'badge badge-warning vo-badge', this.labels.processing);
@@ -341,7 +348,7 @@ class VideoBrowserElement extends HTMLElement {
     const title = video.title || video.uuid;
     const duration = formatDuration(video.duration);
     const badge = this.statusBadge(video);
-    button.setAttribute('aria-label', [title, duration, video.library_name, badge ? badge.textContent : ''].filter(Boolean).join(', '));
+    button.setAttribute('aria-label', [title, duration, video.library_name, badge ? badge.textContent : '', video.error ? video.error_message : ''].filter(Boolean).join(', '));
     if (video.uuid === this.value) {
       button.setAttribute('aria-pressed', 'true');
       button.classList.add('is-selected');

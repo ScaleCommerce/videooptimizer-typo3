@@ -72,7 +72,12 @@
                                     <div class="small text-body-secondary text-break" title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.title')}">{video.metadata}</div>
                                 </f:if>
                             </td>
-                            <td><span class="badge {video.statusClass}">{video.status}</span></td>
+                            <td>
+                                <span class="badge {video.statusClass}">{video.status}</span>
+                                <f:if condition="{video.errorReason}">
+                                    <div class="small text-danger text-break">{video.errorReason}</div>
+                                </f:if>
+                            </td>
                             <td>{video.duration}</td>
                             <td class="text-body-secondary">{video.tags}</td>
                             <td class="text-end text-nowrap">

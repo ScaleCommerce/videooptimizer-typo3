@@ -4,6 +4,9 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+### Added
+- Failure reason of failed videos and URL imports in the module, pickers and page previews ([#2](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/2)).
+
 ### Fixed
 - Thumbnail picker lists the frames of a video ([#1](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/1)).
 

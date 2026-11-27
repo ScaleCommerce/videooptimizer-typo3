@@ -943,6 +943,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
                     : $this->label('videos.fallbackTitle', [substr($uuid, 0, 8)]),
                 'status' => $statusLabel,
                 'statusClass' => $statusClass,
+                'errorReason' => VideoOptimizerClient::errorReason($video),
                 'duration' => $this->formatDuration($video['duration'] ?? 0),
                 'created' => (string)($video['created_at'] ?? ''),
                 'tags' => implode(', ', array_map('strval', (array)($video['tags'] ?? []))),
