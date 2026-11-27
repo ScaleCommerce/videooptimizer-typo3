@@ -222,3 +222,26 @@ export function markUnavailable(wrapper, video, label) {
     wrapper.classList.add('vo-native--unavailable');
     wrapper.setAttribute('data-vo-unavailable', label || 'Video unavailable');
 }
+
+/**
+ * Adds <track> elements for the subtitle tracks and sets crossorigin="anonymous" on the video (the
+ * WebVTT files come from the CDN; without it browsers refuse to load them). Must run before the
+ * source is attached. Tracks that are already present (rendered by the server) are left alone.
+ */
+export function applyTracks(video, tracks, doc = document) {
+    if (!tracks || tracks.length === 0 || video.querySelector('track')) {
+        return;
+    }
+    video.crossOrigin = 'anonymous';
+    for (const track of tracks) {
+        const element = doc.createElement('track');
+        element.kind = track.kind;
+        element.srclang = track.srclang;
+        element.label = track.label;
+        element.src = track.src;
+        if (track.default) {
+            element.default = true;
+        }
+        video.appendChild(element);
+    }
+}

@@ -21,7 +21,7 @@ final class NativePlayerConfig
     /**
      * @param array<string, mixed> $embed payload of GET /embed/{uuid}
      * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string} $settings
-     * @return array{hls: string, mp4: string, poster: string, options: array<string, mixed>, json: string}|null
+     * @return array{hls: string, mp4: string, poster: string, tracks: list<array{src: string, srclang: string, label: string, kind: string, default: bool}>, options: array<string, mixed>, json: string}|null
      *         null when the video has no playable source (not ready, or unknown to the API)
      *
      * The video's player theme (organization, library and video cascade) supplies the defaults: the
@@ -62,6 +62,7 @@ final class NativePlayerConfig
         $loop = $settings['loop'] || $themeFlag('loopButton');
         $preload = in_array($theme['preload'] ?? null, ['auto', 'metadata', 'none'], true) ? $theme['preload'] : 'metadata';
         $accent = self::cssColor($theme['accentColor'] ?? null);
+        $tracks = $background ? [] : self::tracks($embed['tracks'] ?? [], $settings['subtitle_lang']);
         $options = [
             'hls' => $hls,
             'mp4' => $mp4,
@@ -73,6 +74,7 @@ final class NativePlayerConfig
             'loop' => $loop,
             'preload' => $preload,
             'accent' => $accent,
+            'tracks' => $tracks,
             'start' => $settings['start_time'],
             'cover' => $settings['fit_cover'],
             'title' => $title,
@@ -83,9 +85,72 @@ final class NativePlayerConfig
             'hls' => $hls,
             'mp4' => $mp4,
             'poster' => $poster,
+            'tracks' => $tracks,
             'options' => $options,
             'json' => json_encode($options, self::JSON_FLAGS),
         ];
+    }
+
+    /**
+     * Subtitle tracks for <track> elements: WebVTT URL on the allowlist, BCP 47 language, label, kind.
+     * The element's subtitle language decides which track is shown by default ('off' = none, a
+     * language = that one when the video has it); without a choice the API's `default` flag applies
+     * (first one only).
+     *
+     * @return list<array{src: string, srclang: string, label: string, kind: string, default: bool}>
+     */
+    public static function tracks(mixed $raw, string $preferredLanguage = ''): array
+    {
+        $tracks = [];
+        foreach (is_array($raw) ? $raw : [] as $track) {
+            if (!is_array($track)) {
+                continue;
+            }
+            $src = MediaUrl::safe($track['src'] ?? '');
+            $language = is_string($track['srclang'] ?? null) ? trim($track['srclang']) : '';
+            if ($src === '' || preg_match('/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/', $language) !== 1) {
+                continue;
+            }
+            $label = is_string($track['label'] ?? null) ? trim(strip_tags($track['label'])) : '';
+            $tracks[] = [
+                'src' => $src,
+                'srclang' => $language,
+                'label' => mb_substr($label !== '' ? $label : $language, 0, 100),
+                'kind' => ($track['kind'] ?? '') === 'captions' ? 'captions' : 'subtitles',
+                'default' => ($track['default'] ?? false) === true,
+            ];
+        }
+        if ($tracks === [] || $preferredLanguage === '') {
+            return self::onlyFirstDefault($tracks);
+        }
+        if ($preferredLanguage === 'off') {
+            return array_map(static fn (array $track): array => array_merge($track, ['default' => false]), $tracks);
+        }
+        $wanted = strtolower($preferredLanguage);
+        $matched = false;
+        $chosen = [];
+        foreach ($tracks as $track) {
+            $track['default'] = !$matched && strtolower($track['srclang']) === $wanted;
+            $matched = $matched || $track['default'];
+            $chosen[] = $track;
+        }
+
+        return $matched ? $chosen : self::onlyFirstDefault($tracks);
+    }
+
+    /**
+     * @param list<array{src: string, srclang: string, label: string, kind: string, default: bool}> $tracks
+     * @return list<array{src: string, srclang: string, label: string, kind: string, default: bool}>
+     */
+    private static function onlyFirstDefault(array $tracks): array
+    {
+        $seen = false;
+        foreach ($tracks as &$track) {
+            $track['default'] = $track['default'] && !$seen;
+            $seen = $seen || $track['default'];
+        }
+
+        return $tracks;
     }
 
     /**

@@ -1,5 +1,6 @@
 // Validation of the data the server hands to the browser (data-vo-native). Pure functions, no DOM.
 
+const LANGUAGE = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/;
 const ALLOWED_HOST = 'videooptimizer.eu';
 const ACCENT = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([0-9.,%\s/-]+\))$/i;
 
@@ -19,6 +20,22 @@ export function safeUrl(raw) {
         return '';
     }
     return url.href;
+}
+
+/** Subtitle tracks (<track> data) with a validated WebVTT URL and language. */
+function parseTracks(raw) {
+    if (!Array.isArray(raw)) {
+        return [];
+    }
+    return raw
+        .map((track) => ({
+            src: track && typeof track.src === 'string' ? safeUrl(track.src) : '',
+            srclang: track && typeof track.srclang === 'string' ? track.srclang : '',
+            label: track && typeof track.label === 'string' ? track.label : '',
+            kind: track && track.kind === 'captions' ? 'captions' : 'subtitles',
+            default: !!track && track.default === true,
+        }))
+        .filter((track) => track.src !== '' && LANGUAGE.test(track.srclang));
 }
 
 /** Native player settings from a data-vo-native attribute; null when unusable. */
@@ -42,6 +59,7 @@ export function parseConfig(raw) {
         loop: data.loop === true,
         preload: ['auto', 'metadata', 'none'].includes(data.preload) ? data.preload : 'metadata',
         accent: typeof data.accent === 'string' && ACCENT.test(data.accent) ? data.accent : '',
+        tracks: parseTracks(data.tracks),
         start: Number.isFinite(data.start) && data.start > 0 ? data.start : 0,
         cover: data.cover === true,
         title: typeof data.title === 'string' ? data.title : '',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
-import { attachVideoSource, destroyVideoSource, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
+import { applyTracks, attachVideoSource, destroyVideoSource, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
 import { parseConfig, safeUrl } from '../../Resources/Public/Js/native-config.js';
 
 globalThis.window = globalThis;
@@ -193,7 +193,7 @@ test('parseConfig validates the server data', () => {
         { ...cfg },
         {
             hls: sources.hls, mp4: sources.mp4, poster: '', controls: false, autoplay: true, muted: true, loop: true,
-            start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876',
+            start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876', tracks: [],
         }
     );
     assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4, preload: 'x', accent: 'red;}</style>' })).preload, 'metadata');
@@ -203,4 +203,64 @@ test('parseConfig validates the server data', () => {
     assert.equal(parseConfig(''), null);
     assert.equal(parseConfig(JSON.stringify({ hls: 'https://evil.example/x.m3u8' })), null, 'no allowed source');
     assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4 })).controls, true, 'controls default on');
+});
+
+class FakeElement {
+    children = [];
+    crossOrigin = '';
+    querySelector(selector) {
+        return this.children.find((child) => child.tag === selector) ?? null;
+    }
+    appendChild(child) {
+        this.children.push(child);
+    }
+}
+const fakeDoc = { createElement: (tag) => ({ tag }) };
+
+test('applyTracks adds <track> elements and crossorigin before the source is attached', () => {
+    const video = new FakeElement();
+    applyTracks(
+        video,
+        [
+            { src: 'https://l.cdn.videooptimizer.eu/de.vtt', srclang: 'de', label: 'Deutsch', kind: 'subtitles', default: true },
+            { src: 'https://l.cdn.videooptimizer.eu/en.vtt', srclang: 'en', label: 'English', kind: 'captions', default: false },
+        ],
+        fakeDoc
+    );
+
+    assert.equal(video.crossOrigin, 'anonymous');
+    assert.deepEqual(
+        video.children.map((t) => [t.kind, t.srclang, t.label, t.src, t.default === true]),
+        [
+            ['subtitles', 'de', 'Deutsch', 'https://l.cdn.videooptimizer.eu/de.vtt', true],
+            ['captions', 'en', 'English', 'https://l.cdn.videooptimizer.eu/en.vtt', false],
+        ]
+    );
+});
+
+test('applyTracks leaves videos without tracks and server-rendered tracks alone', () => {
+    const none = new FakeElement();
+    applyTracks(none, [], fakeDoc);
+    assert.equal(none.crossOrigin, '');
+    assert.equal(none.children.length, 0);
+
+    const rendered = new FakeElement();
+    rendered.children.push({ tag: 'track' });
+    applyTracks(rendered, [{ src: 'https://l.cdn.videooptimizer.eu/x.vtt', srclang: 'de', label: 'x', kind: 'subtitles' }], fakeDoc);
+    assert.equal(rendered.children.length, 1);
+});
+
+test('parseConfig keeps only valid tracks', () => {
+    const cfg = parseConfig(JSON.stringify({
+        mp4: sources.mp4,
+        tracks: [
+            { src: 'https://l.cdn.videooptimizer.eu/de.vtt', srclang: 'de', label: 'Deutsch', kind: 'captions', default: true },
+            { src: 'https://evil.example/x.vtt', srclang: 'en', label: 'x' },
+            { src: 'https://l.cdn.videooptimizer.eu/y.vtt', srclang: '"><x', label: 'x' },
+        ],
+    }));
+    assert.deepEqual(cfg.tracks, [
+        { src: 'https://l.cdn.videooptimizer.eu/de.vtt', srclang: 'de', label: 'Deutsch', kind: 'captions', default: true },
+    ]);
+    assert.deepEqual(parseConfig(JSON.stringify({ mp4: sources.mp4 })).tracks, []);
 });

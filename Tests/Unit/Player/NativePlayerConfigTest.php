@@ -195,4 +195,63 @@ final class NativePlayerConfigTest extends TestCase
         }
         self::assertSame('metadata', self::options(['preload' => 'bogus'])['preload']);
     }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private static function rawTracks(): array
+    {
+        return [
+            ['src' => 'https://l.cdn.videooptimizer.eu/h/de.vtt?v=2', 'srclang' => 'de', 'label' => 'Deutsch', 'kind' => 'subtitles', 'default' => true],
+            ['src' => 'https://l.cdn.videooptimizer.eu/h/en-US.vtt', 'srclang' => 'en-US', 'label' => 'English', 'kind' => 'captions', 'default' => false],
+        ];
+    }
+
+    #[Test]
+    public function subtitleTracksBecomeTrackData(): void
+    {
+        $config = NativePlayerConfig::build(self::embed(['tracks' => self::rawTracks()]), self::SETTINGS);
+
+        self::assertSame(self::rawTracks(), $config['tracks']);
+        self::assertSame(self::rawTracks(), $config['options']['tracks']);
+    }
+
+    #[Test]
+    public function invalidTracksAreDropped(): void
+    {
+        $tracks = NativePlayerConfig::tracks([
+            ['src' => 'https://evil.example/x.vtt', 'srclang' => 'de'],
+            ['src' => 'https://l.cdn.videooptimizer.eu/x.vtt', 'srclang' => '"><x'],
+            ['src' => 'https://l.cdn.videooptimizer.eu/ok.vtt', 'srclang' => 'fr', 'label' => '<b>Français</b>', 'kind' => 'weird'],
+            'junk',
+        ]);
+
+        self::assertCount(1, $tracks);
+        self::assertSame('Français', $tracks[0]['label']);
+        self::assertSame('subtitles', $tracks[0]['kind']);
+        self::assertSame([], NativePlayerConfig::tracks('nope'));
+    }
+
+    #[Test]
+    public function theElementsSubtitleLanguageDecidesTheDefaultTrack(): void
+    {
+        $default = static fn (array $tracks): array => array_column(array_filter($tracks, static fn (array $t): bool => $t['default']), 'srclang');
+
+        self::assertSame(['de'], $default(NativePlayerConfig::tracks(self::rawTracks())), 'API default');
+        self::assertSame(['en-US'], $default(NativePlayerConfig::tracks(self::rawTracks(), 'en-us')));
+        self::assertSame([], $default(NativePlayerConfig::tracks(self::rawTracks(), 'off')));
+        self::assertSame(['de'], $default(NativePlayerConfig::tracks(self::rawTracks(), 'fr')), 'unknown language keeps the API default');
+    }
+
+    #[Test]
+    public function onlyOneTrackIsDefaultAndABackgroundVideoHasNoTracks(): void
+    {
+        $raw = self::rawTracks();
+        $raw[1]['default'] = true;
+        $tracks = NativePlayerConfig::tracks($raw);
+        self::assertSame([true, false], array_column($tracks, 'default'));
+
+        $config = NativePlayerConfig::build(self::embed(['tracks' => self::rawTracks()]), self::SETTINGS, '', '', true);
+        self::assertSame([], $config['tracks']);
+    }
 }

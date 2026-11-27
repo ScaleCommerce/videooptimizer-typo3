@@ -5,6 +5,7 @@ import {
     attachVideoSource,
     autoplayWhileVisible,
     destroyVideoSource,
+    applyTracks,
     markUnavailable,
     observeVisibility,
 } from './video-source.js';
@@ -49,6 +50,7 @@ function setUpVideo(video, wrap, cfg, { click = false } = {}) {
         video.setAttribute('tabindex', '-1');
     }
     applyStartTime(video, cfg.start);
+    applyTracks(video, cfg.tracks);
 
     let stopAutoplay = null;
     let gone = false;

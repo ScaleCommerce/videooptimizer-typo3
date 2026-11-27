@@ -317,7 +317,7 @@ abstract class AbstractVideoController extends ActionController
      * videos without playable sources.
      *
      * @param array<string, mixed> $video shaped video
-     * @return array{hls: string, mp4: string, poster: string, options: array<string, mixed>, json: string}|null
+     * @return array{hls: string, mp4: string, poster: string, tracks: list<array{src: string, srclang: string, label: string, kind: string, default: bool}>, options: array<string, mixed>, json: string}|null
      */
     protected function buildNative(array $video, bool $heroMode = false): ?array
     {
