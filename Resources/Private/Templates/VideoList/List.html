@@ -3,7 +3,7 @@
 
 <f:section name="Main">
     <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
-    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" defer="1" />
+    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{assetVersion}" />
     <div class="vo-sample vo-sample--list">
         <f:render partial="Error" arguments="{error: error}" />
 
@@ -28,14 +28,14 @@
                                 </f:then>
                                 <f:else>
                                     <a class="vo-list__thumb" href="{video.embed_src}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"
-                                       data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}">
+                                       data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}"<f:if condition="{video.native_json}"> data-vo-native="{video.native_json}"</f:if>>
                                         <f:if condition="{video.poster_src}">
                                             <img src="{video.poster_src}" alt="" width="640" height="360" loading="lazy" decoding="async" />
                                         </f:if>
                                     </a>
                                     <span class="vo-list__body">
                                         <a class="vo-list__title" href="{video.embed_src}" target="_blank" rel="noopener"
-                                           data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}">{video.title_label}</a>
+                                           data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}"<f:if condition="{video.native_json}"> data-vo-native="{video.native_json}"</f:if>>{video.title_label}</a>
                                         <span class="vo-list__meta">
                                             <f:if condition="{video.duration_label}"><span>{video.duration_label}</span><span class="vo-sep" aria-hidden="true">&middot;</span></f:if>
                                             <span><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.views" arguments="{0: video.views}" /></span>

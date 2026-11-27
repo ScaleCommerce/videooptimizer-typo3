@@ -26,7 +26,7 @@ class VideoGridController extends AbstractVideoController
             $errorDetail = $exception->getMessage();
         }
 
-        $shaped = $this->shapeVideos($videos);
+        $shaped = $this->withNativeCards($this->shapeVideos($videos));
         $this->addVideoListStructuredData($shaped);
         $this->registerPageCache([], true, $errorCode !== '');
 

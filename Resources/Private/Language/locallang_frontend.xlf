@@ -63,6 +63,24 @@
             <trans-unit id="date.format">
                 <source>Y-m-d H:i</source>
             </trans-unit>
+            <trans-unit id="video.unavailable">
+                <source>This video cannot be played.</source>
+            </trans-unit>
+            <trans-unit id="facade.play">
+                <source>Play video: %s</source>
+            </trans-unit>
+            <trans-unit id="hero.pause">
+                <source>Pause background video</source>
+            </trans-unit>
+            <trans-unit id="hero.play">
+                <source>Play background video</source>
+            </trans-unit>
+            <trans-unit id="video.pause">
+                <source>Pause video</source>
+            </trans-unit>
+            <trans-unit id="video.play">
+                <source>Play video</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

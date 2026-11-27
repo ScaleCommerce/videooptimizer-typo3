@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace ScaleCommerce\VideoOptimizer\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
+use ScaleCommerce\VideoOptimizer\Player\AssetVersion;
+use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
@@ -41,9 +44,22 @@ abstract class AbstractVideoController extends ActionController
 
     protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=.:-]{1,512}$/';
 
+    /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
+    private array $uploadDates = [];
+
     public function __construct(
         protected readonly VideoOptimizerClient $client,
     ) {
+    }
+
+    /**
+     * Every template gets the version stamp of the frontend modules (see AssetVersion).
+     */
+    protected function htmlResponse(?string $html = null): ResponseInterface
+    {
+        $this->view->assign('assetVersion', AssetVersion::get());
+
+        return parent::htmlResponse($html);
     }
 
     // ------------------------------------------------------------------
@@ -276,6 +292,205 @@ abstract class AbstractVideoController extends ActionController
     }
 
     /**
+     * Player of this element: `hosted` (iframe, default) or `native` (<video>, hls.js on demand).
+     */
+    protected function playerMode(): string
+    {
+        return ($this->currentRecord()['vo_player_mode'] ?? '') === 'native' ? 'native' : 'hosted';
+    }
+
+    /**
+     * How the player appears: `direct` (default), `facade` (poster + play button, player in place) or
+     * `lightbox` (poster + play button, player in a dialog).
+     */
+    protected function presentation(): string
+    {
+        $value = $this->currentRecord()['vo_presentation'] ?? '';
+
+        return in_array($value, ['facade', 'lightbox'], true) ? $value : 'direct';
+    }
+
+    /**
+     * Public player configuration of a video; null when it cannot be loaded (callers fall back to the
+     * hosted player).
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function embedConfig(string $uuid): ?array
+    {
+        // The client answers from the cache first (also stale entries), and after a transport error,
+        // 429 or 5xx it pauses /embed for a minute service-wide (VideoOptimizerClient::embedFailFast):
+        // later lookups that are not cached fail at once, without waiting for the API.
+        try {
+            $config = $this->loadEmbed($uuid);
+        } catch (VideoOptimizerException|\InvalidArgumentException) {
+            // This element falls back to the hosted player: do not keep that page in the page cache.
+            $this->degradePageCache();
+
+            return null;
+        }
+        $this->rememberUploadDate($uuid, $config);
+
+        return $config !== [] ? $config : null;
+    }
+
+    /**
+     * An /embed failure shortens the page cache lifetime like an API failure does (see
+     * PAGE_CACHE_ERROR_LIFETIME), so the hosted fallback does not outlive the outage.
+     */
+    protected function degradePageCache(): void
+    {
+        $collector = $this->request->getAttribute('frontend.cache.collector');
+        if ($collector instanceof CacheDataCollectorInterface) {
+            $collector->restrictMaximumLifetime(self::PAGE_CACHE_ERROR_LIFETIME);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function loadEmbed(string $uuid): array
+    {
+        return $this->client->getEmbed($uuid);
+    }
+
+    /**
+     * Loads the embed configs of many videos in parallel before they are read one by one.
+     *
+     * @param list<string> $uuids
+     */
+    protected function prefetchEmbeds(array $uuids): void
+    {
+        try {
+            $this->client->prefetchEmbeds($uuids);
+        } catch (\Throwable) {
+            // The single lookups report the problem.
+        }
+    }
+
+    /** `sizes` of posters in the column width of single/detail elements and full-bleed heroes. */
+    protected const POSTER_SIZES_CONTENT = '(min-width: 1080px) 1032px, 100vw';
+    protected const POSTER_SIZES_FULL = '100vw';
+
+    /**
+     * Remembers the embed config's `uploadDate` for the JSON-LD of this request (no extra API call).
+     *
+     * @param array<string, mixed> $config
+     */
+    protected function rememberUploadDate(string $uuid, array $config): void
+    {
+        if (is_string($config['uploadDate'] ?? null) && trim($config['uploadDate']) !== '') {
+            $this->uploadDates[$uuid] = $config['uploadDate'];
+        }
+    }
+
+    /**
+     * Responsive poster candidates of a video (`posterSrcset` of the embed config) for the <img> of
+     * facade and hero. '' when the video has none or the embed config cannot be loaded; the plain
+     * poster stays the fallback.
+     */
+    protected function posterSrcset(string $uuid): string
+    {
+        $embed = $this->embedConfig($uuid);
+
+        return $embed === null ? '' : NativePlayerConfig::posterSrcset($embed['posterSrcset'] ?? []);
+    }
+
+    /**
+     * Native player settings for a shaped video; null for hosted elements, processing videos and
+     * videos without playable sources.
+     *
+     * @param array<string, mixed> $video shaped video
+     * @return array{hls: string, mp4: string, poster: string, tracks: list<array{src: string, srclang: string, label: string, kind: string, default: bool}>, options: array<string, mixed>, json: string}|null
+     */
+    protected function buildNative(array $video, bool $heroMode = false, bool $direct = false): ?array
+    {
+        if ($this->playerMode() !== 'native' || ($video['processing'] ?? true) !== false) {
+            return null;
+        }
+        $embed = $this->embedConfig((string)($video['uuid'] ?? ''));
+        if ($embed === null) {
+            return null;
+        }
+
+        return NativePlayerConfig::build(
+            $embed,
+            $this->effectivePlayerSettings($heroMode),
+            (string)($video['title_label'] ?? ''),
+            $this->unavailableLabel(),
+            $heroMode,
+            $direct
+        );
+    }
+
+    protected function unavailableLabel(): string
+    {
+        return (string)LocalizationUtility::translate(
+            'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.unavailable'
+        );
+    }
+
+    /**
+     * Grid/list cards: adds `native_json` (settings of the native player for the lightbox) to every
+     * playable video when the element uses the native player. Cards without sources keep the hosted
+     * lightbox.
+     *
+     * @param list<array<string, mixed>> $videos shaped videos
+     * @return list<array<string, mixed>>
+     */
+    protected function withNativeCards(array $videos): array
+    {
+        if ($this->playerMode() !== 'native') {
+            return $videos;
+        }
+        $this->prefetchEmbeds(array_values(array_filter(array_map(
+            static fn (array $video): string => ($video['processing'] ?? true) === false ? (string)($video['uuid'] ?? '') : '',
+            $videos
+        ))));
+        foreach ($videos as &$video) {
+            $video['native_json'] = $this->buildNative($video)['json'] ?? '';
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Everything the Surface partial needs for single/detail.
+     *
+     * @param array<string, mixed> $video shaped video
+     * @return array{assetVersion: string, presentation: string, posterSrcset: string, posterSizes: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
+     */
+    protected function buildSurface(array $video): array
+    {
+        $embed = $this->buildEmbed($video);
+        $native = $this->buildNative($video, false, $this->presentation() === 'direct');
+        $aspect = $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
+        // Aspect ratio (digits only) and the theme's accent color (validated), for the style attribute.
+        $style = implode('; ', array_filter([
+            $aspect !== '' ? 'aspect-ratio: ' . $aspect : '',
+            ($native['options']['accent'] ?? '') !== '' ? '--vo-accent: ' . $native['options']['accent'] : '',
+        ]));
+
+        $presentation = $this->presentation();
+
+        return [
+            'presentation' => $presentation,
+            // The poster of the facade only; direct players show no poster image.
+            'posterSrcset' => $presentation !== 'direct' ? $this->posterSrcset((string)($video['uuid'] ?? '')) : '',
+            'posterSizes' => self::POSTER_SIZES_CONTENT,
+            'aspect' => $aspect,
+            'style' => $style,
+            'title' => (string)($video['title_label'] ?? ''),
+            'poster' => (string)($video['poster_src'] ?? ''),
+            // Hosted facade/lightbox: the visitor clicked play, so autoplay with sound is allowed.
+            'clickSrc' => (string)($video['lightbox_url'] ?? ''),
+            'embed' => $embed,
+            'native' => $native,
+            'assetVersion' => AssetVersion::get(),
+        ];
+    }
+
+    /**
      * "1920x1080" -> "1920/1080" for a CSS aspect-ratio value. '' when missing or not in WxH form.
      */
     protected function aspectRatioFromResolution(string $resolution): string
@@ -334,6 +549,16 @@ abstract class AbstractVideoController extends ActionController
      */
     protected function playerQueryParams(bool $heroMode = false): array
     {
+        return $this->buildPlayerParams($this->effectivePlayerSettings($heroMode));
+    }
+
+    /**
+     * The element's player options; a hero whose options were never touched plays as a background video.
+     *
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     */
+    protected function effectivePlayerSettings(bool $heroMode = false): array
+    {
         $settings = $this->playerSettings();
 
         if ($heroMode && !$settings['autoplay'] && !$settings['loop'] && !$settings['muted']
@@ -350,7 +575,7 @@ abstract class AbstractVideoController extends ActionController
             ];
         }
 
-        return $this->buildPlayerParams($settings);
+        return $settings;
     }
 
     /**
@@ -406,7 +631,7 @@ abstract class AbstractVideoController extends ActionController
         $row = $this->currentRecord();
 
         $lang = trim((string)($row['vo_subtitle_lang'] ?? ''));
-        if (preg_match('/^([a-z]{2,3}(-[A-Za-z0-9]{2,8})?|off)$/', $lang) !== 1) {
+        if ($lang !== 'off' && preg_match(NativePlayerConfig::LANGUAGE_PATTERN, $lang) !== 1) {
             $lang = '';
         }
 
@@ -524,7 +749,7 @@ abstract class AbstractVideoController extends ActionController
      * @param array<string, mixed> $video
      * @return array<string, mixed>|null
      */
-    private function videoObjectData(array $video, string $fallbackDescription): ?array
+    protected function videoObjectData(array $video, string $fallbackDescription): ?array
     {
         $uuid = (string)($video['uuid'] ?? '');
         if (preg_match('/^[A-Za-z0-9-]{1,64}$/', $uuid) !== 1 || ($video['processing'] ?? true) !== false) {
@@ -555,7 +780,10 @@ abstract class AbstractVideoController extends ActionController
         if ($thumbnails !== []) {
             $object['thumbnailUrl'] = count($thumbnails) === 1 ? $thumbnails[0] : $thumbnails;
         }
-        $uploadDate = $this->isoDate($video['created_at'] ?? null);
+        $uploadDate = $this->isoDate($this->uploadDates[$uuid] ?? null);
+        if ($uploadDate === '') {
+            $uploadDate = $this->isoDate($video['created_at'] ?? null);
+        }
         if ($uploadDate !== '') {
             $object['uploadDate'] = $uploadDate;
         }

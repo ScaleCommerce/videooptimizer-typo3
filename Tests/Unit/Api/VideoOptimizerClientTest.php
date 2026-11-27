@@ -45,6 +45,142 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function getEmbedReadsThePublicPlayerConfigAndCachesItWithTheVideoTag(): void
+    {
+        $client = $this->client([self::json(['data' => ['sources' => [['src' => 'https://l.cdn.videooptimizer.eu/a.mp4']], 'poster' => 'https://poster.videooptimizer.eu/p.jpg']])]);
+
+        $first = $client->getEmbed(self::UUID);
+        $second = $client->getEmbed(self::UUID);
+
+        self::assertSame('https://poster.videooptimizer.eu/p.jpg', $first['poster']);
+        self::assertSame($first, $second);
+        self::assertCount(1, $this->history, 'the second call is served from the cache');
+        self::assertSame('/api/v1/embed/' . self::UUID, $this->history[0]['request']->getUri()->getPath());
+        self::assertSame(['vo_video_' . self::UUID], $this->store->entries[array_key_first($this->store->entries)]['tags']);
+    }
+
+    #[Test]
+    public function getEmbedIsEmptyForUnknownVideos(): void
+    {
+        $client = $this->client([new Response(404, ['Content-Type' => 'application/json'], '{"error":{"message":"not found"}}')]);
+
+        self::assertSame([], $client->getEmbed(self::UUID));
+        self::assertSame([], $client->getEmbed(''));
+    }
+
+    private const UUID_B = '11111111-2222-3333-4444-555555555555';
+    private const UUID_C = '66666666-7777-8888-9999-000000000000';
+
+    #[Test]
+    public function aServerErrorOnEmbedPausesEmbedRequestsForAllFurtherLookups(): void
+    {
+        $client = $this->client([new Response(503, [], '{}')]);
+
+        try {
+            $client->getEmbed(self::UUID);
+            self::fail('expected an exception');
+        } catch (ApiErrorException) {
+        }
+        self::assertTrue($client->embedFailFast());
+
+        try {
+            $client->getEmbed(self::UUID_B);
+            self::fail('expected an exception');
+        } catch (\ScaleCommerce\VideoOptimizer\Api\NetworkException) {
+        }
+        self::assertCount(1, $this->history, 'the second video never reaches the API, and 503 is not retried');
+    }
+
+    #[Test]
+    public function theEmbedPauseIsLoggedOncePerPauseNotPerSkippedLookup(): void
+    {
+        $messages = [];
+        $logger = $this->createStub(\Psr\Log\LoggerInterface::class);
+        $logger->method('warning')->willReturnCallback(static function (string|\Stringable $message) use (&$messages): void {
+            $messages[] = (string)$message;
+        });
+        $client = $this->client([new Response(503, [], '{}')]);
+        $client->setLogger($logger);
+
+        for ($i = 0; $i < 3; $i++) {
+            try {
+                $client->getEmbed($i === 0 ? self::UUID : ($i === 1 ? self::UUID_B : self::UUID_C));
+            } catch (\ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException) {
+            }
+        }
+
+        self::assertCount(1, array_filter($messages, static fn (string $m): bool => str_contains($m, 'pausing embed requests')));
+    }
+
+    #[Test]
+    public function prefetchLogsTheFailureThatPausesEmbedRequests(): void
+    {
+        $reasons = [];
+        $logger = $this->createStub(\Psr\Log\LoggerInterface::class);
+        $logger->method('warning')->willReturnCallback(static function (string|\Stringable $message, array $context = []) use (&$reasons): void {
+            $reasons[] = $context['reason'] ?? '';
+        });
+        $client = $this->client([new Response(429, [], '{}'), self::json(['data' => []])]);
+        $client->setLogger($logger);
+
+        $client->prefetchEmbeds([self::UUID, self::UUID_B]);
+
+        self::assertSame(['HTTP 429'], $reasons);
+    }
+
+    #[Test]
+    public function aMissingVideoDoesNotPauseEmbedRequests(): void
+    {
+        $client = $this->client([new Response(404, [], '{}')]);
+
+        self::assertSame([], $client->getEmbed(self::UUID));
+        self::assertFalse($client->embedFailFast());
+    }
+
+    #[Test]
+    public function prefetchLoadsMissingEmbedsInOneConcurrentBatchAndFillsTheCache(): void
+    {
+        $client = $this->client([
+            self::json(['data' => ['poster' => 'https://poster.videooptimizer.eu/a.jpg']]),
+            self::json(['data' => ['poster' => 'https://poster.videooptimizer.eu/b.jpg']]),
+            new Response(404, [], '{}'),
+        ]);
+
+        $client->prefetchEmbeds([self::UUID, self::UUID_B, self::UUID_C, self::UUID, 'not-a-uuid']);
+
+        self::assertCount(3, $this->history);
+        self::assertSame('https://poster.videooptimizer.eu/a.jpg', $client->getEmbed(self::UUID)['poster']);
+        self::assertSame('https://poster.videooptimizer.eu/b.jpg', $client->getEmbed(self::UUID_B)['poster']);
+        self::assertSame([], $client->getEmbed(self::UUID_C));
+        self::assertCount(3, $this->history, 'later lookups come from the cache');
+        self::assertContains('Bearer test-token', $this->history[0]['request']->getHeader('Authorization'));
+
+        $client->prefetchEmbeds([self::UUID, self::UUID_B]);
+        self::assertCount(3, $this->history, 'cached embeds are not fetched again');
+    }
+
+    #[Test]
+    public function prefetchStopsAfterAServerErrorAndPausesEmbedRequests(): void
+    {
+        $uuids = [];
+        for ($i = 0; $i < 10; $i++) {
+            $uuids[] = sprintf('00000000-0000-0000-0000-%012d', $i);
+        }
+        $responses = [new Response(503, [], '{}')];
+        for ($i = 1; $i < 10; $i++) {
+            $responses[] = self::json(['data' => ['poster' => 'https://poster.videooptimizer.eu/x.jpg']]);
+        }
+        $client = $this->client($responses);
+
+        $client->prefetchEmbeds($uuids);
+
+        self::assertCount(8, $this->history, 'only the first batch of 8 was sent');
+        self::assertTrue($client->embedFailFast());
+        $client->prefetchEmbeds($uuids);
+        self::assertCount(8, $this->history, 'paused');
+    }
+
+    #[Test]
     public function apiErrorsExposeTheMachineReadableCode(): void
     {
         $client = $this->client([self::json(

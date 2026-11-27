@@ -1,0 +1,16 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>Native player, shown directly. The MP4 source makes it playable without JavaScript; the module attaches HLS (hls.js loads only when needed). native.json is escaped on output.</f:comment>
+<f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{surface.assetVersion}" />
+<div class="vo-native<f:if condition="{surface.native.options.cover}"> vo-native--cover</f:if><f:if condition="{surface.native.options.static}"> vo-native--static</f:if>" data-vo-native="{surface.native.json}"<f:if condition="{surface.style}"> style="{f:asset.styleAttr(value: surface.style)}"</f:if>>
+    <video class="vo-native__video" playsinline preload="{surface.native.options.preload}" title="{surface.title}"<f:if condition="{surface.native.tracks}"> crossorigin="anonymous"</f:if><f:if condition="{surface.native.poster}"> poster="{surface.native.poster}"</f:if><f:if condition="{surface.native.options.controls}"> controls</f:if><f:if condition="{surface.native.options.loop}"> loop</f:if><f:if condition="{surface.native.options.muted}"> muted</f:if>>
+        <f:if condition="{surface.native.mp4}"><source src="{surface.native.mp4}" type="video/mp4" /></f:if>
+        <f:for each="{surface.native.tracks}" as="track"><track kind="{track.kind}" srclang="{track.srclang}" label="{track.label}" src="{track.src}"<f:if condition="{track.default}"> default</f:if> /></f:for>
+    </video>
+    <f:if condition="{surface.native.options.autoplay}">
+        <f:comment>Autoplaying video: visitors can pause it (WCAG 2.2.2); the script shows the button.</f:comment>
+        <button type="button" class="vo-toggle" data-vo-toggle="" hidden
+                data-vo-label-play="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.play')}"
+                data-vo-label-pause="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.pause')}"><span class="vo-toggle__icon" aria-hidden="true"></span></button>
+    </f:if>
+</div>
+</html>

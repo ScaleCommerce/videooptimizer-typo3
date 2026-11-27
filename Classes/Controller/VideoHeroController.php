@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ScaleCommerce\VideoOptimizer\Controller;
 
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VideoHeroController extends AbstractVideoController
 {
@@ -29,7 +31,6 @@ class VideoHeroController extends AbstractVideoController
             $errorCode = 'no_video';
         }
 
-        $this->addVideoStructuredData($video);
         $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
 
         $embedUrl = '';
@@ -37,6 +38,19 @@ class VideoHeroController extends AbstractVideoController
             $embedUrl = $this->embedUrlWithParams((string)$video['embed_src'], $this->playerQueryParams(heroMode: true));
         }
 
+        $native = is_array($video) ? $this->buildNative($video, heroMode: true) : null;
+        $posterSrcset = is_array($video) && !$video['processing'] ? $this->posterSrcset((string)$video['uuid']) : '';
+        $this->addVideoStructuredData($video);
+        if (is_array($video) && $video['poster_src'] !== '') {
+            $this->preloadPoster((string)$video['poster_src'], $posterSrcset);
+        }
+
+        $this->view->assign('heroAutoplay', $native !== null ? (bool)$native['options']['autoplay'] : ($this->playerQueryParams(heroMode: true)['autoplay'] ?? '0') === '1');
+        $this->view->assign('native', $native);
+        $this->view->assign('posterSrcset', $posterSrcset);
+        $this->view->assign('posterSizes', self::POSTER_SIZES_FULL);
+        // The lightbox CTA plays like a click-to-play element, not like the background video.
+        $this->view->assign('nativeLightbox', is_array($video) ? $this->buildNative($video) : null);
         $this->view->assign('elementUid', (int)($this->currentRecord()['uid'] ?? 0));
         $this->view->assign('hero', $this->heroOptions());
         $this->view->assign('video', $video);
@@ -81,5 +95,24 @@ class VideoHeroController extends AbstractVideoController
             'height' => $choice('vo_hero_height', self::HEIGHTS, 'default'),
             'align' => $choice('vo_hero_align', self::ALIGNMENTS, 'left'),
         ];
+    }
+
+    /**
+     * The hero poster is the largest contentful paint: preload it with high priority (the page cache
+     * keeps the header data with the page). Values are validated URLs / a srcset built from them and
+     * are escaped for the attribute.
+     */
+    private function preloadPoster(string $poster, string $srcset): void
+    {
+        $attributes = ['rel' => 'preload', 'as' => 'image', 'href' => $poster, 'fetchpriority' => 'high'];
+        if ($srcset !== '') {
+            $attributes['imagesrcset'] = $srcset;
+            $attributes['imagesizes'] = self::POSTER_SIZES_FULL;
+        }
+        $html = '';
+        foreach ($attributes as $name => $value) {
+            $html .= ' ' . $name . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+        }
+        GeneralUtility::makeInstance(PageRenderer::class)->addHeaderData('<link' . $html . ' />');
     }
 }

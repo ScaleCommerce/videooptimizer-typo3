@@ -79,6 +79,34 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => 0,
         ],
     ],
+    // Values are mirrored (unknown -> default) in AbstractVideoController::playerMode()/presentation().
+    'vo_player_mode' => [
+        'label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player_mode.label',
+        'description' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player_mode.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player_mode.hosted', 'value' => 'hosted'],
+                ['label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player_mode.native', 'value' => 'native'],
+            ],
+            'default' => 'hosted',
+        ],
+    ],
+    'vo_presentation' => [
+        'label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_presentation.label',
+        'description' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_presentation.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_presentation.direct', 'value' => 'direct'],
+                ['label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_presentation.facade', 'value' => 'facade'],
+                ['label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_presentation.lightbox', 'value' => 'lightbox'],
+            ],
+            'default' => 'direct',
+        ],
+    ],
     'vo_subtitle_lang' => [
         'label' => 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player.subtitle_lang',
         'config' => [
@@ -105,7 +133,10 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
 // the DB columns of all vo_* fields are derived from this TCA (no ext_tables.sql needed).
 $playerOptions = "
     --div--;LLL:EXT:videooptimizer/Resources/Private/Language/locallang.xlf:vo_player.div,
-    vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_subtitle_lang";
+    vo_player_mode, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_subtitle_lang";
+// Single and detail also choose how the player appears (direct, facade, lightbox); the other types
+// have a fixed presentation (hero background, cards that open a lightbox).
+$playerOptionsPresentation = str_replace('vo_player_mode,', 'vo_player_mode, vo_presentation,', $playerOptions);
 
 $showItemVideo = "
     --palette--;;headers,
@@ -116,6 +147,8 @@ $showItemVideo = "
     --palette--;;frames,
     --div--;core.form.tabs:categories,
     categories";
+
+$showItemVideoPresentation = str_replace($playerOptions, $playerOptionsPresentation, $showItemVideo);
 
 $showItemLibrary = "
     --palette--;;headers,
@@ -128,10 +161,10 @@ $showItemLibrary = "
 
 $recordTypes = [
     ['value' => 'videooptimizer_videohero', 'icon' => 'videooptimizer-videohero', 'label' => 'vo_ct.videohero', 'showItem' => $showItemVideo],
-    ['value' => 'videooptimizer_videosingle', 'icon' => 'videooptimizer-videosingle', 'label' => 'vo_ct.videosingle', 'showItem' => $showItemVideo],
+    ['value' => 'videooptimizer_videosingle', 'icon' => 'videooptimizer-videosingle', 'label' => 'vo_ct.videosingle', 'showItem' => $showItemVideoPresentation],
     ['value' => 'videooptimizer_videogrid', 'icon' => 'videooptimizer-videogrid', 'label' => 'vo_ct.videogrid', 'showItem' => $showItemLibrary],
     ['value' => 'videooptimizer_videolist', 'icon' => 'videooptimizer-videolist', 'label' => 'vo_ct.videolist', 'showItem' => $showItemLibrary],
-    ['value' => 'videooptimizer_videodetail', 'icon' => 'videooptimizer-videodetail', 'label' => 'vo_ct.videodetail', 'showItem' => $showItemVideo],
+    ['value' => 'videooptimizer_videodetail', 'icon' => 'videooptimizer-videodetail', 'label' => 'vo_ct.videodetail', 'showItem' => $showItemVideoPresentation],
 ];
 
 // Label of the "Video" group in the new-content-element wizard (without it TYPO3 shows the raw key "video").
