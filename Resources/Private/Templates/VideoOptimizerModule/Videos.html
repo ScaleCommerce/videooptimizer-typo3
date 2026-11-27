@@ -7,7 +7,7 @@
 <f:layout name="Module" />
 
 <f:section name="Content">
-    <div{f:if(condition: hasProcessing, then: ' data-vo-auto-refresh="1"')}>
+    <div data-vo-auto-refresh="{statusUrl}">
         <h1>
             {library.name}
             <f:if condition="{hasProcessing}">
@@ -46,6 +46,7 @@
             </div>
         </form>
 
+        <div data-vo-list>
         <div class="table-fit">
             <table class="table table-hover vo-table">
                 <thead>
@@ -60,7 +61,7 @@
                 </thead>
                 <tbody>
                     <f:for each="{videoRows}" as="video">
-                        <tr>
+                        <tr{f:if(condition: video.isProcessing, then: ' data-vo-processing="{video.uuid}"')}>
                             <td class="vo-thumb-cell">
                                 <f:if condition="{video.thumbnailUrl}">
                                     <img src="{video.thumbnailUrl}" alt="" class="img-fluid rounded" loading="lazy">
@@ -98,6 +99,7 @@
                                             <input type="hidden" name="videoUuid" value="{video.uuid}">
                                             <input type="hidden" name="formToken" value="{video.renameToken}">
                                             <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <input type="hidden" name="pages" value="{pages}">
                                             <div class="col">
                                                 <label for="vo-rename-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.rename.label" /></label>
                                                 <input type="text" id="vo-rename-{video.uuid}" name="title" value="{video.title}" class="form-control">
@@ -111,6 +113,7 @@
                                             <input type="hidden" name="videoUuid" value="{video.uuid}">
                                             <input type="hidden" name="formToken" value="{video.setTagsToken}">
                                             <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <input type="hidden" name="pages" value="{pages}">
                                             <div class="col">
                                                 <label for="vo-tags-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.tags.label" /></label>
                                                 <input type="text" id="vo-tags-{video.uuid}" name="tags" value="{video.tags}" list="vo-all-tags" class="form-control">
@@ -119,11 +122,27 @@
                                                 <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.tags.submit" /></button>
                                             </div>
                                         </form>
+                                        <form action="{video.setMetadataUrl}" method="post" class="row g-2 align-items-end">
+                                            <input type="hidden" name="libraryId" value="{libraryId}">
+                                            <input type="hidden" name="videoUuid" value="{video.uuid}">
+                                            <input type="hidden" name="formToken" value="{video.setMetadataToken}">
+                                            <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <input type="hidden" name="pages" value="{pages}">
+                                            <div class="col">
+                                                <label for="vo-metadata-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.label" /></label>
+                                                <textarea id="vo-metadata-{video.uuid}" name="metadata" rows="3" placeholder="campaign: summer-2026&#10;cms.page: 42" class="form-control">{video.metadataLines}</textarea>
+                                                <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.help" /></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.submit" /></button>
+                                            </div>
+                                        </form>
                                         <form action="{video.deleteVideoUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
                                             <input type="hidden" name="libraryId" value="{libraryId}">
                                             <input type="hidden" name="videoUuid" value="{video.uuid}">
                                             <input type="hidden" name="formToken" value="{video.deleteVideoToken}">
                                             <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <input type="hidden" name="pages" value="{pages}">
                                             <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.delete.submit" /></button>
                                         </form>
                                     </div>
@@ -139,13 +158,25 @@
                 </tbody>
             </table>
         </div>
+        <f:if condition="{videoRows}">
+            <p class="text-body-secondary vo-paging-info">
+                <f:if condition="{tagFilter}">
+                    <f:then><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.loaded" arguments="{0: loaded}" /></f:then>
+                    <f:else><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.shown" arguments="{0: loaded, 1: count}" /></f:else>
+                </f:if>
+                <f:if condition="{hasMore}">
+                    <a href="{loadMoreUrl}" class="btn btn-default btn-sm ms-2"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.more" /></a>
+                </f:if>
+            </p>
+        </f:if>
+        </div>
     </div>
 
     <f:if condition="{library.media_managed}">
         <div class="row g-4 mt-2">
             <div class="col-lg-6">
                 <h2 class="h4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.upload.title" /></h2>
-                <form action="{uploadUrl}" method="post" enctype="multipart/form-data" class="card card-body bg-body-tertiary vstack gap-3">
+                <form action="{uploadUrl}" method="post" enctype="multipart/form-data" class="card card-body bg-body-tertiary vstack gap-3" data-vo-upload="{uploadConfig}">
                     <input type="hidden" name="libraryId" value="{libraryId}">
                     <input type="hidden" name="formToken" value="{uploadToken}">
                     <div>

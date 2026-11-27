@@ -1,0 +1,10 @@
+# Keep development files out of the release archives (Packagist dist, TER, git archive).
+/.github/ export-ignore
+/Build/ export-ignore
+/Tests/ export-ignore
+/docs/ export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/phpstan.neon.dist export-ignore
+/phpstan-baseline.neon export-ignore
+/phpunit.xml.dist export-ignore

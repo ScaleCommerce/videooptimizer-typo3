@@ -6,6 +6,7 @@
  */
 import Modal from '@typo3/backend/modal.js';
 import { SeverityEnum } from '@typo3/backend/enum/severity.js';
+import { refreshList } from '@scalecommerce/videooptimizer/upload-core.js';
 
 document.addEventListener('submit', (event) => {
     const form = event.target;
@@ -26,7 +27,8 @@ document.addEventListener('submit', (event) => {
     });
 });
 
-if (document.querySelector('[data-vo-auto-refresh="1"]') !== null) {
+const refreshRoot = document.querySelector('[data-vo-auto-refresh]');
+if (refreshRoot !== null && refreshRoot.dataset.voAutoRefresh) {
     let dirty = false;
     const markDirty = (event) => {
         const target = event.target;
@@ -45,12 +47,36 @@ if (document.querySelector('[data-vo-auto-refresh="1"]') !== null) {
         return dirty || document.querySelector('details[open]') !== null;
     };
 
-    const tick = () => {
-        if (document.hidden || busy()) {
-            window.setTimeout(tick, 10000);
-            return;
+    // Ask for each encoding video individually instead of reloading (and re-reading) the whole list;
+    // refresh the list once one of them has finished (or failed).
+    const finished = async () => {
+        const rows = Array.from(document.querySelectorAll('[data-vo-processing]'));
+        for (const row of rows) {
+            try {
+                const url = new URL(refreshRoot.dataset.voAutoRefresh, window.location.href);
+                url.searchParams.set('uuid', row.dataset.voProcessing);
+                const response = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+                const video = response.ok ? await response.json() : null;
+                if (video && video.status && video.status !== 'processing') {
+                    return true;
+                }
+            } catch (e) {
+                // network blip: try again on the next tick
+            }
         }
-        window.location.reload();
+        return false;
+    };
+
+    const tick = async () => {
+        // Nothing encoding (e.g. everything is ready): no requests at all.
+        if (!document.hidden && !busy() && document.querySelector('[data-vo-processing]') !== null && await finished()) {
+            try {
+                await refreshList(window.location.href, document);
+            } catch (e) {
+                // keep the old list; the next tick tries again
+            }
+        }
+        window.setTimeout(tick, 10000);
     };
 
     window.setTimeout(tick, 10000);

@@ -1,0 +1,163 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/Api/VideoOptimizerClient.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: Classes/Api/VideoOptimizerClient.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: Classes/Backend/Controller/VideoBrowserController.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\{code\: string, label\: string, video_count\: int\} will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/Backend/Data/VideoSubtitleLanguageItemsProcessor.php
+
+		-
+			message: '#^Offset ''code'' on array\{code\: string, label\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Data/VideoSubtitleLanguageItemsProcessor.php
+
+		-
+			message: '#^Offset ''label'' on array\{code\: string, label\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Data/VideoSubtitleLanguageItemsProcessor.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: Classes/Backend/Form/Element/LibraryPickerElement.php
+
+		-
+			message: '#^Constant LF not found\.$#'
+			identifier: constant.notFound
+			count: 2
+			path: Classes/Backend/Form/Element/LibraryPickerElement.php
+
+		-
+			message: '#^Method ScaleCommerce\\VideoOptimizer\\Backend\\Form\\Element\\LibraryPickerElement\:\:render\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Classes/Backend/Form/Element/LibraryPickerElement.php
+
+		-
+			message: '#^Constant LF not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: Classes/Backend/Form/Element/VideoBrowserElement.php
+
+		-
+			message: '#^Method ScaleCommerce\\VideoOptimizer\\Backend\\Form\\Element\\VideoBrowserElement\:\:render\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Classes/Backend/Form/Element/VideoBrowserElement.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''code'' on array\{code\: string, label\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''index'' on array\{index\: int, url\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''label'' on array\{code\: string, label\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''name'' on array\{name\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''url'' on array\{index\: int, url\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Offset ''video_count'' on array\{code\: string, label\: string, video_count\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Backend/Module/VideoOptimizerModuleController.php
+
+		-
+			message: '#^Call to an undefined method TYPO3\\CMS\\Core\\Site\\Entity\\SiteInterface\:\:getSettings\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Classes/Controller/AbstractVideoController.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/Controller/AbstractVideoController.php
+
+		-
+			message: '#^Method ScaleCommerce\\VideoOptimizer\\Controller\\AbstractVideoController\:\:fetchVideo\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Classes/Controller/AbstractVideoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>data" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: Classes/Controller/AbstractVideoController.php
+
+		-
+			message: '#^Call to function is_array\(\) with list\<array\<string, mixed\>\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/Controller/VideoGridController.php
+
+		-
+			message: '#^Offset ''items'' on array\{items\: list\<array\<string, mixed\>\>, nextCursor\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Controller/VideoGridController.php
+
+		-
+			message: '#^Call to function is_array\(\) with list\<array\<string, mixed\>\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/Controller/VideoListController.php
+
+		-
+			message: '#^Offset ''items'' on array\{items\: list\<array\<string, mixed\>\>, nextCursor\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: Classes/Controller/VideoListController.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: Classes/EventListener/ContentPreviewListener.php

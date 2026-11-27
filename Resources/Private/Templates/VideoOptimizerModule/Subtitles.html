@@ -41,7 +41,8 @@
                         </td>
                         <td>{track.cue_count}</td>
                         <td>{track.source_format}</td>
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
+                            <a href="{downloadSubtitleUrl}&amp;language={track.language -> f:format.urlencode()}" class="btn btn-default btn-sm" download><core:icon identifier="actions-download" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.download.submit" /></a>
                             <form action="{deleteSubtitleUrl}" method="post" class="d-inline" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
                                 <input type="hidden" name="libraryId" value="{libraryId}">
                                 <input type="hidden" name="videoUuid" value="{videoUuid}">

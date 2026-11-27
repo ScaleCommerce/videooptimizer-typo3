@@ -10,6 +10,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ServerRequestInterface;
+use ScaleCommerce\VideoOptimizer\Security\PublicHttpsUrl;
+use ScaleCommerce\VideoOptimizer\Security\StorageOrigin;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Cache\CacheManager;
@@ -99,6 +101,15 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         return $secret;
+    }
+
+    /**
+     * Origin of the object storage behind the presigned upload URLs: extension configuration
+     * `storageOrigin`, default https://object-storage.scale.sc (also used for the backend CSP).
+     */
+    public function getStorageOrigin(): string
+    {
+        return StorageOrigin::normalize($this->extConf('storageOrigin'));
     }
 
     private function extConf(string $key): string
@@ -251,21 +262,53 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
+     * One video straight from the API, bypassing (and refreshing) the cache. For status polling
+     * and read-modify-write edits. Empty array when the video does not exist.
+     *
+     * @return array<string, mixed>
+     */
+    public function getVideoFresh(string $uuid): array
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        try {
+            $body = $this->request('GET', '/videos/' . rawurlencode($uuid));
+        } catch (ApiErrorException $exception) {
+            if ($exception->getHttpStatus() === 404) {
+                return [];
+            }
+            throw $exception;
+        }
+        $video = is_array($body['data'] ?? null) ? $body['data'] : [];
+        if ($video !== []) {
+            $this->flushTags('vo_video_' . $uuid);
+        }
+
+        return $video;
+    }
+
+    /**
      * One page of videos (a single API request), optionally restricted to a library.
      *
+     * @param list<string> $tags only videos carrying ALL of these tags
+     * @param bool $fresh bypass the cache (backend module: current state of the first page)
+     * @param int|null $cacheTtl lifetime in seconds of a cached page instead of the configured soft TTL
      * @return array{items: list<array<string, mixed>>, nextCursor: ?string}
      */
-    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null): array
+    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null, array $tags = [], bool $fresh = false, ?int $cacheTtl = null): array
     {
         $limit = max(1, min(100, $limit));
         $query = ['limit' => $limit];
-        $tags = ['vo_lists'];
+        $cacheTags = ['vo_lists'];
 
         $libraryId = trim((string)$libraryId);
         if ($libraryId !== '') {
             $libraryId = $this->assertLibraryId($libraryId);
             $query['library_id'] = $libraryId;
-            $tags[] = 'vo_library_' . $libraryId;
+            $cacheTags[] = 'vo_library_' . $libraryId;
+        }
+        $tags = $this->normalizeTags($tags);
+        if ($tags !== []) {
+            $query['tags'] = implode(',', $tags);
         }
         $cursor = trim((string)$cursor);
         if ($cursor !== '') {
@@ -275,7 +318,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             $query['cursor'] = $cursor;
         }
 
-        return $this->remember('page|' . md5(serialize($query)), $tags, function () use ($query): array {
+        $load = function () use ($query): array {
             $body = $this->request('GET', '/videos', ['query' => $query]);
             $items = [];
             foreach (is_array($body['data'] ?? null) ? $body['data'] : [] as $item) {
@@ -290,7 +333,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 'items' => $items,
                 'nextCursor' => (($pagination['has_more'] ?? false) === true && $next !== '') ? $next : null,
             ];
-        });
+        };
+
+        return $fresh ? $load() : $this->remember('page|' . md5(serialize($query)), $cacheTags, $load, $cacheTtl);
     }
 
     /**
@@ -722,6 +767,122 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     // ------------------------------------------------------------------
+    // Custom poster (selfhosted libraries)
+    // ------------------------------------------------------------------
+
+    /** Image types the poster endpoints accept. */
+    public const POSTER_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    /**
+     * Start a custom poster upload: returns the object key and a presigned single-PUT URL.
+     *
+     * @return array{key: string, uploadUrl: string}
+     */
+    public function initiatePosterUpload(string $uuid, string $contentType, int $fileSize): array
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        if (!in_array($contentType, self::POSTER_CONTENT_TYPES, true)) {
+            throw new InvalidArgumentException('Unsupported poster image type.');
+        }
+        if ($fileSize <= 0) {
+            throw new InvalidArgumentException('Invalid poster file size.');
+        }
+
+        $body = $this->request('POST', '/videos/' . rawurlencode($uuid) . '/poster/initiate', [
+            'json' => ['contentType' => $contentType, 'fileSize' => $fileSize],
+        ], retry: false);
+        $data = is_array($body['data'] ?? null) ? $body['data'] : [];
+        if (!is_string($data['key'] ?? null) || !is_string($data['uploadUrl'] ?? null) || $data['key'] === '' || $data['uploadUrl'] === '') {
+            throw new ApiErrorException('VideoOptimizer poster upload failed: unexpected API response.', 0);
+        }
+
+        return ['key' => $data['key'], 'uploadUrl' => $data['uploadUrl']];
+    }
+
+    /**
+     * Confirm the poster upload; the API processes it and activates it by itself when done
+     * (poll `poster.custom_status` of the video).
+     */
+    public function completePosterUpload(string $uuid, string $key): void
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        $key = trim($key);
+        if ($key === '' || strlen($key) > 512 || preg_match('/[\x00-\x1F\x7F]/', $key) === 1) {
+            throw new InvalidArgumentException('Invalid poster object key.');
+        }
+
+        $this->request('POST', '/videos/' . rawurlencode($uuid) . '/poster/complete', ['json' => ['key' => $key]], retry: false);
+        $this->flushVideo($uuid);
+    }
+
+    /**
+     * Switch the active poster between the processed custom upload and a thumbnail frame.
+     *
+     * @return array<string, mixed>
+     */
+    public function selectPoster(string $uuid, string $source, ?int $thumbnailIndex = null): array
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        if (!in_array($source, ['custom', 'thumbnail'], true)) {
+            throw new InvalidArgumentException('Invalid poster source.');
+        }
+        $payload = ['source' => $source];
+        if ($thumbnailIndex !== null) {
+            $payload['thumbnailIndex'] = max(0, min(9, $thumbnailIndex));
+        }
+
+        $body = $this->request('POST', '/videos/' . rawurlencode($uuid) . '/poster/select', ['json' => $payload], retry: false);
+        $this->flushVideo($uuid);
+
+        return is_array($body['data'] ?? null) ? $body['data'] : [];
+    }
+
+    /** Remove the custom poster; the video falls back to its thumbnail frame. */
+    public function deletePoster(string $uuid): void
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        $this->request('DELETE', '/videos/' . rawurlencode($uuid) . '/poster');
+        $this->flushVideo($uuid);
+    }
+
+    /**
+     * PUT a local file to a presigned storage URL (server-side poster upload from the file list).
+     * Plain transfer: no API token, no redirects, only public https URLs.
+     */
+    public function putToPresignedUrl(string $url, string $filePath, string $contentType): void
+    {
+        if (!PublicHttpsUrl::isAllowed($url) || !StorageOrigin::allows($this->getStorageOrigin(), $url)) {
+            throw new InvalidArgumentException('The storage URL is not allowed.');
+        }
+        $handle = is_file($filePath) ? fopen($filePath, 'rb') : false;
+        if ($handle === false) {
+            throw new ApiErrorException('VideoOptimizer upload failed: file not found or unreadable.', 0);
+        }
+
+        try {
+            $response = $this->client()->request('PUT', $url, [
+                'body' => Utils::streamFor($handle),
+                'headers' => ['Content-Type' => $contentType, 'User-Agent' => $this->userAgent->get()],
+                'http_errors' => false,
+                'allow_redirects' => false,
+                'timeout' => self::TIMEOUT_UPLOAD,
+                'connect_timeout' => self::CONNECT_TIMEOUT_UPLOAD,
+            ]);
+        } catch (GuzzleException $exception) {
+            $this->logger?->error('VideoOptimizer storage upload failed.', ['error' => $exception->getMessage()]);
+            throw new NetworkException('VideoOptimizer storage upload failed (network error).', (int)$exception->getCode(), $exception);
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+        }
+
+        if ($response->getStatusCode() >= 400) {
+            throw new ApiErrorException(sprintf('VideoOptimizer storage upload failed (HTTP %d).', $response->getStatusCode()), $response->getStatusCode());
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Subtitles per video
     // ------------------------------------------------------------------
 
@@ -789,6 +950,18 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $this->flushTags('vo_video_' . $uuid, 'vo_sublangs');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
+    }
+
+    /**
+     * The stored WebVTT file of one language (SRT uploads come back converted).
+     */
+    public function downloadSubtitle(string $uuid, string $language): string
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        $language = $this->assertLanguageCode($language);
+        $body = $this->request('GET', '/videos/' . rawurlencode($uuid) . '/subtitles/' . rawurlencode($language), ['vo_raw' => true]);
+
+        return (string)($body['raw'] ?? '');
     }
 
     public function deleteSubtitle(string $uuid, string $language): void
@@ -906,6 +1079,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      *
      * @param array<string, mixed> $session the initiate response data
      * @param list<array{partNumber: int, etag: string}> $parts
+     * @param list<string> $tags
+     * @param array<string, string|null> $metadata
      * @return array<string, mixed>
      */
     public function completeUpload(string $libraryId, array $session, ?string $title, array $parts, array $tags = [], array $metadata = []): array
@@ -931,6 +1106,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         $body = $this->request('POST', '/videos/upload/complete', ['json' => $payload], upload: true);
+        $this->flushTags('vo_lists', 'vo_libraries');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
@@ -1185,7 +1361,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      * @param list<string> $tags
      * @param callable(): mixed $loader
      */
-    private function remember(string $suffix, array $tags, callable $loader): mixed
+    private function remember(string $suffix, array $tags, callable $loader, ?int $ttl = null): mixed
     {
         $cache = $this->getCache();
         $key = $this->key($suffix);
@@ -1244,6 +1420,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         $envelope = ['payload' => $payload, 'fetchedAt' => $now, 'tags' => $tags];
+        if ($ttl !== null) {
+            $envelope['ttl'] = $ttl;
+        }
         if ($payload === []) {
             // Empty results (e.g. unknown IDs) are only remembered briefly.
             $envelope['ttl'] = self::NEGATIVE_TTL;
@@ -1337,9 +1516,10 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      * @param array<string, string|null> $metadata
      * @return array<string, string|null>
      */
-    private function normalizeMetadata(array $metadata): array
+    private function normalizeMetadata(array $metadata, int $maxKeys = 10): array
     {
         $result = [];
+        $sets = 0;
         foreach ($metadata as $key => $value) {
             $key = trim((string)$key);
             if ($key === '' || mb_strlen($key) > 40 || preg_match('/^[a-z0-9][a-z0-9_.-]{0,39}$/', $key) !== 1) {
@@ -1357,10 +1537,12 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             if ($value === '') {
                 continue;
             }
-            $result[$key] = $value;
-            if (count($result) >= 10) {
-                break;
+            // The API limit counts the keys being set; removals (null) do not count.
+            if ($sets >= $maxKeys) {
+                continue;
             }
+            $result[$key] = $value;
+            $sets++;
         }
 
         return $result;
@@ -1406,7 +1588,10 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             throw new VideoOptimizerException('VideoOptimizer API token is not configured.');
         }
 
-        $options['headers'] = ['Accept' => 'application/json'] + ($options['headers'] ?? []);
+        // Raw mode: the endpoint answers with a file (e.g. WebVTT), not JSON.
+        $raw = ($options['vo_raw'] ?? false) === true;
+        unset($options['vo_raw']);
+        $options['headers'] = ['Accept' => $raw ? '*/*' : 'application/json'] + ($options['headers'] ?? []);
         $options['headers']['Authorization'] = 'Bearer ' . $token;
         // Overrides TYPO3's default `User-Agent: TYPO3` ($GLOBALS['TYPO3_CONF_VARS']['HTTP']['headers']).
         $options['headers']['User-Agent'] = $this->userAgent->get();
@@ -1443,9 +1628,12 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             }
 
             $status = $response->getStatusCode();
-            $raw = (string)$response->getBody();
-            $body = json_decode($raw, true);
+            $rawBody = (string)$response->getBody();
+            $body = json_decode($rawBody, true);
 
+            if ($status < 400 && $raw) {
+                return ['raw' => $rawBody];
+            }
             if ($status < 400 && is_array($body)) {
                 return $body;
             }
@@ -1459,13 +1647,13 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             $this->logger?->log(
                 $status === 404 ? 'debug' : ($status >= 500 ? 'error' : 'warning'),
                 'VideoOptimizer API error response.',
-                ['method' => $method, 'path' => $path, 'status' => $status, 'body' => mb_substr($raw, 0, 4000)]
+                ['method' => $method, 'path' => $path, 'status' => $status, 'body' => mb_substr($rawBody, 0, 4000)]
             );
 
             $message = sprintf(
                 'VideoOptimizer API error (HTTP %d): %s',
                 $status,
-                $this->extractErrorMessage($raw, $body)
+                $this->extractErrorMessage($rawBody, $body)
             );
             if ($status === 429) {
                 $rateLimitParts = [];

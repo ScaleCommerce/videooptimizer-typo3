@@ -21,6 +21,23 @@
         </div>
     </f:if>
 
+    <f:if condition="{posterManaged}">
+        <section class="card card-body bg-body-tertiary vstack gap-3 mb-4" data-vo-poster="{posterConfig}">
+            <h2 class="h4 mb-0"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.title" /></h2>
+            <p class="text-body-secondary mb-0"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.intro" /></p>
+            <p class="mb-0" data-vo-poster-state><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.status" arguments="{0: posterStatusLabel}" /></p>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <label class="btn btn-primary mb-0" for="vo-poster-file"><core:icon identifier="actions-upload" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.upload" /></label>
+                <input type="file" id="vo-poster-file" class="visually-hidden" accept="image/jpeg,image/png,image/webp" data-vo-poster-file>
+                <button type="button" class="btn btn-default" data-vo-poster-files><core:icon identifier="actions-folder" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.fromFiles" /></button>
+                <f:if condition="{posterCustomStatus} != 'none'">
+                    <button type="button" class="btn btn-danger" data-vo-poster-remove><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:poster.remove" /></button>
+                </f:if>
+            </div>
+            <div data-vo-poster-message role="status" aria-live="polite"></div>
+        </section>
+    </f:if>
+
     <f:if condition="{thumbnails}">
         <div class="row g-3">
             <f:for each="{thumbnails}" as="frame">

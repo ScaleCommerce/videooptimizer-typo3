@@ -9,3 +9,6 @@ demoVideoUuid =
 
 # cat=api; type=string; label=Webhook signing secret: Signing secret of the VideoOptimizer webhook. Create the webhook in the VideoOptimizer app under Organization > Webhooks with the URL https://<your-site>/videooptimizer/webhook and paste its secret here (or set the environment variable VO_WEBHOOK_SECRET). Empty = receiver disabled (503).
 webhookSecret =
+
+# cat=api; type=string; label=Storage origin: Origin of the object storage behind the presigned upload URLs (browser uploads PUT there; allowed in the backend CSP). Only change it for a self-hosted platform. Default https://object-storage.scale.sc
+storageOrigin = https://object-storage.scale.sc

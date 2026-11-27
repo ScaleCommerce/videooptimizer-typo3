@@ -225,7 +225,7 @@
             </trans-unit>
             <trans-unit id="videos.filter.label">
                 <source>Filter by tag (comma-separated):</source>
-                <target>Nach Tag filtern (kommagetrennt):</target>
+                <target>Nach Tags filtern (Videos mit allen, kommagetrennt):</target>
             </trans-unit>
             <trans-unit id="videos.filter.placeholder">
                 <source>e.g. promo,webinar</source>
@@ -698,6 +698,234 @@
             <trans-unit id="list.quality.help">
                 <source>"Quality" produces roughly 2.5 to 3 times the file size and CDN traffic of "Performance". Changing it re-encodes nothing by itself.</source>
                 <target>„Qualität“ erzeugt etwa die 2,5- bis 3-fache Dateigröße und CDN-Traffic von „Performance“. Eine Änderung encodiert für sich genommen nichts neu.</target>
+            </trans-unit>
+            <trans-unit id="subtitles.download.submit">
+                <source>Download</source>
+                <target>Herunterladen</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.label">
+                <source>Metadata (one "key: value" per line)</source>
+                <target>Metadaten (je Zeile „Schlüssel: Wert“)</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.help">
+                <source>Up to 10 keys (a-z, 0-9, _ . -), values up to 64 characters, e.g. CMS IDs. Removing a line deletes the key.</source>
+                <target>Bis zu 10 Schlüssel (a-z, 0-9, _ . -), Werte bis 64 Zeichen, z. B. CMS-IDs. Wird eine Zeile entfernt, wird der Schlüssel gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.submit">
+                <source>Save metadata</source>
+                <target>Metadaten speichern</target>
+            </trans-unit>
+            <trans-unit id="flash.video.metadataUpdated">
+                <source>Metadata saved.</source>
+                <target>Metadaten gespeichert.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.metadataUnchanged">
+                <source>Metadata unchanged.</source>
+                <target>Metadaten unverändert.</target>
+            </trans-unit>
+            <trans-unit id="videos.paging.shown">
+                <source>Showing %1$d of %2$d videos.</source>
+                <target>%1$d von %2$d Videos angezeigt.</target>
+            </trans-unit>
+            <trans-unit id="videos.paging.more">
+                <source>Load more</source>
+                <target>Mehr laden</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.noLibrary">
+                <source>No valid library selected.</source>
+                <target>Keine gültige Bibliothek ausgewählt.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.badSession">
+                <source>The upload session is invalid. Please start the upload again.</source>
+                <target>Die Upload-Sitzung ist ungültig. Bitte starten Sie den Upload erneut.</target>
+            </trans-unit>
+            <trans-unit id="flash.upload.badParts">
+                <source>The list of uploaded parts is incomplete.</source>
+                <target>Die Liste der hochgeladenen Teile ist unvollständig.</target>
+            </trans-unit>
+            <trans-unit id="flash.poster.badVideo">
+                <source>Video not found or invalid video ID.</source>
+                <target>Video nicht gefunden oder ungültige Video-ID.</target>
+            </trans-unit>
+            <trans-unit id="flash.poster.badType">
+                <source>Use a JPEG, PNG or WebP image.</source>
+                <target>Verwenden Sie ein JPEG-, PNG- oder WebP-Bild.</target>
+            </trans-unit>
+            <trans-unit id="flash.poster.badSize">
+                <source>The image is empty or larger than 20 MB.</source>
+                <target>Das Bild ist leer oder größer als 20 MB.</target>
+            </trans-unit>
+            <trans-unit id="flash.poster.fileNotFound">
+                <source>The file was not found or you may not read it.</source>
+                <target>Die Datei wurde nicht gefunden oder Sie dürfen sie nicht lesen.</target>
+            </trans-unit>
+            <trans-unit id="flash.poster.folderNotFound">
+                <source>The folder was not found or you may not open it.</source>
+                <target>Der Ordner wurde nicht gefunden oder Sie dürfen ihn nicht öffnen.</target>
+            </trans-unit>
+            <trans-unit id="poster.title">
+                <source>Custom poster</source>
+                <target>Eigenes Vorschaubild (Poster)</target>
+            </trans-unit>
+            <trans-unit id="poster.intro">
+                <source>Upload an image (JPEG, PNG or WebP, up to 20 MB) or choose one from the file list. The platform processes it and activates it as the poster automatically.</source>
+                <target>Laden Sie ein Bild hoch (JPEG, PNG oder WebP, bis 20 MB) oder wählen Sie eines aus der Dateiliste. Die Plattform verarbeitet es und aktiviert es automatisch als Poster.</target>
+            </trans-unit>
+            <trans-unit id="poster.status">
+                <source>Custom poster: %s</source>
+                <target>Eigenes Poster: %s</target>
+            </trans-unit>
+            <trans-unit id="poster.status.none">
+                <source>none</source>
+                <target>keines</target>
+            </trans-unit>
+            <trans-unit id="poster.status.processing">
+                <source>processing</source>
+                <target>wird verarbeitet</target>
+            </trans-unit>
+            <trans-unit id="poster.status.ready">
+                <source>ready</source>
+                <target>bereit</target>
+            </trans-unit>
+            <trans-unit id="poster.status.failed">
+                <source>failed</source>
+                <target>fehlgeschlagen</target>
+            </trans-unit>
+            <trans-unit id="poster.upload">
+                <source>Upload image</source>
+                <target>Bild hochladen</target>
+            </trans-unit>
+            <trans-unit id="poster.fromFiles">
+                <source>Choose from file list</source>
+                <target>Aus Dateiliste wählen</target>
+            </trans-unit>
+            <trans-unit id="poster.remove">
+                <source>Remove custom poster</source>
+                <target>Eigenes Poster entfernen</target>
+            </trans-unit>
+            <trans-unit id="js.poster.uploading">
+                <source>Uploading poster …</source>
+                <target>Poster wird hochgeladen …</target>
+            </trans-unit>
+            <trans-unit id="js.poster.processing">
+                <source>Processing poster …</source>
+                <target>Poster wird verarbeitet …</target>
+            </trans-unit>
+            <trans-unit id="js.poster.ready">
+                <source>Poster updated.</source>
+                <target>Poster aktualisiert.</target>
+            </trans-unit>
+            <trans-unit id="js.poster.failed">
+                <source>The platform could not process the poster image.</source>
+                <target>Die Plattform konnte das Poster-Bild nicht verarbeiten.</target>
+            </trans-unit>
+            <trans-unit id="js.poster.error">
+                <source>Poster upload failed: %s</source>
+                <target>Poster-Upload fehlgeschlagen: %s</target>
+            </trans-unit>
+            <trans-unit id="js.poster.removeConfirm">
+                <source>Remove the custom poster? The video falls back to its thumbnail frame.</source>
+                <target>Das eigene Poster entfernen? Das Video verwendet dann wieder sein Vorschaubild.</target>
+            </trans-unit>
+            <trans-unit id="js.poster.removed">
+                <source>Custom poster removed.</source>
+                <target>Eigenes Poster entfernt.</target>
+            </trans-unit>
+            <trans-unit id="js.poster.filesTitle">
+                <source>Choose poster image</source>
+                <target>Poster-Bild wählen</target>
+            </trans-unit>
+            <trans-unit id="js.poster.filesEmpty">
+                <source>No suitable images here (JPEG, PNG or WebP).</source>
+                <target>Hier gibt es keine passenden Bilder (JPEG, PNG oder WebP).</target>
+            </trans-unit>
+            <trans-unit id="js.poster.filesUp">
+                <source>Up</source>
+                <target>Nach oben</target>
+            </trans-unit>
+            <trans-unit id="js.poster.filesRoot">
+                <source>File storages</source>
+                <target>Dateispeicher</target>
+            </trans-unit>
+            <trans-unit id="js.poster.filesError">
+                <source>The file list could not be loaded: %s</source>
+                <target>Die Dateiliste konnte nicht geladen werden: %s</target>
+            </trans-unit>
+            <trans-unit id="js.upload.preparing">
+                <source>Preparing upload …</source>
+                <target>Upload wird vorbereitet …</target>
+            </trans-unit>
+            <trans-unit id="js.upload.progress">
+                <source>Uploading: %1$d%% (%2$s of %3$s)</source>
+                <target>Hochladen: %1$d%% (%2$s von %3$s)</target>
+            </trans-unit>
+            <trans-unit id="js.upload.retry">
+                <source>Part %1$d failed, retrying (%2$d/%3$d) …</source>
+                <target>Teil %1$d fehlgeschlagen, neuer Versuch (%2$d/%3$d) …</target>
+            </trans-unit>
+            <trans-unit id="js.upload.finishing">
+                <source>Finishing upload …</source>
+                <target>Upload wird abgeschlossen …</target>
+            </trans-unit>
+            <trans-unit id="js.upload.processing">
+                <source>Encoding … the video appears in the list when it is ready.</source>
+                <target>Wird verarbeitet … das Video erscheint in der Liste, sobald es bereit ist.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.ready">
+                <source>Done: the video is ready.</source>
+                <target>Fertig: Das Video ist bereit.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.failed">
+                <source>Encoding failed: %s</source>
+                <target>Verarbeitung fehlgeschlagen: %s</target>
+            </trans-unit>
+            <trans-unit id="js.upload.failedNoReason">
+                <source>Encoding failed.</source>
+                <target>Verarbeitung fehlgeschlagen.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.error">
+                <source>Upload failed: %s</source>
+                <target>Upload fehlgeschlagen: %s</target>
+            </trans-unit>
+            <trans-unit id="js.upload.cancel">
+                <source>Cancel upload</source>
+                <target>Upload abbrechen</target>
+            </trans-unit>
+            <trans-unit id="js.upload.cancelled">
+                <source>Upload cancelled. Incomplete uploads are cleaned up by the platform.</source>
+                <target>Upload abgebrochen. Unvollständige Uploads räumt die Plattform auf.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.noEtag">
+                <source>The storage did not return an ETag. The storage CORS settings must expose the ETag header.</source>
+                <target>Der Speicher hat kein ETag geliefert. Die CORS-Einstellungen des Speichers müssen den ETag-Header freigeben.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.serverFallback">
+                <source>Upload via server instead</source>
+                <target>Stattdessen über den Server hochladen</target>
+            </trans-unit>
+            <trans-unit id="js.upload.showList">
+                <source>Show videos</source>
+                <target>Videos anzeigen</target>
+            </trans-unit>
+            <trans-unit id="js.upload.pollLost">
+                <source>The status check was interrupted. Reload the list to see the video.</source>
+                <target>Die Statusabfrage wurde unterbrochen. Laden Sie die Liste neu, um das Video zu sehen.</target>
+            </trans-unit>
+            <trans-unit id="js.upload.noFile">
+                <source>Choose a video file first.</source>
+                <target>Wählen Sie zuerst eine Videodatei.</target>
+            </trans-unit>
+            <trans-unit id="js.poster.badType">
+                <source>Use a JPEG, PNG or WebP image.</source>
+                <target>Verwenden Sie ein JPEG-, PNG- oder WebP-Bild.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.metadataInvalid">
+                <source>Metadata not saved, invalid lines (use "key: value", up to 10 keys, keys a-z 0-9 _ . -, values up to 64 characters): %s</source>
+                <target>Metadaten nicht gespeichert, ungültige Zeilen (Format „Schlüssel: Wert“, bis zu 10 Schlüssel, Schlüssel a-z 0-9 _ . -, Werte bis 64 Zeichen): %s</target>
+            </trans-unit>
+            <trans-unit id="videos.paging.loaded">
+                <source>%1$d matching videos loaded.</source>
+                <target>%1$d passende Videos geladen.</target>
             </trans-unit>
         </body>
     </file>
