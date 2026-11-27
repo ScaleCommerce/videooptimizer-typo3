@@ -33,8 +33,28 @@ final class VideoInputTest extends TestCase
         for ($i = 1; $i <= 12; $i++) {
             $lines[] = 'k' . $i . ': v';
         }
-        self::assertCount(10, VideoInput::parseMetadata(implode("\n", $lines)));
-        self::assertSame(64, mb_strlen(VideoInput::parseMetadata('a: ' . str_repeat('ä', 100))['a']));
+        $result = VideoInput::parseMetadataDetailed(implode("\n", $lines));
+        self::assertCount(10, $result['metadata']);
+        self::assertSame(['k11: v', 'k12: v'], $result['invalid'], 'keys beyond the API limit are reported');
+        self::assertSame([], VideoInput::parseMetadataDetailed('a: ' . str_repeat('ä', 64))['invalid']);
+        self::assertSame(['a: ' . str_repeat('ä', 57)], VideoInput::parseMetadataDetailed('a: ' . str_repeat('ä', 65))['invalid'], 'overlong values are reported, not cut');
+    }
+
+    #[Test]
+    public function invalidLinesAreReported(): void
+    {
+        $result = VideoInput::parseMetadataDetailed("ok: 1\nnot a line\n: novalue\nempty:\nBad Key: x");
+
+        self::assertSame(['ok' => '1'], $result['metadata']);
+        self::assertSame(['not a line', ': novalue', 'empty:', 'Bad Key: x'], $result['invalid']);
+    }
+
+    #[Test]
+    public function theFirstSeparatorWins(): void
+    {
+        self::assertSame(['url' => 'https://example.com/a?b=c'], VideoInput::parseMetadata('url=https://example.com/a?b=c'));
+        self::assertSame(['note' => 'a=b'], VideoInput::parseMetadata('note: a=b'));
+        self::assertSame(['k' => 'v:w'], VideoInput::parseMetadata('K = v:w'));
     }
 
     #[Test]

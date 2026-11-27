@@ -589,9 +589,16 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         try {
+            $parsed = VideoInput::parseMetadataDetailed($metadata);
+            if ($parsed['invalid'] !== []) {
+                // Nothing is saved: a mistyped line would otherwise delete its key.
+                $this->flash('flash.video.metadataInvalid', ContextualFeedbackSeverity::ERROR, [implode(' | ', array_slice($parsed['invalid'], 0, 5))]);
+
+                return $this->redirect('videos', null, null, $redirectArguments);
+            }
             // The API merges metadata: compare with the current state so removed lines delete their keys.
             $current = (array)($this->client->getVideoFresh($videoUuid)['metadata'] ?? []);
-            $patch = VideoInput::metadataPatch($current, VideoInput::parseMetadata($metadata));
+            $patch = VideoInput::metadataPatch($current, $parsed['metadata']);
             if ($patch === []) {
                 $this->flash('flash.video.metadataUnchanged', ContextualFeedbackSeverity::INFO);
             } else {

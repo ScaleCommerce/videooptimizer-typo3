@@ -37,42 +37,44 @@ final class VideoInput
     }
 
     /**
-     * Metadata textarea ("key: value" per line, also accepts "key=value") -> key => value map
-     * (max 10 keys, API rules; invalid lines are skipped).
+     * Metadata textarea ("key: value" per line, also "key=value"; the first ":" or "=" separates) ->
+     * key => value map (max 10 keys, API rules). Invalid lines are skipped; use
+     * parseMetadataDetailed() to learn which.
      *
      * @return array<string, string>
      */
     public static function parseMetadata(string $input): array
     {
+        return self::parseMetadataDetailed($input)['metadata'];
+    }
+
+    /**
+     * @return array{metadata: array<string, string>, invalid: list<string>} invalid = the offending lines (shortened)
+     */
+    public static function parseMetadataDetailed(string $input): array
+    {
         $result = [];
+        $invalid = [];
         foreach (preg_split('/\r\n|\r|\n/', $input) ?: [] as $line) {
             $line = trim($line);
             if ($line === '') {
                 continue;
             }
-            $separator = strpos($line, ':');
-            if ($separator === false) {
-                $separator = strpos($line, '=');
-            }
-            if ($separator === false) {
+            $colon = strpos($line, ':');
+            $equals = strpos($line, '=');
+            $separator = $colon === false ? $equals : ($equals === false ? $colon : min($colon, $equals));
+            $key = $separator === false ? '' : strtolower(trim(substr($line, 0, $separator)));
+            $value = $separator === false ? '' : trim((string)preg_replace('/[\x00-\x1F\x7F]/u', '', substr($line, $separator + 1)));
+            if (preg_match('/^[a-z0-9][a-z0-9_.-]{0,39}$/', $key) !== 1 || $value === '' || mb_strlen($value) > self::MAX_METADATA_VALUE_LENGTH
+                || (!isset($result[$key]) && count($result) >= self::MAX_METADATA_KEYS)
+            ) {
+                $invalid[] = mb_substr($line, 0, 60);
                 continue;
             }
-            $key = strtolower(trim(substr($line, 0, $separator)));
-            if (preg_match('/^[a-z0-9][a-z0-9_.-]{0,39}$/', $key) !== 1) {
-                continue;
-            }
-            $value = preg_replace('/[\x00-\x1F\x7F]/u', '', substr($line, $separator + 1)) ?? '';
-            $value = trim($value);
-            if ($value === '') {
-                continue;
-            }
-            $result[$key] = mb_substr($value, 0, self::MAX_METADATA_VALUE_LENGTH);
-            if (count($result) >= self::MAX_METADATA_KEYS) {
-                break;
-            }
+            $result[$key] = $value;
         }
 
-        return $result;
+        return ['metadata' => $result, 'invalid' => $invalid];
     }
 
     /**

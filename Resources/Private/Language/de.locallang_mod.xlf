@@ -919,6 +919,10 @@
                 <source>Use a JPEG, PNG or WebP image.</source>
                 <target>Verwenden Sie ein JPEG-, PNG- oder WebP-Bild.</target>
             </trans-unit>
+            <trans-unit id="flash.video.metadataInvalid">
+                <source>Metadata not saved, invalid lines (use "key: value", up to 10 keys, keys a-z 0-9 _ . -, values up to 64 characters): %s</source>
+                <target>Metadaten nicht gespeichert, ungültige Zeilen (Format „Schlüssel: Wert“, bis zu 10 Schlüssel, Schlüssel a-z 0-9 _ . -, Werte bis 64 Zeichen): %s</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

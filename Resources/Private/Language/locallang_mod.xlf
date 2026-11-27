@@ -691,6 +691,9 @@
             <trans-unit id="js.poster.badType">
                 <source>Use a JPEG, PNG or WebP image.</source>
             </trans-unit>
+            <trans-unit id="flash.video.metadataInvalid">
+                <source>Metadata not saved, invalid lines (use "key: value", up to 10 keys, keys a-z 0-9 _ . -, values up to 64 characters): %s</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
