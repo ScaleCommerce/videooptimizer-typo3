@@ -82,6 +82,19 @@ abstract class AbstractVideoController extends ActionController
     }
 
     /**
+     * Library of a shaped video (empty when unknown).
+     *
+     * @param array<string, mixed>|null $video
+     * @return list<string>
+     */
+    protected function libraryIdsOf(?array $video): array
+    {
+        $libraryId = is_array($video) ? trim((string)($video['library_id'] ?? '')) : '';
+
+        return $libraryId !== '' ? [$libraryId] : [];
+    }
+
+    /**
      * Demo video: extension configuration first, then the environment variable VO_DEMO_VIDEO_UUID
      * (single source of truth in the client, as documented in ext_conf_template.txt).
      */
@@ -193,8 +206,9 @@ abstract class AbstractVideoController extends ActionController
      * Tag the page cache entry and cap its lifetime to the API cache TTL (see PAGE_CACHE_FLOOR).
      *
      * @param list<string> $videoUuids
+     * @param list<string> $libraryIds libraries of the shown videos, so library flushes reach this page
      */
-    protected function registerPageCache(array $videoUuids, bool $isList, bool $failed = false): void
+    protected function registerPageCache(array $videoUuids, bool $isList, bool $failed = false, array $libraryIds = []): void
     {
         $collector = $this->request->getAttribute('frontend.cache.collector');
         if (!$collector instanceof CacheDataCollectorInterface) {
@@ -205,6 +219,11 @@ abstract class AbstractVideoController extends ActionController
         foreach ($videoUuids as $uuid) {
             if (preg_match('/^[A-Za-z0-9-]{1,64}$/', $uuid) === 1) {
                 $tags[] = new CacheTag('vo_video_' . $uuid);
+            }
+        }
+        foreach (array_unique($libraryIds) as $libraryId) {
+            if (preg_match('/^[A-Za-z0-9-]{1,64}$/', $libraryId) === 1) {
+                $tags[] = new CacheTag('vo_library_' . $libraryId);
             }
         }
         if ($isList) {

@@ -38,6 +38,7 @@ final class VideoOptimizerClientTest extends TestCase
         $this->store = new \stdClass();
         $this->store->entries = [];
         $this->store->flushed = [];
+        $this->store->pageFlushed = [];
     }
 
     /**
@@ -58,6 +59,7 @@ final class VideoOptimizerClientTest extends TestCase
         $cache->method('get')->willReturnCallback(static fn(string $id): mixed => $store->entries[$id] ?? false);
         $cache->method('set')->willReturnCallback(static function (string $id, mixed $data, array $tags = []) use ($store): void {
             $store->entries[$id] = $data;
+            $store->tagsOf[preg_replace('/^.*?(video_.*)$/', '$1', $id) ?? $id] = $tags;
         });
         $cache->method('flushByTag')->willReturnCallback(static function (string $tag) use ($store): void {
             $store->flushed[] = $tag;
@@ -67,6 +69,9 @@ final class VideoOptimizerClientTest extends TestCase
         });
         $cacheManager = $this->createStub(CacheManager::class);
         $cacheManager->method('getCache')->willReturn($cache);
+        $cacheManager->method('flushCachesInGroupByTags')->willReturnCallback(static function (string $group, array $tags) use ($store): void {
+            $store->pageFlushed[] = [$group, $tags];
+        });
 
         $extensionConfiguration = $this->createStub(ExtensionConfiguration::class);
         $extensionConfiguration->method('get')->willReturn('test-token');
@@ -237,5 +242,61 @@ final class VideoOptimizerClientTest extends TestCase
         $method = new \ReflectionMethod(VideoOptimizerClient::class, 'key');
 
         return $method->invoke($this->client([]), $suffix);
+    }
+
+    #[Test]
+    public function libraryActionsFlushThePageCacheTagsOfTheLibrary(): void
+    {
+        $client = $this->client([
+            self::json(['data' => ['id' => '0a1b2c3d-1111-4222-8333-444455556666']]),
+            self::json(['data' => ['queued' => 1]]),
+            self::json([], 204),
+        ]);
+
+        $client->updateLibrary('0a1b2c3d-1111-4222-8333-444455556666', ['resolutions' => '720p']);
+        $client->reprocessLibrary('0a1b2c3d-1111-4222-8333-444455556666', true);
+        $client->deleteLibrary('0a1b2c3d-1111-4222-8333-444455556666');
+
+        self::assertCount(3, $this->store->pageFlushed);
+        foreach ($this->store->pageFlushed as [$group, $tags]) {
+            self::assertSame('pages', $group);
+            self::assertContains('vo_library_0a1b2c3d-1111-4222-8333-444455556666', $tags);
+            self::assertContains('vo_lists', $tags);
+        }
+    }
+
+    #[Test]
+    public function cachedVideoIsDroppedByLibraryFlushes(): void
+    {
+        $video = self::json(['data' => ['uuid' => self::UUID, 'library_id' => '0a1b2c3d-1111-4222-8333-444455556666']]);
+        $client = $this->client([$video, self::json(['data' => ['id' => '0a1b2c3d-1111-4222-8333-444455556666']])]);
+
+        $client->getVideo(self::UUID);
+        $client->getVideo(self::UUID);
+        self::assertCount(1, $this->history, 'second read comes from the cache');
+        self::assertContains('vo_library_0a1b2c3d-1111-4222-8333-444455556666', $this->store->tagsOf['video_' . self::UUID] ?? []);
+
+        $client->updateLibrary('0a1b2c3d-1111-4222-8333-444455556666', ['resolutions' => '720p']);
+        self::assertContains('vo_library_0a1b2c3d-1111-4222-8333-444455556666', $this->store->flushed);
+    }
+
+    #[Test]
+    public function renamingALibraryDoesNotFlushPages(): void
+    {
+        $client = $this->client([self::json(['data' => ['id' => '0a1b2c3d-1111-4222-8333-444455556666']])]);
+
+        $client->updateLibrary('0a1b2c3d-1111-4222-8333-444455556666', ['name' => 'Renamed']);
+
+        self::assertSame([], $this->store->pageFlushed);
+        self::assertContains('vo_library_0a1b2c3d-1111-4222-8333-444455556666', $this->store->flushed);
+    }
+
+    #[Test]
+    public function flushVideoLeavesLibraryPagesAlone(): void
+    {
+        $this->client([])->flushVideo(self::UUID, '0a1b2c3d-1111-4222-8333-444455556666');
+
+        self::assertSame([['pages', ['vo_video_' . self::UUID, 'vo_lists']]], $this->store->pageFlushed);
+        self::assertContains('vo_library_0a1b2c3d-1111-4222-8333-444455556666', $this->store->flushed);
     }
 }
