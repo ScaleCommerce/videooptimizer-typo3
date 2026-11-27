@@ -1,0 +1,37 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>
+    Player of single/detail: hosted or native, direct or behind a click (facade / lightbox).
+    surface is built in AbstractVideoController::buildSurface(); every URL in it is validated there.
+</f:comment>
+<f:if condition="{surface.presentation} == 'direct'">
+    <f:then>
+        <f:if condition="{surface.native}">
+            <f:then><f:render partial="NativeVideo" arguments="{surface: surface}" /></f:then>
+            <f:else>
+                <f:if condition="{surface.embed}">
+                    <f:render partial="Player" arguments="{embed: surface.embed}" />
+                </f:if>
+            </f:else>
+        </f:if>
+    </f:then>
+    <f:else>
+        <f:if condition="{surface.native} || {surface.embed}">
+            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+            <div class="vo-surface" data-vo-surface="{surface.presentation}" data-vo-title="{surface.title}"
+                 data-vo-close-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close')}"
+                 <f:if condition="{surface.native}">data-vo-native="{surface.native.json}"</f:if>
+                 <f:if condition="{surface.clickSrc}">data-vo-embed="{surface.clickSrc}"</f:if>
+                 <f:if condition="{surface.aspect}">style="{f:asset.styleAttr(value: 'aspect-ratio: {surface.aspect}')}"</f:if>>
+                <button type="button" class="vo-facade" data-vo-play=""
+                        aria-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:facade.play', arguments: {0: surface.title})}">
+                    <f:if condition="{surface.native.poster}">
+                        <f:then><img src="{surface.native.poster}" alt="" loading="lazy" decoding="async" /></f:then>
+                        <f:else><f:if condition="{surface.poster}"><img src="{surface.poster}" alt="" loading="lazy" decoding="async" /></f:if></f:else>
+                    </f:if>
+                    <span class="vo-facade__play" aria-hidden="true">&#9654;</span>
+                </button>
+            </div>
+        </f:if>
+    </f:else>
+</f:if>
+</html>

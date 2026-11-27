@@ -45,6 +45,30 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function getEmbedReadsThePublicPlayerConfigAndCachesItWithTheVideoTag(): void
+    {
+        $client = $this->client([self::json(['data' => ['sources' => [['src' => 'https://l.cdn.videooptimizer.eu/a.mp4']], 'poster' => 'https://poster.videooptimizer.eu/p.jpg']])]);
+
+        $first = $client->getEmbed(self::UUID);
+        $second = $client->getEmbed(self::UUID);
+
+        self::assertSame('https://poster.videooptimizer.eu/p.jpg', $first['poster']);
+        self::assertSame($first, $second);
+        self::assertCount(1, $this->history, 'the second call is served from the cache');
+        self::assertSame('/api/v1/embed/' . self::UUID, $this->history[0]['request']->getUri()->getPath());
+        self::assertSame(['vo_video_' . self::UUID], $this->store->entries[array_key_first($this->store->entries)]['tags']);
+    }
+
+    #[Test]
+    public function getEmbedIsEmptyForUnknownVideos(): void
+    {
+        $client = $this->client([new Response(404, ['Content-Type' => 'application/json'], '{"error":{"message":"not found"}}')]);
+
+        self::assertSame([], $client->getEmbed(self::UUID));
+        self::assertSame([], $client->getEmbed(''));
+    }
+
+    #[Test]
     public function apiErrorsExposeTheMachineReadableCode(): void
     {
         $client = $this->client([self::json(

@@ -15,7 +15,7 @@
     <f:else>
         <a class="vo-card" href="{video.embed_src}" target="_blank" rel="noopener"
            title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.open', arguments: {0: video.title_label})}"
-           data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}">
+           data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}" data-vo-close-label="{closeLabel}"<f:if condition="{video.native_json}"> data-vo-native="{video.native_json}"</f:if>>
             <span class="vo-card__media">
                 <f:if condition="{video.poster_src}">
                     <img src="{video.poster_src}" alt="" width="640" height="360" loading="lazy" decoding="async" />

@@ -26,7 +26,7 @@ final class VideoControllerHelpersTest extends TestCase
     /**
      * @param array<string, mixed> $record tt_content row of the element
      */
-    private function controller(array $record = [], int $ttl = 300): object
+    private function controller(array $record = [], int $ttl = 300, ?array $embed = null): object
     {
         $collector = $this->createStub(CacheDataCollectorInterface::class);
         $collector->method('addCacheTags')->willReturnCallback(function (CacheTag ...$tags): void {
@@ -44,13 +44,26 @@ final class VideoControllerHelpersTest extends TestCase
             static fn(string $name): mixed => $name === 'frontend.cache.collector' ? $collector : null
         );
 
-        $controller = new class ((new \ReflectionClass(VideoOptimizerClient::class))->newInstanceWithoutConstructor(), $record, $ttl) extends AbstractVideoController {
+        $controller = new class ((new \ReflectionClass(VideoOptimizerClient::class))->newInstanceWithoutConstructor(), $record, $ttl, $embed) extends AbstractVideoController {
             /**
              * @param array<string, mixed> $record
              */
-            public function __construct(VideoOptimizerClient $client, private array $record, private int $ttl)
+            /**
+             * @param array<string, mixed>|null $embed
+             */
+            public function __construct(VideoOptimizerClient $client, private array $record, private int $ttl, private ?array $embed)
             {
                 parent::__construct($client);
+            }
+
+            protected function embedConfig(string $uuid): ?array
+            {
+                return $this->embed;
+            }
+
+            protected function unavailableLabel(): string
+            {
+                return 'Unavailable';
             }
 
             protected function currentRecord(): array
@@ -212,5 +225,107 @@ final class VideoControllerHelpersTest extends TestCase
         self::assertTrue($shaped[0]['processing']);
         self::assertSame(['width' => 1920, 'height' => 1080], $shaped[0]['dimensions']);
         self::assertStringStartsWith('https://embed.videooptimizer.eu/embed/abc?', $shaped[0]['lightbox_url']);
+    }
+
+    private const EMBED = [
+        'sources' => [
+            ['src' => 'https://l.cdn.videooptimizer.eu/h/master.m3u8', 'type' => 'application/vnd.apple.mpegurl', 'label' => 'auto'],
+            ['src' => 'https://l.cdn.videooptimizer.eu/h/720p.mp4', 'type' => 'video/mp4', 'label' => '720p'],
+        ],
+        'poster' => 'https://poster.videooptimizer.eu/l/h/thumbnail.jpg',
+    ];
+
+    private const VIDEO = [
+        'uuid' => 'abcdef12-0000-0000-0000-000000000000',
+        'title_label' => 'Clip',
+        'processing' => false,
+        'resolution' => '1920x1080',
+        'poster_src' => 'https://poster.videooptimizer.eu/t.jpg',
+        'embed_url' => 'https://player.videooptimizer.eu/embed/abc',
+        'lightbox_url' => 'https://player.videooptimizer.eu/embed/abc?autoplay=1',
+    ];
+
+    #[Test]
+    public function playerModeAndPresentationDefaultToHostedAndDirect(): void
+    {
+        self::assertSame('hosted', $this->controller([])->call('playerMode'));
+        self::assertSame('hosted', $this->controller(['vo_player_mode' => 'bogus'])->call('playerMode'));
+        self::assertSame('native', $this->controller(['vo_player_mode' => 'native'])->call('playerMode'));
+        self::assertSame('direct', $this->controller([])->call('presentation'));
+        self::assertSame('direct', $this->controller(['vo_presentation' => '"><x'])->call('presentation'));
+        self::assertSame('facade', $this->controller(['vo_presentation' => 'facade'])->call('presentation'));
+        self::assertSame('lightbox', $this->controller(['vo_presentation' => 'lightbox'])->call('presentation'));
+    }
+
+    #[Test]
+    public function hostedElementsNeverBuildNativeSettings(): void
+    {
+        self::assertNull($this->controller([], 300, self::EMBED)->call('buildNative', self::VIDEO));
+    }
+
+    #[Test]
+    public function nativeElementsBuildSettingsFromTheEmbedConfig(): void
+    {
+        $native = $this->controller(['vo_player_mode' => 'native', 'vo_loop' => 1], 300, self::EMBED)->call('buildNative', self::VIDEO);
+
+        self::assertSame('https://l.cdn.videooptimizer.eu/h/master.m3u8', $native['hls']);
+        self::assertSame('https://l.cdn.videooptimizer.eu/h/720p.mp4', $native['mp4']);
+        self::assertTrue($native['options']['loop']);
+        self::assertSame('Clip', $native['options']['title']);
+        self::assertSame('Unavailable', $native['options']['unavailable']);
+    }
+
+    #[Test]
+    public function nativeFallsBackToHostedWhenTheEmbedConfigIsMissingOrTheVideoStillProcesses(): void
+    {
+        $controller = $this->controller(['vo_player_mode' => 'native'], 300, null);
+        self::assertNull($controller->call('buildNative', self::VIDEO));
+        $surface = $controller->call('buildSurface', self::VIDEO);
+        self::assertNull($surface['native']);
+        self::assertNotNull($surface['embed']);
+
+        self::assertNull($this->controller(['vo_player_mode' => 'native'], 300, self::EMBED)
+            ->call('buildNative', ['processing' => true] + self::VIDEO));
+    }
+
+    #[Test]
+    public function theHeroUsesBackgroundSettingsAndTheLightboxCtaClickToPlaySettings(): void
+    {
+        $controller = $this->controller(['vo_player_mode' => 'native'], 300, self::EMBED);
+
+        $hero = $controller->call('buildNative', self::VIDEO, true);
+        self::assertFalse($hero['options']['controls']);
+        self::assertTrue($hero['options']['autoplay']);
+        self::assertTrue($hero['options']['cover']);
+
+        $lightbox = $controller->call('buildNative', self::VIDEO, false);
+        self::assertTrue($lightbox['options']['controls']);
+        self::assertFalse($lightbox['options']['autoplay']);
+    }
+
+    #[Test]
+    public function surfaceCarriesPresentationAspectAndHostedClickUrl(): void
+    {
+        $surface = $this->controller(['vo_presentation' => 'facade'])->call('buildSurface', self::VIDEO);
+
+        self::assertSame('facade', $surface['presentation']);
+        self::assertSame('1920/1080', $surface['aspect']);
+        self::assertSame('https://player.videooptimizer.eu/embed/abc?autoplay=1', $surface['clickSrc']);
+        self::assertSame('https://poster.videooptimizer.eu/t.jpg', $surface['poster']);
+        self::assertNull($surface['native']);
+    }
+
+    #[Test]
+    public function nativeCardsGetSettingsOnlyForNativeElements(): void
+    {
+        $videos = [self::VIDEO];
+
+        self::assertArrayNotHasKey('native_json', $this->controller([])->call('withNativeCards', $videos)[0]);
+
+        $cards = $this->controller(['vo_player_mode' => 'native'], 300, self::EMBED)->call('withNativeCards', $videos);
+        self::assertStringContainsString('"hls":"https:\/\/', str_replace('/', '\/', $cards[0]['native_json']));
+
+        $missing = $this->controller(['vo_player_mode' => 'native'], 300, null)->call('withNativeCards', $videos);
+        self::assertSame('', $missing[0]['native_json']);
     }
 }

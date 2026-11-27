@@ -1,0 +1,9 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>Native player, shown directly. The MP4 source makes it playable without JavaScript; the module attaches HLS (hls.js loads only when needed). native.json is escaped on output.</f:comment>
+<f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+<div class="vo-native<f:if condition="{surface.native.options.cover}"> vo-native--cover</f:if>" data-vo-native="{surface.native.json}"<f:if condition="{surface.aspect}"> style="{f:asset.styleAttr(value: 'aspect-ratio: {surface.aspect}')}"</f:if>>
+    <video class="vo-native__video" playsinline preload="none" title="{surface.title}"<f:if condition="{surface.native.poster}"> poster="{surface.native.poster}"</f:if><f:if condition="{surface.native.options.controls}"> controls</f:if><f:if condition="{surface.native.options.loop}"> loop</f:if><f:if condition="{surface.native.options.muted}"> muted</f:if>>
+        <f:if condition="{surface.native.mp4}"><source src="{surface.native.mp4}" type="video/mp4" /></f:if>
+    </video>
+</div>
+</html>

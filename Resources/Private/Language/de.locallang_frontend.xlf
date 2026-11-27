@@ -83,6 +83,14 @@
                 <source>Y-m-d H:i</source>
                 <target>d.m.Y H:i</target>
             </trans-unit>
+            <trans-unit id="video.unavailable" approved="yes">
+                <source>This video cannot be played.</source>
+                <target>Dieses Video kann nicht abgespielt werden.</target>
+            </trans-unit>
+            <trans-unit id="facade.play" approved="yes">
+                <source>Play video: %s</source>
+                <target>Video abspielen: %s</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScaleCommerce\VideoOptimizer\Controller;
 
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
+use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
@@ -276,6 +277,116 @@ abstract class AbstractVideoController extends ActionController
     }
 
     /**
+     * Player of this element: `hosted` (iframe, default) or `native` (<video>, hls.js on demand).
+     */
+    protected function playerMode(): string
+    {
+        return ($this->currentRecord()['vo_player_mode'] ?? '') === 'native' ? 'native' : 'hosted';
+    }
+
+    /**
+     * How the player appears: `direct` (default), `facade` (poster + play button, player in place) or
+     * `lightbox` (poster + play button, player in a dialog).
+     */
+    protected function presentation(): string
+    {
+        $value = $this->currentRecord()['vo_presentation'] ?? '';
+
+        return in_array($value, ['facade', 'lightbox'], true) ? $value : 'direct';
+    }
+
+    /**
+     * Public player configuration of a video; null when it cannot be loaded (callers fall back to the
+     * hosted player).
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function embedConfig(string $uuid): ?array
+    {
+        try {
+            $config = $this->client->getEmbed($uuid);
+        } catch (VideoOptimizerException|\InvalidArgumentException) {
+            return null;
+        }
+
+        return $config !== [] ? $config : null;
+    }
+
+    /**
+     * Native player settings for a shaped video; null for hosted elements, processing videos and
+     * videos without playable sources.
+     *
+     * @param array<string, mixed> $video shaped video
+     * @return array{hls: string, mp4: string, poster: string, options: array<string, mixed>, json: string}|null
+     */
+    protected function buildNative(array $video, bool $heroMode = false): ?array
+    {
+        if ($this->playerMode() !== 'native' || ($video['processing'] ?? true) !== false) {
+            return null;
+        }
+        $embed = $this->embedConfig((string)($video['uuid'] ?? ''));
+        if ($embed === null) {
+            return null;
+        }
+
+        return NativePlayerConfig::build(
+            $embed,
+            $this->effectivePlayerSettings($heroMode),
+            (string)($video['title_label'] ?? ''),
+            $this->unavailableLabel()
+        );
+    }
+
+    protected function unavailableLabel(): string
+    {
+        return (string)LocalizationUtility::translate(
+            'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:video.unavailable'
+        );
+    }
+
+    /**
+     * Grid/list cards: adds `native_json` (settings of the native player for the lightbox) to every
+     * playable video when the element uses the native player. Cards without sources keep the hosted
+     * lightbox.
+     *
+     * @param list<array<string, mixed>> $videos shaped videos
+     * @return list<array<string, mixed>>
+     */
+    protected function withNativeCards(array $videos): array
+    {
+        if ($this->playerMode() !== 'native') {
+            return $videos;
+        }
+        foreach ($videos as &$video) {
+            $video['native_json'] = $this->buildNative($video)['json'] ?? '';
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Everything the Surface partial needs for single/detail.
+     *
+     * @param array<string, mixed> $video shaped video
+     * @return array{presentation: string, aspect: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
+     */
+    protected function buildSurface(array $video): array
+    {
+        $embed = $this->buildEmbed($video);
+
+        return [
+            'presentation' => $this->presentation(),
+            'aspect' => $this->aspectRatioFromResolution((string)($video['resolution'] ?? '')),
+            'title' => (string)($video['title_label'] ?? ''),
+            'poster' => (string)($video['poster_src'] ?? ''),
+            // Hosted facade/lightbox: the visitor clicked play, so autoplay with sound is allowed.
+            'clickSrc' => (string)($video['lightbox_url'] ?? ''),
+            'embed' => $embed,
+            'native' => $this->buildNative($video),
+        ];
+    }
+
+    /**
      * "1920x1080" -> "1920/1080" for a CSS aspect-ratio value. '' when missing or not in WxH form.
      */
     protected function aspectRatioFromResolution(string $resolution): string
@@ -334,6 +445,16 @@ abstract class AbstractVideoController extends ActionController
      */
     protected function playerQueryParams(bool $heroMode = false): array
     {
+        return $this->buildPlayerParams($this->effectivePlayerSettings($heroMode));
+    }
+
+    /**
+     * The element's player options; a hero whose options were never touched plays as a background video.
+     *
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     */
+    protected function effectivePlayerSettings(bool $heroMode = false): array
+    {
         $settings = $this->playerSettings();
 
         if ($heroMode && !$settings['autoplay'] && !$settings['loop'] && !$settings['muted']
@@ -350,7 +471,7 @@ abstract class AbstractVideoController extends ActionController
             ];
         }
 
-        return $this->buildPlayerParams($settings);
+        return $settings;
     }
 
     /**

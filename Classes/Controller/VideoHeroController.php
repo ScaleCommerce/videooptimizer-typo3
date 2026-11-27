@@ -37,6 +37,11 @@ class VideoHeroController extends AbstractVideoController
             $embedUrl = $this->embedUrlWithParams((string)$video['embed_src'], $this->playerQueryParams(heroMode: true));
         }
 
+        $native = is_array($video) ? $this->buildNative($video, heroMode: true) : null;
+
+        $this->view->assign('native', $native);
+        // The lightbox CTA plays like a click-to-play element, not like the background video.
+        $this->view->assign('nativeLightbox', is_array($video) ? $this->buildNative($video) : null);
         $this->view->assign('elementUid', (int)($this->currentRecord()['uid'] ?? 0));
         $this->view->assign('hero', $this->heroOptions());
         $this->view->assign('video', $video);

@@ -194,6 +194,42 @@
                 <source>Centered</source>
                 <target>Zentriert</target>
             </trans-unit>
+            <trans-unit id="vo_player_mode.label">
+                <source>Player</source>
+                <target>Player</target>
+            </trans-unit>
+            <trans-unit id="vo_player_mode.description">
+                <source>Hosted: the VideoOptimizer player in an iframe. Native: a video element with the player code and hls.js loaded only when needed (no iframe, subtitles and theme applied).</source>
+                <target>Gehostet: der VideoOptimizer-Player in einem iframe. Nativ: ein Video-Element; Player-Code und hls.js werden nur bei Bedarf geladen (kein iframe, Untertitel und Theme werden übernommen).</target>
+            </trans-unit>
+            <trans-unit id="vo_player_mode.hosted">
+                <source>Hosted (iframe)</source>
+                <target>Gehostet (iframe)</target>
+            </trans-unit>
+            <trans-unit id="vo_player_mode.native">
+                <source>Native (video element)</source>
+                <target>Nativ (Video-Element)</target>
+            </trans-unit>
+            <trans-unit id="vo_presentation.label">
+                <source>Presentation</source>
+                <target>Darstellung</target>
+            </trans-unit>
+            <trans-unit id="vo_presentation.description">
+                <source>Direct: the player is shown right away. Facade: poster with play button, the player loads on click. Lightbox: poster with play button, the player opens in a dialog.</source>
+                <target>Direkt: der Player wird sofort angezeigt. Fassade: Vorschaubild mit Play-Button, der Player lädt erst beim Klick. Lightbox: Vorschaubild mit Play-Button, der Player öffnet sich in einem Dialog.</target>
+            </trans-unit>
+            <trans-unit id="vo_presentation.direct">
+                <source>Direct</source>
+                <target>Direkt</target>
+            </trans-unit>
+            <trans-unit id="vo_presentation.facade">
+                <source>Facade (click to play)</source>
+                <target>Fassade (Klick zum Abspielen)</target>
+            </trans-unit>
+            <trans-unit id="vo_presentation.lightbox">
+                <source>Lightbox (dialog)</source>
+                <target>Lightbox (Dialog)</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

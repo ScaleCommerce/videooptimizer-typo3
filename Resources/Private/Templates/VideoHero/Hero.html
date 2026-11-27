@@ -11,9 +11,20 @@
                 <img class="vo-hero__poster" src="{video.poster_src}" alt="" aria-hidden="true" fetchpriority="high"
                      <f:if condition="{video.dimensions}">width="{video.dimensions.width}" height="{video.dimensions.height}"</f:if> />
             </f:if>
-            <f:if condition="{embedUrl}">
-                <iframe class="vo-hero__media" src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"
-                        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <f:if condition="{native}">
+                <f:then>
+                    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+                    <video class="vo-hero__media vo-hero__video" data-vo-native="{native.json}" data-vo-hero="" playsinline preload="none"
+                           aria-hidden="true" tabindex="-1"<f:if condition="{native.options.loop}"> loop</f:if> muted<f:if condition="{native.poster}"> poster="{native.poster}"</f:if>>
+                        <f:if condition="{native.mp4}"><source src="{native.mp4}" type="video/mp4" /></f:if>
+                    </video>
+                </f:then>
+                <f:else>
+                    <f:if condition="{embedUrl}">
+                        <iframe class="vo-hero__media" src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"
+                                allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    </f:if>
+                </f:else>
             </f:if>
             <div class="vo-hero__overlay"></div>
             <div class="vo-hero__content">
@@ -37,9 +48,9 @@
                             <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener">{ctaLabel} &#9654;</a>
                         </f:if>
                         <f:if condition="{hero.ctaMode} == 'lightbox' && {video.embed_src}">
-                            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" defer="1" />
+                            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
                             <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener"
-                               data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}"
+                               data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}"<f:if condition="{nativeLightbox}"> data-vo-native="{nativeLightbox.json}"</f:if>
                                data-vo-close-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close')}">{ctaLabel} &#9654;</a>
                         </f:if>
                         <f:if condition="{hero.ctaMode} == 'link'">

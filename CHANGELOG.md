@@ -4,6 +4,16 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+### Upgrade
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns `vo_player_mode` and `vo_presentation`, then `cache:flush`. Existing elements keep the hosted player, shown directly.
+- `Js/videooptimizer.js` is an ES module now: custom templates that load it must add `type="module"` (`<f:asset.script ... type="module" />`).
+
+### Added
+- Native player per content element (`<video>`, hls.js light loaded only when needed, native HLS on Safari, MP4 fallback that keeps position and playing state) next to the hosted iframe ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
+- Presentation of single/detail elements: direct, click-to-play facade or lightbox; grid, list and the hero button open the native player in the lightbox ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
+- Native hero: background `<video>` that plays only while visible ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
+- Frontend CSP mutations for `*.cdn.videooptimizer.eu`, `poster.videooptimizer.eu` and `blob:` media ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
+
 ## [2.0.0] - 2026-11-27
 
 ### Upgrade

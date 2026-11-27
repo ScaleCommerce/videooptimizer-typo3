@@ -262,6 +262,34 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
+     * Public player configuration of a video (`GET /embed/{uuid}`): theme, sources, poster, subtitle
+     * tracks. Cached with the video's tag, so webhooks and edits refresh it. Empty array when unknown.
+     *
+     * @return array<string, mixed>
+     */
+    public function getEmbed(string $uuid): array
+    {
+        $uuid = trim($uuid);
+        if ($uuid === '') {
+            return [];
+        }
+        $uuid = $this->assertUuid($uuid, 'video ID');
+
+        return $this->remember('embed:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
+            try {
+                $body = $this->request('GET', '/embed/' . rawurlencode($uuid));
+            } catch (ApiErrorException $exception) {
+                if ($exception->getHttpStatus() === 404) {
+                    return [];
+                }
+                throw $exception;
+            }
+
+            return is_array($body['data'] ?? null) ? $body['data'] : [];
+        });
+    }
+
+    /**
      * One video straight from the API, bypassing (and refreshing) the cache. For status polling
      * and read-modify-write edits. Empty array when the video does not exist.
      *

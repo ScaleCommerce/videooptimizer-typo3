@@ -12,6 +12,7 @@ class VideoDetailController extends AbstractVideoController
     {
         $video = null;
         $embed = null;
+        $surface = null;
         $errorCode = '';
         $errorDetail = '';
 
@@ -20,6 +21,7 @@ class VideoDetailController extends AbstractVideoController
             $video = $this->fetchVideo($uuid, $errorCode, $errorDetail);
             if (is_array($video) && !$video['processing']) {
                 $embed = $this->buildEmbed($video);
+                $surface = $this->buildSurface($video);
             }
         } else {
             $errorCode = 'no_video';
@@ -30,6 +32,7 @@ class VideoDetailController extends AbstractVideoController
 
         $this->view->assign('video', $video);
         $this->view->assign('embed', $embed);
+        $this->view->assign('surface', $surface);
         $this->view->assign('error', $this->errorForTemplate(
             $errorCode !== '' ? $errorCode : ($video === null ? $this->missingTokenCode() : ''),
             $errorDetail

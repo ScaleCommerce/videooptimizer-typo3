@@ -116,7 +116,7 @@ URL import, reprocessing and thumbnail changes require a library that is managed
 5. **Manage videos.** Open **System → VideoOptimizer** to create libraries, upload videos and maintain
    thumbnails and subtitles.
 
-CSS and the small lightbox script are added automatically by the element templates (only on pages that
+CSS and the player script (lightbox, facade, native player) are added automatically by the element templates (only on pages that
 use them) — no build step, no TypoScript to include.
 
 <div align="center">
@@ -202,8 +202,13 @@ Good to know:
 
 - **Library → video.** Pick a library tile first; the video picker then opens with that library. Picking a
   video selects its library tile. Without a video, the element falls back to the configured demo video.
-- **Player options** tab: autoplay (muted), loop, muted, controls, start position, cover fit, subtitle
-  language.
+- **Player options** tab: player (*hosted* iframe — the default — or *native* `<video>`), presentation
+  of single/detail (*direct* — the default —, *facade* with poster and play button, or *lightbox*),
+  autoplay (muted), loop, muted, controls, start position, cover fit, subtitle language. The native player
+  loads hls.js only when needed (bundled hls.js light, Apache-2.0, see
+  `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4.
+  With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
+  `poster.videooptimizer.eu` for media, images and connections.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the
   default —, lightbox, link to a page/URL, or no button), overlay strength, height (compact / default /
   full screen) and text alignment.
