@@ -4,7 +4,22 @@
     surface is built in AbstractVideoController::buildSurface(); every URL in it is validated there.
 </f:comment>
 <f:if condition="{surface.media}">
-    <f:then><div class="{surface.media.class}"><f:render section="Player" arguments="{surface: surface}" /></div></f:then>
+    <f:then>
+        <f:if condition="{surface.media.mini}">
+            <f:then>
+                <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{surface.assetVersion}" />
+                <f:comment>Floating mini player: the box is pinned with CSS once the visitor started playback and the player scrolled out of view; nothing is moved in the DOM.</f:comment>
+                <div class="{surface.media.class}" data-vo-mini="">
+                    <div class="vo-media__box" data-vo-box="">
+                        <f:render section="Player" arguments="{surface: surface}" />
+                        <button type="button" class="vo-media__close" data-vo-mini-close=""
+                                aria-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:mini.close')}"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                </div>
+            </f:then>
+            <f:else><div class="{surface.media.class}"><f:render section="Player" arguments="{surface: surface}" /></div></f:else>
+        </f:if>
+    </f:then>
     <f:else><f:render section="Player" arguments="{surface: surface}" /></f:else>
 </f:if>
 

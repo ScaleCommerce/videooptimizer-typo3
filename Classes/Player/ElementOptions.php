@@ -93,4 +93,14 @@ final class ElementOptions
 
         return ['x' => $axis($row['vo_focus_x'] ?? 50), 'y' => $axis($row['vo_focus_y'] ?? 50)];
     }
+
+    /**
+     * Floating mini player (explicit opt-in).
+     *
+     * @param array<string, mixed> $row
+     */
+    public static function miniPlayer(array $row): bool
+    {
+        return (int)(is_scalar($row['vo_mini_player'] ?? null) ? $row['vo_mini_player'] : 0) === 1;
+    }
 }

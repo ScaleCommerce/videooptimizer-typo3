@@ -326,6 +326,14 @@
                 <source>Native player, shown directly: starts muted when at least half of it is visible and pauses when it scrolls out. A pause by the visitor sticks. Not with reduced motion or data saver.</source>
                 <target>Nativer Player, direkt angezeigt: startet stumm, sobald mindestens die Hälfte sichtbar ist, und pausiert beim Hinausscrollen. Eine Pause des Besuchers bleibt bestehen. Nicht bei reduzierter Bewegung oder Datensparmodus.</target>
             </trans-unit>
+            <trans-unit id="vo_mini_player.label">
+                <source>Floating mini player</source>
+                <target>Schwebender Mini-Player</target>
+            </trans-unit>
+            <trans-unit id="vo_mini_player.description">
+                <source>Direct presentation only: after the visitor started playback and the player scrolls out of view, it is pinned to the bottom right (from 600 px viewport width) until it is closed or scrolled back into view.</source>
+                <target>Nur bei direkter Darstellung: Hat der Besucher die Wiedergabe gestartet und scrollt der Player aus dem Bild, wird er unten rechts angeheftet (ab 600 px Fensterbreite), bis er geschlossen oder wieder ins Bild gescrollt wird.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

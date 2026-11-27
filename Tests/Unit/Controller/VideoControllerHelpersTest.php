@@ -401,6 +401,20 @@ final class VideoControllerHelpersTest extends TestCase
     }
 
     #[Test]
+    public function theMiniPlayerNeedsTheWrapperAndOnlyAppliesToDirectPlayers(): void
+    {
+        $direct = $this->controller(['vo_mini_player' => 1])->call('buildSurface', self::VIDEO);
+        self::assertTrue($direct['media']['mini']);
+        self::assertSame('vo-media', $direct['media']['class']);
+
+        $facade = $this->controller(['vo_mini_player' => 1, 'vo_presentation' => 'facade'])->call('buildSurface', self::VIDEO);
+        self::assertNull($facade['media']);
+
+        $formatOnly = $this->controller(['vo_format' => '1-1'])->call('buildSurface', self::VIDEO);
+        self::assertFalse($formatOnly['media']['mini']);
+    }
+
+    #[Test]
     public function aLightboxKeepsTheVideoUncroppedAndOnlyTheFacadeTakesTheFormat(): void
     {
         $record = ['vo_format' => '9-16', 'vo_presentation' => 'lightbox', 'vo_player_mode' => 'native'];

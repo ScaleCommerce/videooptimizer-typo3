@@ -182,9 +182,10 @@ export function observeVisibility(element, onChange, rootMargin = '0px', thresho
 /**
  * Plays a muted, autoplaying video only while it is visible and pauses it when it scrolls out of
  * view. Once the visitor pauses it themselves it is not resumed automatically. `threshold` is the
- * share of the element that must be visible (play while scrolling uses 0.5).
+ * share of the element that must be visible (play while scrolling uses 0.5); `canPause()` can veto the
+ * pause on leaving (the mini player pins the playing video instead).
  */
-export function autoplayWhileVisible(video, observed = video, threshold = 0.25) {
+export function autoplayWhileVisible(video, observed = video, threshold = 0.25, canPause = () => true) {
     let pausedForViewport = false;
     let pausedByUser = false;
     const onPause = () => {
@@ -205,7 +206,7 @@ export function autoplayWhileVisible(video, observed = video, threshold = 0.25) 
         // A finished non-looping video is not restarted when it scrolls back into view.
         if (visible && video.paused && !pausedByUser && !video.ended) {
             video.play().catch(() => {});
-        } else if (!visible && !video.paused) {
+        } else if (!visible && !video.paused && canPause()) {
             pausedForViewport = true;
             video.pause();
         }

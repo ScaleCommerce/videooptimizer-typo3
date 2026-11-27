@@ -5,10 +5,14 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 ### Upgrade
-- Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` is a new sub-module of `Js/videooptimizer.js` (copy it along when you serve the JavaScript yourself).
-- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`, `vo_format`, `vo_focus_x`, `vo_focus_y`, `vo_scroll_play`), then `cache:flush`.
+- Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` and `Js/mini-player.js` are new sub-modules of `Js/videooptimizer.js` (copy them along when you serve the JavaScript yourself).
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`, `vo_format`, `vo_focus_x`, `vo_focus_y`, `vo_scroll_play`, `vo_mini_player`), then `cache:flush`.
+
+### Changed
+- Autoplaying native players (hero, single, ...) now pause once less than 25 % of them is visible (was: only when completely out of view) ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
 
 ### Added
+- Floating mini player (single, split, spotlight, chapters; direct presentation): after the visitor started playback and the player scrolls out of view it is pinned bottom right (320 px, from 600 px viewport width) with a close button (Escape works too); native closing pauses, hosted closing stops the iframe and restores it on return; a placeholder keeps the page height and nothing is moved in the DOM; with play while scrolling the mini player pins the video instead of pausing it ([#22](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/22)).
 - Play while scrolling (single, split, spotlight, chapters; native player shown directly): starts muted at 50 % visible, pauses below it, a pause by the visitor sticks, hls.js attaches only then; not with reduced motion or data saver ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
 - Format option (original, 16:9, 9:16, 1:1, 4:5, 21:9) with focal point on single, split and spotlight: the surface takes the ratio and the video/poster fills it (`object-fit: cover`, `object-position`; hosted `fit=cover`); 9:16 and 4:5 are capped at 420 px wide; with a format the player sits in a `.vo-media` wrapper ([#20](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/20)).
 - Content element "Video Chapters": the player with a row of scene previews (3-10 of the video's ten thumbnails, optional titles); a click jumps to the scene and plays, native and hosted ([#19](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/19)).

@@ -545,23 +545,28 @@ abstract class AbstractVideoController extends ActionController
             'embed' => $embed,
             'native' => $native,
             'assetVersion' => AssetVersion::get(),
-            'media' => $this->mediaWrapper($format),
+            'media' => $this->mediaWrapper($format, $presentation === 'direct' && ElementOptions::miniPlayer($this->currentRecord())),
         ];
     }
 
     /**
-     * Wrapper around the player for the options that need one (format, later scroll and mini player);
+     * Wrapper around the player for the options that need one (format, mini player);
      * null keeps the markup of elements without such options.
      *
-     * @return array{class: string}|null
+     * @return array{class: string, mini: bool}|null
      */
-    protected function mediaWrapper(string $format): ?array
+    protected function mediaWrapper(string $format, bool $mini = false): ?array
     {
-        if ($format === 'original') {
+        if ($format === 'original' && !$mini) {
             return null;
         }
 
-        return ['class' => 'vo-media vo-media--format-' . $format . (ElementOptions::isPortrait($format) ? ' vo-media--portrait' : '')];
+        return [
+            'class' => 'vo-media'
+                . ($format !== 'original' ? ' vo-media--format-' . $format : '')
+                . (ElementOptions::isPortrait($format) ? ' vo-media--portrait' : ''),
+            'mini' => $mini,
+        ];
     }
 
     /**

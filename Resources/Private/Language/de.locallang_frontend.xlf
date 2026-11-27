@@ -115,6 +115,10 @@
                 <source>Scenes</source>
                 <target>Szenen</target>
             </trans-unit>
+            <trans-unit id="mini.close">
+                <source>Close mini player</source>
+                <target>Mini-Player schließen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

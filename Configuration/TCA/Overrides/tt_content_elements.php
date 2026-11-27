@@ -49,6 +49,14 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => 0,
         ],
     ],
+    'vo_mini_player' => [
+        'label' => $lll . 'vo_mini_player.label',
+        'description' => $lll . 'vo_mini_player.description',
+        'config' => [
+            'type' => 'check',
+            'default' => 0,
+        ],
+    ],
     'vo_format' => [
         'label' => $lll . 'vo_format.label',
         'description' => $lll . 'vo_format.description',
@@ -120,7 +128,7 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
 
 $playerOptions = "
     --div--;{$lll}vo_player.div,
-    vo_player_mode, vo_presentation, vo_autoplay, vo_scroll_play, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_format, vo_focus_x, vo_focus_y, vo_subtitle_lang";
+    vo_player_mode, vo_presentation, vo_autoplay, vo_scroll_play, vo_mini_player, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_format, vo_focus_x, vo_focus_y, vo_subtitle_lang";
 
 $showItemSplit = "
     --palette--;;headers,
@@ -155,7 +163,7 @@ $showItemChapters = "
     vo_library_id,
     vo_video_uuid,
     --div--;{$lll}vo_player.div,
-    vo_player_mode, vo_autoplay, vo_scroll_play, vo_loop, vo_muted, vo_controls, vo_start_time, vo_subtitle_lang,
+    vo_player_mode, vo_autoplay, vo_scroll_play, vo_mini_player, vo_loop, vo_muted, vo_controls, vo_start_time, vo_subtitle_lang,
     --div--;core.form.tabs:appearance,
     --palette--;;frames,
     --div--;core.form.tabs:categories,
@@ -192,7 +200,7 @@ ExtensionManagementUtility::addToAllTCAtypes(
 );
 ExtensionManagementUtility::addToAllTCAtypes(
     'tt_content',
-    'vo_scroll_play',
+    'vo_scroll_play, vo_mini_player',
     'videooptimizer_videosingle',
     'after:vo_autoplay'
 );

@@ -59,4 +59,12 @@ final class ElementOptionsTest extends TestCase
         self::assertSame(['x' => 0, 'y' => 100], ElementOptions::focal(['vo_focus_x' => -5, 'vo_focus_y' => 900]));
         self::assertSame(['x' => 50, 'y' => 50], ElementOptions::focal(['vo_focus_x' => 'abc', 'vo_focus_y' => null]));
     }
+
+    #[Test]
+    public function theMiniPlayerIsAnExplicitOptIn(): void
+    {
+        self::assertFalse(ElementOptions::miniPlayer([]));
+        self::assertFalse(ElementOptions::miniPlayer(['vo_mini_player' => 0]));
+        self::assertTrue(ElementOptions::miniPlayer(['vo_mini_player' => '1']));
+    }
 }

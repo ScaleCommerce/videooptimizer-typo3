@@ -87,6 +87,9 @@
             <trans-unit id="scenes.aria">
                 <source>Scenes</source>
             </trans-unit>
+            <trans-unit id="mini.close">
+                <source>Close mini player</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

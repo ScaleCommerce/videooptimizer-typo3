@@ -214,6 +214,7 @@ Good to know:
   `poster.videooptimizer.eu` for media, images and connections.
 - **Format** (single, split, spotlight): *original* (default) or 16:9, 9:16, 1:1, 4:5, 21:9. The player area takes the ratio and the video and poster fill it (cropped); the focal point X/Y in percent decides which part stays visible (native player and poster; the hosted player centers). 9:16 and 4:5 are at most 420 px wide. In a lightbox only the poster takes the format.
 - **Play while scrolling** (single, split, spotlight, chapters; native player shown directly): the video starts muted when at least half of it is visible and pauses when it scrolls out of view; a pause by the visitor sticks. Reduced motion and data saver keep it still.
+- **Floating mini player** (single, split, spotlight, chapters; direct presentation): once playback was started and the player scrolls out of view it is pinned bottom right (from 600 px viewport width) with a close button; scrolling back or closing unpins it. A hosted player is detected as started when the visitor clicks into it. Combined with *play while scrolling* the player is pinned instead of paused.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the
   default —, lightbox, link to a page/URL, or no button), overlay strength, height (compact / default /
   full screen) and text alignment.

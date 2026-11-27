@@ -1,6 +1,6 @@
 // Frontend of the VideoOptimizer content elements (ES module, loaded with type="module"):
 // native player (hls.js loaded only when needed), click-to-play facade, lightbox dialog and the
-// background video of the hero. The hosted player stays a plain iframe.
+// background video of the hero, chapters and the floating mini player. The hosted player stays a plain iframe.
 // The sub-modules are imported with a version stamp the server computes from all module files
 // (data-vo-version on this script's tag), so a browser cache that keeps JavaScript for a year, or a
 // TYPO3 that rewrites the entry's file name, cannot pair a new entry with an old sub-module. Without
@@ -21,10 +21,12 @@ const [
     },
     { parseConfig, safeUrl },
     { initChapters },
+    { bindMiniPlayer, keepsPlayingWhenHidden },
 ] = await Promise.all([
     import('./video-source.js' + version),
     import('./native-config.js' + version),
     import('./chapters.js' + version),
+    import('./mini-player.js' + version),
 ]);
 
 // Play while scrolling: start at this share of the player in view, pause below it.
@@ -87,7 +89,12 @@ function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false,
     if (!click && !still && cfg.autoplay) {
         attached.then(() => {
             if (!gone && !skipAutoplay()) {
-                stopAutoplay = autoplayWhileVisible(video, wrap, cfg.scroll ? SCROLL_THRESHOLD : undefined);
+                stopAutoplay = autoplayWhileVisible(
+                    video,
+                    wrap,
+                    cfg.scroll ? SCROLL_THRESHOLD : undefined,
+                    () => !keepsPlayingWhenHidden(wrap.closest('[data-vo-mini]'))
+                );
             }
         });
     }
@@ -393,10 +400,29 @@ function initHostedHero(frame) {
     );
 }
 
+// Floating mini player of single/split/spotlight/chapters (direct presentation).
+function initMini(media) {
+    if (media.hasAttribute('data-vo-mini-ready')) {
+        return;
+    }
+    media.setAttribute('data-vo-mini-ready', '');
+    const video = media.querySelector('.vo-native video');
+    const frame = media.querySelector('iframe.vo-player');
+    const src = frame ? safeUrl(frame.getAttribute('src') || '') : '';
+    let autoplay = false;
+    try {
+        autoplay = !!src && new URL(src).searchParams.get('autoplay') === '1';
+    } catch {
+        autoplay = false;
+    }
+    bindMiniPlayer(media, { video, frame: src ? frame : null, hostedSrc: src, startedAtLoad: autoplay });
+}
+
 function init() {
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
     document.querySelectorAll('iframe[data-vo-src]').forEach(initHostedHero);
+    document.querySelectorAll('.vo-media[data-vo-mini]').forEach(initMini);
     document.querySelectorAll('[data-vo-chapters]').forEach((root) => initChapters(root, safeUrl));
 }
 

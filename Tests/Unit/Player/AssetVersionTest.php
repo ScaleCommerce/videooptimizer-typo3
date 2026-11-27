@@ -16,7 +16,7 @@ final class AssetVersionTest extends TestCase
     {
         $this->directory = sys_get_temp_dir() . '/vo-assets-' . bin2hex(random_bytes(4)) . '/';
         mkdir($this->directory . 'vendor', 0777, true);
-        foreach (['videooptimizer.js', 'video-source.js', 'native-config.js', 'chapters.js'] as $file) {
+        foreach (['videooptimizer.js', 'video-source.js', 'native-config.js', 'chapters.js', 'mini-player.js'] as $file) {
             file_put_contents($this->directory . $file, $file . ' v1');
         }
         file_put_contents($this->directory . 'vendor/hls.light-1.7.4.min.js', 'hls');
@@ -44,7 +44,7 @@ final class AssetVersionTest extends TestCase
     {
         $before = AssetVersion::forDirectory($this->directory);
 
-        foreach (['videooptimizer.js', 'video-source.js', 'native-config.js', 'chapters.js'] as $file) {
+        foreach (['videooptimizer.js', 'video-source.js', 'native-config.js', 'chapters.js', 'mini-player.js'] as $file) {
             file_put_contents($this->directory . $file, $file . ' v2');
             $after = AssetVersion::forDirectory($this->directory);
             self::assertNotSame($before, $after, $file);

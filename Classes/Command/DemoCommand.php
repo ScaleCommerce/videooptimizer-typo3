@@ -71,6 +71,18 @@ class DemoCommand extends Command
             'ctype' => 'videooptimizer_videosingle', 'header' => '11) Single video, plays while scrolling (native)', 'sorting' => 2816, 'videoUuid' => true,
             'fields' => ['vo_player_mode' => 'native', 'vo_scroll_play' => 1],
         ],
+        [
+            'ctype' => 'videooptimizer_videosingle', 'header' => '12) Single video with floating mini player (native)', 'sorting' => 3072, 'videoUuid' => true,
+            'fields' => ['vo_player_mode' => 'native', 'vo_mini_player' => 1],
+        ],
+        [
+            'ctype' => 'videooptimizer_videospotlight', 'header' => '13) Spotlight with floating mini player (hosted)', 'sorting' => 3328, 'videoUuid' => true,
+            'fields' => ['vo_mini_player' => 1, 'vo_caption' => 'Click play, then scroll away.'],
+        ],
+        [
+            'ctype' => 'videooptimizer_videosingle', 'header' => '14) Single video, 4:5 format (native)', 'sorting' => 3584, 'videoUuid' => true,
+            'fields' => ['vo_format' => '4-5', 'vo_player_mode' => 'native'],
+        ],
     ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
