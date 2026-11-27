@@ -48,6 +48,18 @@
             <trans-unit id="opt.subtitles">
                 <source>Subtitles:</source>
             </trans-unit>
+            <trans-unit id="opt.scroll">
+                <source>Plays while scrolling</source>
+            </trans-unit>
+            <trans-unit id="opt.mini">
+                <source>Mini player</source>
+            </trans-unit>
+            <trans-unit id="opt.format">
+                <source>Format</source>
+            </trans-unit>
+            <trans-unit id="opt.scenes">
+                <source>Scenes:</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -63,6 +63,22 @@
                 <source>Subtitles:</source>
                 <target>Untertitel:</target>
             </trans-unit>
+            <trans-unit id="opt.scroll">
+                <source>Plays while scrolling</source>
+                <target>Spielt beim Scrollen</target>
+            </trans-unit>
+            <trans-unit id="opt.mini">
+                <source>Mini player</source>
+                <target>Mini-Player</target>
+            </trans-unit>
+            <trans-unit id="opt.format">
+                <source>Format</source>
+                <target>Format</target>
+            </trans-unit>
+            <trans-unit id="opt.scenes">
+                <source>Scenes:</source>
+                <target>Szenen:</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
