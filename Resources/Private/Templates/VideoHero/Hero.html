@@ -14,7 +14,7 @@
             <f:if condition="{native}">
                 <f:then>
                     <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
-                    <video class="vo-hero__media vo-hero__video" data-vo-native="{native.json}" data-vo-hero="" playsinline preload="none"
+                    <video class="vo-hero__media vo-hero__video" data-vo-native="{native.json}" data-vo-hero="" playsinline preload="{native.options.preload}"
                            aria-hidden="true" tabindex="-1"<f:if condition="{native.options.loop}"> loop</f:if> muted<f:if condition="{native.poster}"> poster="{native.poster}"</f:if>>
                         <f:if condition="{native.mp4}"><source src="{native.mp4}" type="video/mp4" /></f:if>
                     </video>

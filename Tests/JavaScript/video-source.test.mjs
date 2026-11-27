@@ -187,15 +187,18 @@ test('safeUrl only allows https on videooptimizer.eu', () => {
 test('parseConfig validates the server data', () => {
     const cfg = parseConfig(JSON.stringify({
         hls: sources.hls, mp4: sources.mp4, poster: 'https://evil.example/p.jpg', controls: false, autoplay: true,
-        muted: true, loop: true, start: 12, cover: true, title: 'T', unavailable: 'U',
+        muted: true, loop: true, start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876',
     }));
     assert.deepEqual(
         { ...cfg },
         {
             hls: sources.hls, mp4: sources.mp4, poster: '', controls: false, autoplay: true, muted: true, loop: true,
-            start: 12, cover: true, title: 'T', unavailable: 'U',
+            start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876',
         }
     );
+    assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4, preload: 'x', accent: 'red;}</style>' })).preload, 'metadata');
+    assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4, accent: 'red;}</style>' })).accent, '');
+    assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4, accent: 'rgba(0,0,0,0.7)' })).accent, 'rgba(0,0,0,0.7)');
     assert.equal(parseConfig('not json'), null);
     assert.equal(parseConfig(''), null);
     assert.equal(parseConfig(JSON.stringify({ hls: 'https://evil.example/x.m3u8' })), null, 'no allowed source');

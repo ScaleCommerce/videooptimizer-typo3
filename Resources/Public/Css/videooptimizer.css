@@ -570,6 +570,7 @@ body:has(dialog.vo-lightbox[open]) {
     display: block;
     background: #000;
     object-fit: contain;
+    accent-color: var(--vo-accent, auto);
 }
 
 .vo-native--cover .vo-native__video {

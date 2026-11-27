@@ -108,4 +108,91 @@ final class NativePlayerConfigTest extends TestCase
         self::assertStringNotContainsString('"><', $json);
         self::assertSame('"><script>x</script> & \'', json_decode($json, true)['title']);
     }
+
+    private const THEME = [
+        'accentColor' => '#C72876', 'controls' => true, 'autoplay' => false, 'mutedStart' => false,
+        'loopButton' => false, 'preload' => 'auto',
+    ];
+
+    /**
+     * @param array<string, mixed> $theme
+     * @param array<string, mixed> $settings
+     * @return array<string, mixed>
+     */
+    private static function options(array $theme, array $settings = [], bool $background = false): array
+    {
+        return NativePlayerConfig::build(self::embed(['theme' => $theme + self::THEME]), $settings + self::SETTINGS, '', '', $background)['options'];
+    }
+
+    #[Test]
+    public function theThemeSuppliesDefaultsForPreloadAndAccent(): void
+    {
+        $options = self::options([]);
+
+        self::assertSame('auto', $options['preload']);
+        self::assertSame('#C72876', $options['accent']);
+        self::assertTrue($options['controls']);
+        self::assertFalse($options['autoplay']);
+    }
+
+    #[Test]
+    public function withoutAThemePreloadIsMetadataAndThereIsNoAccent(): void
+    {
+        $options = NativePlayerConfig::build(self::embed(), self::SETTINGS)['options'];
+
+        self::assertSame('metadata', $options['preload']);
+        self::assertSame('', $options['accent']);
+    }
+
+    #[Test]
+    public function themeFlagsTurnOnAutoplayMutedAndLoopButTheElementCannotBeOverriddenOff(): void
+    {
+        $options = self::options(['autoplay' => true, 'loopButton' => true]);
+        self::assertTrue($options['autoplay']);
+        self::assertTrue($options['muted'], 'autoplay starts muted');
+        self::assertTrue($options['loop']);
+
+        $options = self::options(['mutedStart' => true]);
+        self::assertTrue($options['muted']);
+        self::assertFalse($options['autoplay']);
+
+        $options = self::options([], ['autoplay' => true, 'loop' => true]);
+        self::assertTrue($options['autoplay']);
+        self::assertTrue($options['loop']);
+    }
+
+    #[Test]
+    public function aHiddenControlBarInTheThemeOrTheElementHidesTheControls(): void
+    {
+        self::assertFalse(self::options(['controls' => false])['controls']);
+        self::assertFalse(self::options([], ['controls' => false])['controls']);
+        self::assertTrue(self::options([])['controls']);
+    }
+
+    #[Test]
+    public function aBackgroundVideoTakesOnlyPreloadAndAccentFromTheTheme(): void
+    {
+        $options = self::options(['autoplay' => true, 'controls' => false, 'loopButton' => true, 'mutedStart' => true], ['controls' => false], true);
+
+        self::assertFalse($options['autoplay']);
+        self::assertFalse($options['loop']);
+        self::assertFalse($options['muted']);
+        self::assertFalse($options['controls']);
+        self::assertSame('auto', $options['preload']);
+        self::assertSame('#C72876', $options['accent']);
+
+        self::assertTrue(self::options(['controls' => false], [], true)['controls'], 'theme controls do not apply to the background');
+    }
+
+    #[Test]
+    public function onlyPlainCssColorsPassAndUnknownPreloadFallsBack(): void
+    {
+        foreach (['#fff', '#C72876', '#C72876cc', 'rgb(1,2,3)', 'rgba(0,0,0,0.7)', 'rgb(0 0 0 / 50%)', 'hsl(120, 50%, 50%)'] as $color) {
+            self::assertSame($color, NativePlayerConfig::cssColor($color), $color);
+        }
+        foreach (['red', 'red;}</style>', 'url(x)', '#12', 'rgb(1,2,3);color:red', 'expression(1)', 42, null] as $color) {
+            self::assertSame('', NativePlayerConfig::cssColor($color), var_export($color, true));
+        }
+        self::assertSame('metadata', self::options(['preload' => 'bogus'])['preload']);
+    }
 }

@@ -1,6 +1,7 @@
 // Validation of the data the server hands to the browser (data-vo-native). Pure functions, no DOM.
 
 const ALLOWED_HOST = 'videooptimizer.eu';
+const ACCENT = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([0-9.,%\s/-]+\))$/i;
 
 /**
  * Only https URLs on videooptimizer.eu (or a sub-domain) are loaded into an iframe, <video> or
@@ -39,6 +40,8 @@ export function parseConfig(raw) {
         autoplay: data.autoplay === true,
         muted: data.muted === true,
         loop: data.loop === true,
+        preload: ['auto', 'metadata', 'none'].includes(data.preload) ? data.preload : 'metadata',
+        accent: typeof data.accent === 'string' && ACCENT.test(data.accent) ? data.accent : '',
         start: Number.isFinite(data.start) && data.start > 0 ? data.start : 0,
         cover: data.cover === true,
         title: typeof data.title === 'string' ? data.title : '',

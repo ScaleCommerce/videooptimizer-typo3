@@ -38,7 +38,7 @@ function setUpVideo(video, wrap, cfg, { click = false } = {}) {
     video.muted = click ? false : cfg.muted || cfg.autoplay;
     video.autoplay = false;
     video.playsInline = true;
-    video.preload = 'none';
+    video.preload = click ? 'auto' : cfg.preload;
     if (cfg.poster) {
         video.poster = cfg.poster;
     }
@@ -84,6 +84,9 @@ function buildNativePlayer(cfg) {
     wrap.className = 'vo-native vo-native--fill' + (cfg.cover ? ' vo-native--cover' : '');
     const video = document.createElement('video');
     video.className = 'vo-native__video';
+    if (cfg.accent) {
+        wrap.style.setProperty('--vo-accent', cfg.accent);
+    }
     wrap.appendChild(video);
     const teardown = setUpVideo(video, wrap, cfg, { click: true });
     return { element: wrap, video, teardown };

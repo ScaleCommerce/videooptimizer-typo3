@@ -333,7 +333,8 @@ abstract class AbstractVideoController extends ActionController
             $embed,
             $this->effectivePlayerSettings($heroMode),
             (string)($video['title_label'] ?? ''),
-            $this->unavailableLabel()
+            $this->unavailableLabel(),
+            $heroMode
         );
     }
 
@@ -368,21 +369,29 @@ abstract class AbstractVideoController extends ActionController
      * Everything the Surface partial needs for single/detail.
      *
      * @param array<string, mixed> $video shaped video
-     * @return array{presentation: string, aspect: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
+     * @return array{presentation: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
      */
     protected function buildSurface(array $video): array
     {
         $embed = $this->buildEmbed($video);
+        $native = $this->buildNative($video);
+        $aspect = $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
+        // Aspect ratio (digits only) and the theme's accent color (validated), for the style attribute.
+        $style = implode('; ', array_filter([
+            $aspect !== '' ? 'aspect-ratio: ' . $aspect : '',
+            ($native['options']['accent'] ?? '') !== '' ? '--vo-accent: ' . $native['options']['accent'] : '',
+        ]));
 
         return [
             'presentation' => $this->presentation(),
-            'aspect' => $this->aspectRatioFromResolution((string)($video['resolution'] ?? '')),
+            'aspect' => $aspect,
+            'style' => $style,
             'title' => (string)($video['title_label'] ?? ''),
             'poster' => (string)($video['poster_src'] ?? ''),
             // Hosted facade/lightbox: the visitor clicked play, so autoplay with sound is allowed.
             'clickSrc' => (string)($video['lightbox_url'] ?? ''),
             'embed' => $embed,
-            'native' => $this->buildNative($video),
+            'native' => $native,
         ];
     }
 
