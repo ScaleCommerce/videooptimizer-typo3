@@ -119,6 +119,20 @@
                                                 <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.tags.submit" /></button>
                                             </div>
                                         </form>
+                                        <form action="{video.setMetadataUrl}" method="post" class="row g-2 align-items-end">
+                                            <input type="hidden" name="libraryId" value="{libraryId}">
+                                            <input type="hidden" name="videoUuid" value="{video.uuid}">
+                                            <input type="hidden" name="formToken" value="{video.setMetadataToken}">
+                                            <input type="hidden" name="tagFilter" value="{tagFilter}">
+                                            <div class="col">
+                                                <label for="vo-metadata-{video.uuid}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.label" /></label>
+                                                <textarea id="vo-metadata-{video.uuid}" name="metadata" rows="3" placeholder="campaign: summer-2026&#10;cms.page: 42" class="form-control">{video.metadataLines}</textarea>
+                                                <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.help" /></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.metadata.submit" /></button>
+                                            </div>
+                                        </form>
                                         <form action="{video.deleteVideoUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.delete.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
                                             <input type="hidden" name="libraryId" value="{libraryId}">
                                             <input type="hidden" name="videoUuid" value="{video.uuid}">

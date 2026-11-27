@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScaleCommerce\VideoOptimizer\Backend\Module;
 
 use ScaleCommerce\VideoOptimizer\Backend\Http\SubtitleDownload;
+use ScaleCommerce\VideoOptimizer\Backend\Input\VideoInput;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -420,8 +421,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 $tmpPath,
                 $filename,
                 trim($title) !== '' ? trim($title) : null,
-                $this->parseTags($tags),
-                $this->parseMetadata($metadata),
+                VideoInput::parseTags($tags),
+                VideoInput::parseMetadata($metadata),
             );
             $this->flash('flash.upload.done', ContextualFeedbackSeverity::OK, [$filename, substr((string)$result['uuid'], 0, 8)]);
         } catch (VideoOptimizerException $exception) {
@@ -475,8 +476,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 $libraryId,
                 $sourceUrl,
                 trim($title) !== '' ? trim($title) : null,
-                $this->parseTags($tags),
-                $this->parseMetadata($metadata),
+                VideoInput::parseTags($tags),
+                VideoInput::parseMetadata($metadata),
             );
             $this->flash('flash.ingest.done', ContextualFeedbackSeverity::OK, [substr((string)$result['uuid'], 0, 8)]);
         } catch (ApiErrorException $exception) {
@@ -542,13 +543,47 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         try {
-            $this->client->updateVideo($videoUuid, ['tags' => $this->parseTags($tags)]);
+            $this->client->updateVideo($videoUuid, ['tags' => VideoInput::parseTags($tags)]);
             $this->flash('flash.video.tagsUpdated', ContextualFeedbackSeverity::OK);
         } catch (VideoOptimizerException $exception) {
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }
 
         return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+    }
+
+    public function setMetadataAction(
+        string $libraryId = '',
+        string $videoUuid = '',
+        string $formToken = '',
+        string $metadata = '',
+        string $tagFilter = '',
+    ): ResponseInterface {
+        $redirectArguments = ['libraryId' => $libraryId, 'tagFilter' => $tagFilter];
+        if (($denied = $this->guardMutation('manage', 'videos', $redirectArguments)) !== null) {
+            return $denied;
+        }
+        if (!$this->validateFormToken($formToken, 'setMetadata', $videoUuid)) {
+            $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('videos', null, null, $redirectArguments);
+        }
+
+        try {
+            // The API merges metadata: compare with the current state so removed lines delete their keys.
+            $current = (array)($this->client->getVideoFresh($videoUuid)['metadata'] ?? []);
+            $patch = VideoInput::metadataPatch($current, VideoInput::parseMetadata($metadata));
+            if ($patch === []) {
+                $this->flash('flash.video.metadataUnchanged', ContextualFeedbackSeverity::INFO);
+            } else {
+                $this->client->updateVideo($videoUuid, ['metadata' => $patch]);
+                $this->flash('flash.video.metadataUpdated', ContextualFeedbackSeverity::OK);
+            }
+        } catch (VideoOptimizerException $exception) {
+            $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+        }
+
+        return $this->redirect('videos', null, null, $redirectArguments);
     }
 
     public function deleteVideoAction(
@@ -1060,6 +1095,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 'created' => (string)($video['created_at'] ?? ''),
                 'tags' => implode(', ', array_map('strval', (array)($video['tags'] ?? []))),
                 'metadata' => $this->formatMetadata((array)($video['metadata'] ?? [])),
+                'metadataLines' => VideoInput::metadataToLines((array)($video['metadata'] ?? [])),
+                'setMetadataUrl' => $this->moduleUrl('setMetadata', ['libraryId' => $libraryId, 'videoUuid' => $uuid]),
+                'setMetadataToken' => $this->formToken('setMetadata', $uuid),
                 'thumbnailUrl' => MediaUrl::safe($video['poster_url'] ?? '') ?: MediaUrl::safe($video['thumbnail_url'] ?? ''),
                 'renameUrl' => $this->moduleUrl('rename', ['libraryId' => $libraryId, 'videoUuid' => $uuid]),
                 'setTagsUrl' => $this->moduleUrl('setTags', ['libraryId' => $libraryId, 'videoUuid' => $uuid]),
@@ -1073,76 +1111,6 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         return $rows;
-    }
-
-    /**
-     * Comma-separated tag input -> normalized list (max 20, 50 chars each).
-     *
-     * @return list<string>
-     */
-    private function parseTags(string $input): array
-    {
-        $tags = [];
-        foreach (explode(',', $input) as $tag) {
-            $tag = trim($tag);
-            if ($tag === '' || mb_strlen($tag) > 50) {
-                continue;
-            }
-            $tags[] = $tag;
-        }
-
-        $unique = [];
-        foreach ($tags as $tag) {
-            $key = strtolower($tag);
-            if (!isset($unique[$key])) {
-                $unique[$key] = $tag;
-            }
-        }
-
-        return array_slice(array_values($unique), 0, 20);
-    }
-
-    /**
-     * Metadata textarea ("key: value" per line, also accepts "key=value") ->
-     * key => value map (max 10 keys, API rules; invalid lines are skipped).
-     *
-     * @return array<string, string>
-     */
-    private function parseMetadata(string $input): array
-    {
-        $result = [];
-        foreach (preg_split('/\r\n|\r|\n/', $input) ?: [] as $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
-            }
-            $separator = strpos($line, ':');
-            if ($separator === false) {
-                $separator = strpos($line, '=');
-            }
-            if ($separator === false) {
-                continue;
-            }
-            $key = strtolower(trim(substr($line, 0, $separator)));
-            if (!preg_match('/^[a-z0-9][a-z0-9_.-]{0,39}$/', $key)) {
-                continue;
-            }
-            $value = trim(substr($line, $separator + 1));
-            $value = preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? '';
-            $value = trim($value);
-            if ($value === '') {
-                continue;
-            }
-            if (mb_strlen($value) > 64) {
-                $value = mb_substr($value, 0, 64);
-            }
-            $result[$key] = $value;
-            if (count($result) >= 10) {
-                break;
-            }
-        }
-
-        return $result;
     }
 
     /**

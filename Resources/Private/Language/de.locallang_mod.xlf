@@ -703,6 +703,26 @@
                 <source>Download</source>
                 <target>Herunterladen</target>
             </trans-unit>
+            <trans-unit id="videos.metadata.label">
+                <source>Metadata (one "key: value" per line)</source>
+                <target>Metadaten (je Zeile „Schlüssel: Wert“)</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.help">
+                <source>Up to 10 keys (a-z, 0-9, _ . -), values up to 64 characters, e.g. CMS IDs. Removing a line deletes the key.</source>
+                <target>Bis zu 10 Schlüssel (a-z, 0-9, _ . -), Werte bis 64 Zeichen, z. B. CMS-IDs. Wird eine Zeile entfernt, wird der Schlüssel gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="videos.metadata.submit">
+                <source>Save metadata</source>
+                <target>Metadaten speichern</target>
+            </trans-unit>
+            <trans-unit id="flash.video.metadataUpdated">
+                <source>Metadata saved.</source>
+                <target>Metadaten gespeichert.</target>
+            </trans-unit>
+            <trans-unit id="flash.video.metadataUnchanged">
+                <source>Metadata unchanged.</source>
+                <target>Metadaten unverändert.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

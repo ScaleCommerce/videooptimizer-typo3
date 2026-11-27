@@ -251,6 +251,31 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
+     * One video straight from the API, bypassing (and refreshing) the cache. For status polling
+     * and read-modify-write edits. Empty array when the video does not exist.
+     *
+     * @return array<string, mixed>
+     */
+    public function getVideoFresh(string $uuid): array
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        try {
+            $body = $this->request('GET', '/videos/' . rawurlencode($uuid));
+        } catch (ApiErrorException $exception) {
+            if ($exception->getHttpStatus() === 404) {
+                return [];
+            }
+            throw $exception;
+        }
+        $video = is_array($body['data'] ?? null) ? $body['data'] : [];
+        if ($video !== []) {
+            $this->flushTags('vo_video_' . $uuid);
+        }
+
+        return $video;
+    }
+
+    /**
      * One page of videos (a single API request), optionally restricted to a library.
      *
      * @return array{items: list<array<string, mixed>>, nextCursor: ?string}
@@ -637,7 +662,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             if ($data['metadata'] === null) {
                 $payload['metadata'] = null;
             } elseif (is_array($data['metadata'])) {
-                $payload['metadata'] = $this->normalizeMetadata($data['metadata']);
+                // Up to 10 keys to set plus up to 10 keys to remove (null) in one merge.
+                $payload['metadata'] = $this->normalizeMetadata($data['metadata'], 20);
             }
         }
         if ($payload === []) {
@@ -1349,7 +1375,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      * @param array<string, string|null> $metadata
      * @return array<string, string|null>
      */
-    private function normalizeMetadata(array $metadata): array
+    private function normalizeMetadata(array $metadata, int $maxKeys = 10): array
     {
         $result = [];
         foreach ($metadata as $key => $value) {
@@ -1370,7 +1396,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 continue;
             }
             $result[$key] = $value;
-            if (count($result) >= 10) {
+            if (count($result) >= $maxKeys) {
                 break;
             }
         }

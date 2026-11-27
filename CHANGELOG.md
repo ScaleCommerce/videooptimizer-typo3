@@ -6,6 +6,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ### Added
 - Subtitles can be downloaded as WebVTT in the module ([#8](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/8)).
+- Metadata of existing videos can be edited in the module; removing a line deletes its key ([#9](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/9)).
 
 ## [1.0.5] - 2026-11-27
 

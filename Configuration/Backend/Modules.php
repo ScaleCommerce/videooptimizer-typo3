@@ -28,6 +28,7 @@ return [
                 'ingest',
                 'rename',
                 'setTags',
+                'setMetadata',
                 'deleteVideo',
                 'thumbnail',
                 'setThumbnail',

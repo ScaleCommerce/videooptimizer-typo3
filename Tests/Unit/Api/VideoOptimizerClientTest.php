@@ -197,6 +197,54 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function metadataUpdatesMergeAndRemoveKeys(): void
+    {
+        $client = $this->client([self::json(['data' => ['uuid' => self::UUID, 'metadata' => ['a' => '2']]])]);
+
+        $client->updateVideo(self::UUID, ['metadata' => ['a' => '2', 'gone' => null]]);
+
+        self::assertSame(['metadata' => ['a' => '2', 'gone' => null]], json_decode((string)$this->history[0]['request']->getBody(), true));
+        self::assertSame('PATCH', $this->history[0]['request']->getMethod());
+        self::assertContains('vo_video_' . self::UUID, $this->store->flushed);
+    }
+
+    #[Test]
+    public function metadataUpdateKeepsRemovalsBeyondTenSets(): void
+    {
+        $metadata = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $metadata['set' . $i] = 'v';
+        }
+        for ($i = 1; $i <= 5; $i++) {
+            $metadata['del' . $i] = null;
+        }
+        $client = $this->client([self::json(['data' => ['uuid' => self::UUID]])]);
+
+        $client->updateVideo(self::UUID, ['metadata' => $metadata]);
+
+        self::assertCount(15, json_decode((string)$this->history[0]['request']->getBody(), true)['metadata']);
+    }
+
+    #[Test]
+    public function getVideoFreshBypassesTheCache(): void
+    {
+        $client = $this->client([
+            self::json(['data' => ['uuid' => self::UUID, 'status' => 'processing']]),
+            self::json(['data' => ['uuid' => self::UUID, 'status' => 'ready']]),
+        ]);
+
+        self::assertSame('processing', $client->getVideoFresh(self::UUID)['status']);
+        self::assertSame('ready', $client->getVideoFresh(self::UUID)['status']);
+        self::assertCount(2, $this->history);
+    }
+
+    #[Test]
+    public function getVideoFreshIsEmptyForUnknownVideos(): void
+    {
+        self::assertSame([], $this->client([self::json(['message' => 'nope'], 404)])->getVideoFresh(self::UUID));
+    }
+
+    #[Test]
     public function rejectsInvalidSubtitleLanguageCodes(): void
     {
         $this->expectException(\ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException::class);
