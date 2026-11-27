@@ -2,6 +2,14 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Upgrade
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`), then `cache:flush`.
+
+### Added
+- Content elements "Video Split" (video next to eyebrow, headline, rich text and button, left or right) and "Video Spotlight" (centered video with eyebrow, headline and caption) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+
 ## [2.1.0] - 2026-11-28
 
 ### Upgrade

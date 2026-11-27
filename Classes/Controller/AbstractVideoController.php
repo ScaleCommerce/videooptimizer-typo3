@@ -455,6 +455,42 @@ abstract class AbstractVideoController extends ActionController
     }
 
     /**
+     * Loads the element's video and assigns video, embed, surface and error to the view: the shared
+     * data of every element that shows one video through the Surface partial (single, media split,
+     * spotlight, detail).
+     */
+    protected function assignVideoSurface(): void
+    {
+        $video = null;
+        $embed = null;
+        $surface = null;
+        $errorCode = '';
+        $errorDetail = '';
+
+        $uuid = $this->configuredUuid();
+        if ($uuid !== '') {
+            $video = $this->fetchVideo($uuid, $errorCode, $errorDetail);
+            if (is_array($video) && !$video['processing']) {
+                $embed = $this->buildEmbed($video);
+                $surface = $this->buildSurface($video);
+            }
+        } else {
+            $errorCode = 'no_video';
+        }
+
+        $this->addVideoStructuredData($video);
+        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
+
+        $this->view->assign('video', $video);
+        $this->view->assign('embed', $embed);
+        $this->view->assign('surface', $surface);
+        $this->view->assign('error', $this->errorForTemplate(
+            $errorCode !== '' ? $errorCode : ($video === null ? $this->missingTokenCode() : ''),
+            $errorDetail
+        ));
+    }
+
+    /**
      * Everything the Surface partial needs for single/detail.
      *
      * @param array<string, mixed> $video shaped video

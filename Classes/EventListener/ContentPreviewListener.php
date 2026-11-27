@@ -16,7 +16,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 /**
- * Page module preview for the five VideoOptimizer content elements: thumbnail, title, duration,
+ * Page module preview for the VideoOptimizer content elements: thumbnail, title, duration,
  * library, status and the player options set on the record (hero/single/detail), or library name,
  * video count and the first thumbnails (grid/list). Uses the client's cached readers only and never
  * throws: on any failure a text-only preview is rendered.
@@ -26,7 +26,13 @@ final class ContentPreviewListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const VIDEO_TYPES = ['videooptimizer_videohero', 'videooptimizer_videosingle', 'videooptimizer_videodetail'];
+    private const VIDEO_TYPES = [
+        'videooptimizer_videohero',
+        'videooptimizer_videosingle',
+        'videooptimizer_videodetail',
+        'videooptimizer_videosplit',
+        'videooptimizer_videospotlight',
+    ];
     private const COLLECTION_TYPES = ['videooptimizer_videogrid', 'videooptimizer_videolist'];
     private const TEMPLATE = 'EXT:videooptimizer/Resources/Private/Templates/Backend/ContentPreview.html';
     private const CSS = 'EXT:videooptimizer/Resources/Public/Css/backend-preview.css';

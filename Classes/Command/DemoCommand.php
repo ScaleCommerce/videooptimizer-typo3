@@ -14,15 +14,17 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[AsCommand(
     name: 'videooptimizer:demo',
-    description: 'Creates the five VideoOptimizer integration samples on the root page (idempotent).',
+    description: 'Creates the VideoOptimizer integration samples on the root page (idempotent).',
 )]
 class DemoCommand extends Command
 {
     /**
-     * The five sample content elements, in display order.
-     * Samples flagged videoUuid seed the demo video into vo_video_uuid; grid/list show all videos.
+     * The sample content elements, in display order. A sample is identified by CType and header, so one
+     * element type can appear several times with different options.
+     * Samples flagged videoUuid seed the demo video into vo_video_uuid; grid/list show all videos;
+     * `fields` are further tt_content columns.
      *
-     * @var list<array{ctype: string, header: string, sorting: int, videoUuid?: bool}>
+     * @var list<array{ctype: string, header: string, sorting: int, videoUuid?: bool, fields?: array<string, scalar>}>
      */
     private const SAMPLES = [
         ['ctype' => 'videooptimizer_videohero', 'header' => 'Full-bleed hero (background video)', 'sorting' => 128, 'videoUuid' => true],
@@ -30,6 +32,25 @@ class DemoCommand extends Command
         ['ctype' => 'videooptimizer_videogrid', 'header' => '2) Video grid (multiple videos)', 'sorting' => 512],
         ['ctype' => 'videooptimizer_videolist', 'header' => '3) Video list (all videos)', 'sorting' => 768],
         ['ctype' => 'videooptimizer_videodetail', 'header' => '4) Video detail with metadata', 'sorting' => 1024, 'videoUuid' => true],
+        [
+            'ctype' => 'videooptimizer_videosplit', 'header' => '5) Video next to text', 'sorting' => 1280, 'videoUuid' => true,
+            'fields' => [
+                'vo_eyebrow' => 'Media split',
+                'bodytext' => '<p>The video sits next to your text. Edit headline, copy and button in the content element; the side is a setting.</p><p>Native player, shown directly.</p>',
+                'vo_cta_label' => 'Learn more',
+                'vo_cta_link' => 'https://videooptimizer.eu/en/docs',
+                'vo_player_mode' => 'native',
+            ],
+        ],
+        [
+            'ctype' => 'videooptimizer_videospotlight', 'header' => '6) Spotlight', 'sorting' => 1536, 'videoUuid' => true,
+            'fields' => [
+                'vo_eyebrow' => 'Spotlight',
+                'vo_caption' => 'One prominent video, centered, with a caption.',
+                'vo_player_mode' => 'native',
+                'vo_presentation' => 'facade',
+            ],
+        ],
     ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -56,7 +77,7 @@ class DemoCommand extends Command
             $exists = (int)$ttContent->count(
                 'uid',
                 'tt_content',
-                ['pid' => 1, 'CType' => $sample['ctype']]
+                ['pid' => 1, 'CType' => $sample['ctype'], 'header' => $sample['header']]
             ) > 0;
 
             if ($exists) {
@@ -80,7 +101,7 @@ class DemoCommand extends Command
                 }
             }
 
-            $ttContent->insert('tt_content', $data);
+            $ttContent->insert('tt_content', $data + ($sample['fields'] ?? []));
             $created++;
             $output->writeln(sprintf('Created: %s', $sample['header']));
         }

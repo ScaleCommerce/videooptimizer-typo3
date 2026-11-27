@@ -178,6 +178,39 @@
             <trans-unit id="vo_presentation.lightbox">
                 <source>Lightbox (dialog)</source>
             </trans-unit>
+            <trans-unit id="vo_ct.videosplit.label">
+                <source>Video Split</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosplit.description">
+                <source>Video next to text: eyebrow, headline, rich text and an optional button.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.label">
+                <source>Video Spotlight</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.description">
+                <source>One prominent, centered video with eyebrow, headline and caption.</source>
+            </trans-unit>
+            <trans-unit id="vo_eyebrow.label">
+                <source>Eyebrow</source>
+            </trans-unit>
+            <trans-unit id="vo_caption.label">
+                <source>Caption</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.label">
+                <source>Video position</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.left">
+                <source>Left of the text</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.right">
+                <source>Right of the text</source>
+            </trans-unit>
+            <trans-unit id="vo_cta_label.label">
+                <source>Button label</source>
+            </trans-unit>
+            <trans-unit id="vo_cta_link.label">
+                <source>Button link</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

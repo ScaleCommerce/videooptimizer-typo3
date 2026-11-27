@@ -230,6 +230,50 @@
                 <source>Lightbox (dialog)</source>
                 <target>Lightbox (Dialog)</target>
             </trans-unit>
+            <trans-unit id="vo_ct.videosplit.label">
+                <source>Video Split</source>
+                <target>Video mit Text</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosplit.description">
+                <source>Video next to text: eyebrow, headline, rich text and an optional button.</source>
+                <target>Video neben Text: Eyebrow, Überschrift, Fließtext und optional ein Button.</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.label">
+                <source>Video Spotlight</source>
+                <target>Video-Spotlight</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.description">
+                <source>One prominent, centered video with eyebrow, headline and caption.</source>
+                <target>Ein hervorgehobenes, zentriertes Video mit Eyebrow, Überschrift und Bildunterschrift.</target>
+            </trans-unit>
+            <trans-unit id="vo_eyebrow.label">
+                <source>Eyebrow</source>
+                <target>Eyebrow (Kicker)</target>
+            </trans-unit>
+            <trans-unit id="vo_caption.label">
+                <source>Caption</source>
+                <target>Bildunterschrift</target>
+            </trans-unit>
+            <trans-unit id="vo_split_side.label">
+                <source>Video position</source>
+                <target>Position des Videos</target>
+            </trans-unit>
+            <trans-unit id="vo_split_side.left">
+                <source>Left of the text</source>
+                <target>Links vom Text</target>
+            </trans-unit>
+            <trans-unit id="vo_split_side.right">
+                <source>Right of the text</source>
+                <target>Rechts vom Text</target>
+            </trans-unit>
+            <trans-unit id="vo_cta_label.label">
+                <source>Button label</source>
+                <target>Button-Beschriftung</target>
+            </trans-unit>
+            <trans-unit id="vo_cta_link.label">
+                <source>Button link</source>
+                <target>Button-Link</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

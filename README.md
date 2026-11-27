@@ -15,8 +15,8 @@
 
 ---
 
-Give your editors adaptive, CDN-streamed video without ever leaving TYPO3. This extension adds **five
-ready-to-use content elements** (hero, single video, grid, list, detail), a **visual library and video
+Give your editors adaptive, CDN-streamed video without ever leaving TYPO3. This extension adds **ready-to-use
+content elements** (hero, single video, video next to text, spotlight, video with chapters, grid, list, detail), a **visual library and video
 picker**, a **backend module** to manage libraries, videos, thumbnails and subtitles, and **previews in the
 page layout** — while the organization's API token stays on the server. Editors just pick a video and
 publish.
@@ -196,6 +196,8 @@ Good to know:
 |---|---|---|
 | **Video Hero** | Full-bleed section with a muted, looping background video, poster, eyebrow, title, subtitle and a button | one video |
 | **Video Single** | A responsive player with title | one video |
+| **Video Split** | The video next to eyebrow, headline, rich text and an optional button; the video can sit left or right | one video |
+| **Video Spotlight** | One prominent, centered video with eyebrow, headline and caption | one video |
 | **Video Grid** | A grid of up to 12 videos; click opens a lightbox | a library or all libraries |
 | **Video List** | A paginated list (24 per page) with duration and views | a library or all libraries |
 | **Video Detail** | Player plus metadata (duration, resolution, views, date) | one video |

@@ -716,3 +716,95 @@ body:has(dialog.vo-lightbox[open]) {
 .vo-native--static .vo-native__video {
     pointer-events: none;
 }
+
+/* Video next to text */
+.vo-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: center;
+}
+
+.vo-split--reversed .vo-split__media {
+    order: 2;
+}
+
+.vo-split__eyebrow,
+.vo-spotlight__eyebrow {
+    margin: 0 0 8px;
+    color: var(--vo-accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.vo-split__headline,
+.vo-spotlight__headline {
+    margin: 0 0 12px;
+    font-size: 1.75rem;
+    line-height: 1.2;
+}
+
+.vo-split__body {
+    color: var(--vo-muted);
+}
+
+.vo-split__body > :first-child {
+    margin-top: 0;
+}
+
+.vo-split__cta {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--vo-accent);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.vo-split__cta:hover {
+    filter: brightness(1.1);
+}
+
+.vo-split__cta:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .vo-split {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .vo-split--reversed .vo-split__media {
+        order: 0;
+    }
+}
+
+/* Spotlight: one centered, prominent video */
+.vo-spotlight {
+    max-width: 880px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.vo-spotlight__media {
+    margin: 20px 0 0;
+    text-align: left;
+}
+
+.vo-spotlight__media .vo-native,
+.vo-spotlight__media .vo-surface,
+.vo-spotlight__media .vo-player-wrap {
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.vo-spotlight__caption {
+    margin: 12px 0 0;
+    color: var(--vo-muted);
+    font-size: 0.95rem;
+}

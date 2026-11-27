@@ -6,6 +6,8 @@ use ScaleCommerce\VideoOptimizer\Controller\VideoDetailController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoGridController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoHeroController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoListController;
+use ScaleCommerce\VideoOptimizer\Controller\VideoSplitController;
+use ScaleCommerce\VideoOptimizer\Controller\VideoSpotlightController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoSingleController;
 use TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
@@ -35,6 +37,12 @@ $plugins = [
     ],
     'VideoDetail' => [
         'actions' => [VideoDetailController::class => 'detail'],
+    ],
+    'VideoSplit' => [
+        'actions' => [VideoSplitController::class => 'split'],
+    ],
+    'VideoSpotlight' => [
+        'actions' => [VideoSpotlightController::class => 'spotlight'],
     ],
 ];
 
