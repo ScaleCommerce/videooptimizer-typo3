@@ -93,6 +93,8 @@ export function initChapters(root, safeUrl) {
 
     buttons.forEach((button, index) => {
         button.addEventListener('click', () => {
+            // A scene click is the visitor's gesture for a mini player (native playback follows it).
+            root.querySelector('.vo-media')?.dispatchEvent(new Event('vo-gesture'));
             if (video) {
                 const teardown = wrap.__voStart?.();
                 seekAndPlay(video, starts[index], teardown?.attached ?? Promise.resolve());

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
-import { bindMiniPlayer, keepsPlayingWhenHidden, shouldPin, startedByVisitor } from '../../Resources/Public/Js/mini-player.js';
+import { bindMiniPlayer, keepsPlayingWhenHidden, shouldPin } from '../../Resources/Public/Js/mini-player.js';
 
 class FakeElement extends EventTarget {
     classes = new Set();
@@ -32,7 +32,7 @@ class FakeElement extends EventTarget {
 let observer;
 let mediaQuery;
 let modal;
-let activation;
+let clock;
 let win;
 let doc;
 
@@ -60,7 +60,11 @@ class FakeVideo extends FakeElement {
     }
 }
 
-function setUp({ withVideo = true } = {}) {
+function press(box, type = 'pointerdown') {
+    box.dispatchEvent(new Event(type));
+}
+
+function setUp({ withVideo = true, gesture = true } = {}) {
     const media = new FakeElement();
     const box = new FakeElement();
     const close = new FakeElement();
@@ -70,15 +74,20 @@ function setUp({ withVideo = true } = {}) {
     const frame = withVideo ? null : new FakeElement();
     frame?.setAttribute('src', 'https://player.videooptimizer.eu/embed/a');
     const bound = bindMiniPlayer(media, { video, frame, hostedSrc: 'https://player.videooptimizer.eu/embed/a' }, win, doc);
+    if (gesture) {
+        // The visitor pressed in the player (a scene button sends the same event).
+        media.dispatchEvent(new Event('vo-gesture'));
+    }
+
     return { media, box, close, video, frame, bound };
 }
 
 beforeEach(() => {
     mediaQuery = { matches: true, listeners: [], addEventListener(_, fn) { this.listeners.push(fn); }, removeEventListener() {} };
     modal = false;
-    activation = { isActive: true };
+    clock = 1000;
     win = Object.assign(new EventTarget(), {
-        navigator: { userActivation: activation },
+        performance: { now: () => clock },
         IntersectionObserver: FakeObserver,
         matchMedia: () => mediaQuery,
         setTimeout: (fn) => fn(),
@@ -196,29 +205,36 @@ test('a hosted player counts as started when the iframe takes the focus; closing
     assert.equal(media.hasAttribute('data-vo-mini-dismissed'), false);
 });
 
-test('autoplay and play while scrolling do not count as the visitor starting playback', () => {
-    const { media, video } = setUp();
-    activation.isActive = false;
-    video.muted = true;
+test('autoplay and play while scrolling do not count as the visitor starting playback, whatever the sound state', () => {
+    const { media, video } = setUp({ gesture: false });
+    video.muted = false; // an unmuted autoplay (theme) is still not a visitor start
     video.dispatchEvent(new Event('play'));
     observer.report(0);
     assert.equal(media.classList.contains('vo-media--pinned'), false);
-    assert.equal(startedByVisitor(video, win), false);
+    assert.equal(media.hasAttribute('data-vo-mini-started'), false);
+});
 
-    activation.isActive = true;
+test('a keyboard or click gesture elsewhere on the page (page scrolling) does not count; one in the player does, even for a muted video', () => {
+    const { media, video, box } = setUp({ gesture: false });
+    video.muted = true; // muted by the editor
+    // A key press outside the box (e.g. Space to scroll) never reaches the box listeners.
+    video.dispatchEvent(new Event('play')); // autoplay arrives after the page scroll
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), false);
+
+    press(box, 'pointerdown'); // the visitor presses play in the controls
     video.dispatchEvent(new Event('play'));
-    assert.equal(startedByVisitor(video, win), true);
+    assert.equal(media.hasAttribute('data-vo-mini-started'), true);
     observer.report(0);
     assert.equal(media.classList.contains('vo-media--pinned'), true);
 });
 
-test('without the user activation API only playback with sound counts', () => {
-    const video = new FakeVideo();
-    const bare = { navigator: {} };
-    video.muted = true;
-    assert.equal(startedByVisitor(video, bare), false);
-    video.muted = false;
-    assert.equal(startedByVisitor(video, bare), true);
+test('a keyboard press in the player counts, but not for long', () => {
+    const { media, video, box } = setUp({ gesture: false });
+    press(box, 'keydown');
+    clock += 20000; // the autoplay play event comes long after
+    video.dispatchEvent(new Event('play'));
+    assert.equal(media.hasAttribute('data-vo-mini-started'), false);
 });
 
 test('a hosted player (also with autoplay in its URL) is not started until the visitor acts', () => {
@@ -269,15 +285,14 @@ test('closing the mini player moves the focus to the video, or to the box for a 
 
 test('unmuting or seeking an autoplaying video by hand is the visitor taking over, autoplay itself is not', () => {
     for (const event of ['volumechange', 'seeking']) {
-        const { media, video } = setUp();
-        activation.isActive = false;
+        const { media, video, box } = setUp({ gesture: false });
         video.dispatchEvent(new Event('play')); // autoplay
         video.dispatchEvent(new Event(event));
         observer.report(0);
         assert.equal(media.classList.contains('vo-media--pinned'), false, event + ' without a gesture');
         assert.equal(media.hasAttribute('data-vo-mini-started'), false);
 
-        activation.isActive = true;
+        press(box);
         video.dispatchEvent(new Event(event));
         assert.equal(media.hasAttribute('data-vo-mini-started'), true, event);
         observer.report(0);

@@ -1,5 +1,5 @@
-// Floating mini player: once the visitor started playback (a click on play, the facade or a scene; not
-// autoplay and not play while scrolling) and the player scrolls out of view, it is
+// Floating mini player: once the visitor started playback (a press in the player or on a scene button;
+// not autoplay and not play while scrolling) and the player scrolls out of view, it is
 // pinned bottom right with CSS only (class on the wrapper, a placeholder keeps the page height). The
 // video or iframe is never moved in the DOM (an iframe would reload). No imports (the entry loads this
 // with the version stamp); the DOM objects are passed in so the logic can be unit-tested with node.
@@ -30,15 +30,8 @@ export function keepsPlayingWhenHidden(media, win = window) {
     );
 }
 
-/**
- * True when a native video's `play` event comes from the visitor (a click on the controls, the facade
- * or a scene button) and not from autoplay or play while scrolling: the browser's transient user
- * activation is active then. Browsers without the API only count playback with sound.
- */
-export function startedByVisitor(video, win = window) {
-    const activation = win.navigator?.userActivation;
-    return activation ? activation.isActive === true : !video.muted;
-}
+/** How long after a gesture in the player (or on a scene button) a play/unmute/seek counts as the visitor's. */
+export const GESTURE_MS = 8000;
 
 /**
  * Wires one mini player wrapper (`.vo-media[data-vo-mini]` with `[data-vo-box]` around the player and a
@@ -123,8 +116,16 @@ export function bindMiniPlayer(media, { video = null, frame = null, hostedSrc = 
 
     // Playing, unmuting or seeking an autoplaying video by hand is the visitor taking over; autoplay
     // itself never counts.
+    // Only a pointer or key press inside the player box, or a scene button (`vo-gesture` on the wrapper),
+    // makes a following play/unmute/seek the visitor's: not browser-wide user activation (which any
+    // click or scroll key elsewhere keeps alive) and not the sound state.
+    let lastGesture = -Infinity;
+    const now = () => win.performance?.now?.() ?? Date.now();
+    const onGesture = () => {
+        lastGesture = now();
+    };
     const onInteraction = () => {
-        if (!startedByVisitor(video, win)) {
+        if (now() - lastGesture > GESTURE_MS) {
             return;
         }
         setStarted(true);
@@ -164,6 +165,9 @@ export function bindMiniPlayer(media, { video = null, frame = null, hostedSrc = 
         }
     };
 
+    box.addEventListener('pointerdown', onGesture, true);
+    box.addEventListener('keydown', onGesture, true);
+    media.addEventListener('vo-gesture', onGesture);
     close?.addEventListener('click', onClose);
     media.addEventListener('vo-start', onStart);
     doc.addEventListener?.('vo:lightbox-open', onLightbox);
@@ -198,6 +202,9 @@ export function bindMiniPlayer(media, { video = null, frame = null, hostedSrc = 
     return {
         unbind: () => {
             observer?.disconnect();
+            box.removeEventListener('pointerdown', onGesture, true);
+            box.removeEventListener('keydown', onGesture, true);
+            media.removeEventListener('vo-gesture', onGesture);
             close?.removeEventListener('click', onClose);
             media.removeEventListener('vo-start', onStart);
             doc.removeEventListener?.('vo:lightbox-open', onLightbox);
