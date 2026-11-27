@@ -554,6 +554,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
 
+    /**
+     * Remove a subtitle language of the organization (409 `subtitle_language_in_use` while videos still have it).
+     */
+    public function deleteSubtitleLanguage(string $code): void
+    {
+        $code = $this->assertLanguageCode($code);
+        $this->request('DELETE', '/subtitle-languages/' . rawurlencode($code), retry: false);
+        $this->flushTags('vo_sublangs');
+    }
+
     // ------------------------------------------------------------------
     // Video management
     // ------------------------------------------------------------------

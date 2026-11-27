@@ -487,6 +487,30 @@
             <trans-unit id="list.reprocess.force">
                 <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
             </trans-unit>
+            <trans-unit id="subtitles.languages.title">
+                <source>Subtitle languages of the organization</source>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.intro">
+                <source>These languages are available for all videos. A language can only be deleted once no video has subtitles in it.</source>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.videos">
+                <source>Used by %d video(s)</source>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.delete.confirm">
+                <source>Delete the subtitle language %s?</source>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.delete.submit">
+                <source>Delete language</source>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.empty">
+                <source>No subtitle languages yet.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitleLanguage.deleted">
+                <source>Subtitle language %s deleted.</source>
+            </trans-unit>
+            <trans-unit id="flash.subtitleLanguage.inUse">
+                <source>The subtitle language %s is still used by videos. Delete those subtitles first.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

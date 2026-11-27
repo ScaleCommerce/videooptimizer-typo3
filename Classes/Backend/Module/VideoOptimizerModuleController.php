@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Http\Message\UploadedFileInterface;
+use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
 use ScaleCommerce\VideoOptimizer\Api\EncodingOptions;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
@@ -679,7 +680,11 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('videoTitle', $videoTitle);
         $view->assign('tracks', array_values(array_filter($tracks, 'is_array')));
         $view->assign('languages', array_map(
-            static fn(array $l): array => ['code' => (string)($l['code'] ?? ''), 'label' => (string)($l['label'] ?? '')],
+            static fn(array $l): array => [
+                'code' => (string)($l['code'] ?? ''),
+                'label' => (string)($l['label'] ?? ''),
+                'videoCount' => (int)($l['video_count'] ?? 0),
+            ],
             array_filter($languages, 'is_array'),
         ));
         $view->assign('errorMessage', $errorMessage);
@@ -688,6 +693,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('deleteSubtitleUrl', $this->moduleUrl('deleteSubtitle', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('uploadSubtitleToken', $this->formToken('uploadSubtitle', $videoUuid));
         $view->assign('deleteSubtitleToken', $this->formToken('deleteSubtitle', $videoUuid));
+        $view->assign('deleteLanguageUrl', $this->moduleUrl('deleteSubtitleLanguage', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
+        $view->assign('deleteLanguageToken', $this->formToken('deleteSubtitleLanguage', $videoUuid));
 
         $this->addBackButton($view, $this->moduleUrl('videos', ['libraryId' => $libraryId]), 'nav.backToVideos');
         return $this->renderView($view, 'Subtitles', 'subtitles.docTitle', $videoTitle);
@@ -788,6 +795,48 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         return $this->redirect('subtitles', null, null, ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]);
+    }
+
+    /**
+     * Remove a subtitle language of the organization (refused by the API while videos still use it).
+     */
+    public function deleteSubtitleLanguageAction(
+        string $libraryId = '',
+        string $videoUuid = '',
+        string $formToken = '',
+        string $language = '',
+    ): ResponseInterface {
+        $redirectArguments = ['libraryId' => $libraryId, 'videoUuid' => $videoUuid];
+        if (($denied = $this->guardMutation('delete', 'subtitles', $redirectArguments)) !== null) {
+            return $denied;
+        }
+        if (!$this->validateFormToken($formToken, 'deleteSubtitleLanguage', $videoUuid)) {
+            $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, $redirectArguments);
+        }
+
+        $language = trim($language);
+        if ($language === '') {
+            $this->flash('flash.subtitle.languageMissing', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, $redirectArguments);
+        }
+
+        try {
+            $this->client->deleteSubtitleLanguage($language);
+            $this->flash('flash.subtitleLanguage.deleted', ContextualFeedbackSeverity::OK, [$language]);
+        } catch (ApiErrorException $exception) {
+            if ($exception->getHttpStatus() === 409 || $exception->getApiCode() === 'subtitle_language_in_use') {
+                $this->flash('flash.subtitleLanguage.inUse', ContextualFeedbackSeverity::ERROR, [$language]);
+            } else {
+                $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+            }
+        } catch (VideoOptimizerException $exception) {
+            $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+        }
+
+        return $this->redirect('subtitles', null, null, $redirectArguments);
     }
 
     // ------------------------------------------------------------------

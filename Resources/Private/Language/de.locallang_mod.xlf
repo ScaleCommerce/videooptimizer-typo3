@@ -647,6 +647,38 @@
                 <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
                 <target>Auch fertige Varianten neu encodieren (nach Änderung der Encodierqualität erforderlich)</target>
             </trans-unit>
+            <trans-unit id="subtitles.languages.title">
+                <source>Subtitle languages of the organization</source>
+                <target>Untertitelsprachen der Organisation</target>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.intro">
+                <source>These languages are available for all videos. A language can only be deleted once no video has subtitles in it.</source>
+                <target>Diese Sprachen stehen für alle Videos zur Verfügung. Eine Sprache lässt sich erst löschen, wenn kein Video mehr Untertitel darin hat.</target>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.videos">
+                <source>Used by %d video(s)</source>
+                <target>Von %d Video(s) verwendet</target>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.delete.confirm">
+                <source>Delete the subtitle language %s?</source>
+                <target>Die Untertitelsprache %s löschen?</target>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.delete.submit">
+                <source>Delete language</source>
+                <target>Sprache löschen</target>
+            </trans-unit>
+            <trans-unit id="subtitles.languages.empty">
+                <source>No subtitle languages yet.</source>
+                <target>Noch keine Untertitelsprachen vorhanden.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitleLanguage.deleted">
+                <source>Subtitle language %s deleted.</source>
+                <target>Untertitelsprache %s gelöscht.</target>
+            </trans-unit>
+            <trans-unit id="flash.subtitleLanguage.inUse">
+                <source>The subtitle language %s is still used by videos. Delete those subtitles first.</source>
+                <target>Die Untertitelsprache %s wird noch von Videos verwendet. Löschen Sie zuerst deren Untertitel.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

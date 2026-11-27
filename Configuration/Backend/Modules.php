@@ -34,6 +34,7 @@ return [
                 'subtitles',
                 'uploadSubtitle',
                 'deleteSubtitle',
+                'deleteSubtitleLanguage',
             ],
         ],
     ],

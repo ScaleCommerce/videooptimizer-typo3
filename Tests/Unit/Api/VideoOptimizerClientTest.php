@@ -111,6 +111,24 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function deletesASubtitleLanguage(): void
+    {
+        $client = $this->client([self::json(['data' => ['code' => 'de-CH', 'deleted' => true]])]);
+
+        $client->deleteSubtitleLanguage('de-CH');
+
+        self::assertSame('DELETE', $this->history[0]['request']->getMethod());
+        self::assertSame('/api/v1/subtitle-languages/de-CH', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    #[Test]
+    public function rejectsInvalidSubtitleLanguageCodes(): void
+    {
+        $this->expectException(\ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException::class);
+        $this->client([])->deleteSubtitleLanguage('../x');
+    }
+
+    #[Test]
     public function readsTheFailureReasonOfAVideo(): void
     {
         self::assertSame('Download failed: HTTP 404', VideoOptimizerClient::errorReason(['status' => 'failed', 'error' => ' Download failed: HTTP 404 ']));

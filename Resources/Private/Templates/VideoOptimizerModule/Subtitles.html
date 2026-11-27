@@ -97,6 +97,33 @@
             </div>
         </form>
     </div>
+
+    <h2 class="h4 mt-4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.title" /></h2>
+    <p class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.intro" /></p>
+    <div class="table-fit">
+        <table class="table table-hover vo-table">
+            <tbody>
+                <f:for each="{languages}" as="language">
+                    <tr>
+                        <td><strong>{language.label}</strong> <span class="text-body-secondary">({language.code})</span></td>
+                        <td class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.videos" arguments="{0: language.videoCount}" /></td>
+                        <td class="text-end">
+                            <form action="{deleteLanguageUrl}" method="post" class="d-inline" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.delete.confirm', arguments: {0: language.code})}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                <input type="hidden" name="libraryId" value="{libraryId}">
+                                <input type="hidden" name="videoUuid" value="{videoUuid}">
+                                <input type="hidden" name="formToken" value="{deleteLanguageToken}">
+                                <input type="hidden" name="language" value="{language.code}">
+                                <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.delete.submit" /></button>
+                            </form>
+                        </td>
+                    </tr>
+                </f:for>
+                <f:if condition="{languages}"><f:else>
+                    <tr><td class="text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.empty" /></td></tr>
+                </f:else></f:if>
+            </tbody>
+        </table>
+    </div>
 </f:section>
 
 </html>
