@@ -955,3 +955,22 @@ body:has(dialog.vo-lightbox[open]) {
         box-shadow: none;
     }
 }
+
+/* Sub header of split, spotlight and chapters (the record's "Subheader") */
+.vo-split__headline-sub,
+.vo-spotlight__headline-sub,
+.vo-chapters__headline-sub {
+    margin: -6px 0 12px;
+    color: var(--vo-muted);
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.ce-headline-center {
+    text-align: center;
+}
+
+.ce-headline-right {
+    text-align: right;
+}

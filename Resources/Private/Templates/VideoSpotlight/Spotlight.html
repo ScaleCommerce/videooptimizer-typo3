@@ -9,7 +9,7 @@
         <f:if condition="{video}">
             <div class="vo-spotlight">
                 <f:if condition="{spotlight.eyebrow}"><p class="vo-spotlight__eyebrow">{spotlight.eyebrow}</p></f:if>
-                <f:if condition="{spotlight.headline}"><h2 class="vo-spotlight__headline">{spotlight.headline}</h2></f:if>
+                <f:render partial="Headline" arguments="{headline: spotlight.headline, class: 'vo-spotlight__headline'}" />
                 <div class="vo-spotlight__media">
                     <f:if condition="{video.processing}">
                         <f:then><f:render partial="Processing" arguments="{video: video}" /></f:then>

@@ -67,4 +67,28 @@ final class ElementOptionsTest extends TestCase
         self::assertFalse(ElementOptions::miniPlayer(['vo_mini_player' => 0]));
         self::assertTrue(ElementOptions::miniPlayer(['vo_mini_player' => '1']));
     }
+
+    #[Test]
+    public function theHeadlineFollowsTheHeaderPaletteOfTheCoreHeaderPartial(): void
+    {
+        self::assertNull(ElementOptions::headline([]));
+        self::assertNull(ElementOptions::headline(['header' => 'Hi', 'subheader' => 'Sub', 'header_layout' => 100]), 'hidden');
+
+        $default = ElementOptions::headline(['header' => 'Hi', 'subheader' => 'Sub', 'header_layout' => 0]);
+        self::assertSame(['text' => 'Hi', 'level' => 2, 'link' => '', 'position' => ''], $default['header']);
+        self::assertSame(['text' => 'Sub', 'level' => 3], $default['sub']);
+
+        $h1 = ElementOptions::headline(['header' => 'Hi', 'header_layout' => 1, 'header_link' => 't3://page?uid=2', 'header_position' => 'center', 'subheader' => 'S']);
+        self::assertSame(1, $h1['header']['level']);
+        self::assertSame('t3://page?uid=2', $h1['header']['link']);
+        self::assertSame('center', $h1['header']['position']);
+        self::assertSame(2, $h1['sub']['level']);
+
+        $h6 = ElementOptions::headline(['header' => 'Hi', 'header_layout' => 6, 'subheader' => 'S']);
+        self::assertSame(6, $h6['header']['level']);
+        self::assertSame(3, $h6['sub']['level'], 'like the core: a sub header of an h6 uses the default');
+
+        self::assertNull(ElementOptions::headline(['header' => 'Hi'])['sub']);
+        self::assertSame('', ElementOptions::headline(['header' => 'Hi', 'header_position' => 'evil'])['header']['position']);
+    }
 }

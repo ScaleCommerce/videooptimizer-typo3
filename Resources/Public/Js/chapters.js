@@ -102,6 +102,8 @@ export function initChapters(root, safeUrl) {
                     frame.setAttribute('src', src);
                     buttons.forEach((other) => other.removeAttribute('aria-current'));
                     button.setAttribute('aria-current', 'true');
+                    // The visitor started playback: lets a mini player know (the iframe cannot tell).
+                    root.querySelector('.vo-media')?.dispatchEvent(new Event('vo-start'));
                 }
             }
         });

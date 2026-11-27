@@ -234,6 +234,8 @@ function openLightbox(player, title, closeLabel, trigger) {
     teardownPlayer = player.teardown;
     inertPage(el);
     document.addEventListener('keydown', onKeydown, true);
+    // The floating mini player steps aside while the lightbox is open.
+    document.dispatchEvent(new CustomEvent('vo:lightbox-open'));
     el.showModal();
     // Focus starts on the close button, not inside an iframe, so Escape works right away.
     closeBtn.focus();
@@ -409,13 +411,7 @@ function initMini(media) {
     const video = media.querySelector('.vo-native video');
     const frame = media.querySelector('iframe.vo-player');
     const src = frame ? safeUrl(frame.getAttribute('src') || '') : '';
-    let autoplay = false;
-    try {
-        autoplay = !!src && new URL(src).searchParams.get('autoplay') === '1';
-    } catch {
-        autoplay = false;
-    }
-    bindMiniPlayer(media, { video, frame: src ? frame : null, hostedSrc: src, startedAtLoad: autoplay });
+    bindMiniPlayer(media, { video, frame: src ? frame : null, hostedSrc: src });
 }
 
 function init() {

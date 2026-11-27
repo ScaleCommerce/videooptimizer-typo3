@@ -28,6 +28,9 @@ final class ScenesTest extends TestCase
         self::assertSame(5, Scenes::start(60, 0));
         self::assertSame(54, Scenes::start(60, 9));
         self::assertSame(10, Scenes::start(120, 0));
+        // The float duration is not rounded first: 65.9 / 11 = 5.99 (rounding to 66 would give 6).
+        self::assertSame(5, Scenes::start(65.9, 0));
+        self::assertSame('0:05', Scenes::build(self::UUID, 65.9, 3, [], 'Scene %d')[0]['time']);
     }
 
     #[Test]

@@ -22,9 +22,10 @@ class VideoChaptersController extends AbstractVideoController
         if (is_array($video) && ($video['processing'] ?? true) === false) {
             $uuid = (string)($video['uuid'] ?? '');
             $embed = $this->embedConfig($uuid);
-            $duration = (int)round((float)($embed['duration'] ?? 0));
+            // The float duration as the encoder sampled it (no rounding before the division).
+            $duration = (float)($embed['duration'] ?? 0);
             if ($duration <= 0) {
-                $duration = (int)round((float)($video['duration'] ?? 0));
+                $duration = (float)($video['duration'] ?? 0);
             }
             $row = $this->currentRecord();
             $scenes = Scenes::build(
@@ -36,7 +37,7 @@ class VideoChaptersController extends AbstractVideoController
             );
         }
         $this->view->assign('scenes', $scenes);
-        $this->view->assign('headline', ElementOptions::text($this->currentRecord(), 'header', 255));
+        $this->view->assign('headline', ElementOptions::headline($this->currentRecord()));
 
         return $this->htmlResponse();
     }

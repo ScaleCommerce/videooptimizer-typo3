@@ -19,7 +19,7 @@ class VideoSpotlightController extends AbstractVideoController
         $row = $this->currentRecord();
         $this->view->assign('spotlight', [
             'eyebrow' => ElementOptions::text($row, 'vo_eyebrow', 80),
-            'headline' => ElementOptions::text($row, 'header', 255),
+            'headline' => ElementOptions::headline($row),
             'caption' => ElementOptions::text($row, 'vo_caption', 300),
         ]);
 

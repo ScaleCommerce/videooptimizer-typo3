@@ -103,4 +103,43 @@ final class ElementOptions
     {
         return (int)(is_scalar($row['vo_mini_player'] ?? null) ? $row['vo_mini_player'] : 0) === 1;
     }
+
+    /** Header type used when the record has none (the fluid_styled_content default). */
+    private const DEFAULT_HEADER_LEVEL = 2;
+
+    /**
+     * Header, sub header, header type, link and position of the record, with the same rules as the core
+     * `Header/All` partial: type 100 hides everything, 0 takes the default type, 1-6 are h1-h6, a sub
+     * header is one level below (an h6 and unset types use the default). Null when nothing is shown.
+     *
+     * @param array<string, mixed> $row
+     * @return array{header: array{text: string, level: int, link: string, position: string}, sub: array{text: string, level: int}|null}|null
+     */
+    public static function headline(array $row): ?array
+    {
+        $layout = is_numeric($row['header_layout'] ?? null) ? (int)$row['header_layout'] : 0;
+        if ($layout === 100) {
+            return null;
+        }
+        $text = is_scalar($row['header'] ?? null) ? trim((string)$row['header']) : '';
+        $sub = is_scalar($row['subheader'] ?? null) ? trim((string)$row['subheader']) : '';
+        if ($text === '' && $sub === '') {
+            return null;
+        }
+        $position = $row['header_position'] ?? '';
+        $link = is_scalar($row['header_link'] ?? null) ? trim((string)$row['header_link']) : '';
+
+        return [
+            'header' => [
+                'text' => $text,
+                'level' => $layout >= 1 && $layout <= 6 ? $layout : self::DEFAULT_HEADER_LEVEL,
+                'link' => $link,
+                'position' => in_array($position, ['center', 'right'], true) ? (string)$position : '',
+            ],
+            'sub' => $sub === '' ? null : [
+                'text' => $sub,
+                'level' => $layout >= 1 && $layout <= 5 ? $layout + 1 : self::DEFAULT_HEADER_LEVEL + 1,
+            ],
+        ];
+    }
 }

@@ -7,7 +7,7 @@
         <f:render partial="Error" arguments="{error: error}" />
 
         <f:if condition="{video}">
-            <f:if condition="{headline}"><h2 class="vo-chapters__headline">{headline}</h2></f:if>
+            <f:render partial="Headline" arguments="{headline: headline, class: 'vo-chapters__headline'}" />
             <f:if condition="{video.processing}">
                 <f:then><f:render partial="Processing" arguments="{video: video}" /></f:then>
                 <f:else>

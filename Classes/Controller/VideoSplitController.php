@@ -21,7 +21,7 @@ class VideoSplitController extends AbstractVideoController
         $this->view->assign('split', [
             'side' => ElementOptions::side($row),
             'eyebrow' => ElementOptions::text($row, 'vo_eyebrow', 80),
-            'headline' => ElementOptions::text($row, 'header', 255),
+            'headline' => ElementOptions::headline($row),
             'text' => is_scalar($row['bodytext'] ?? null) ? (string)$row['bodytext'] : '',
             'cta' => ElementOptions::cta($row),
         ]);

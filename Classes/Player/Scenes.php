@@ -34,7 +34,7 @@ final class Scenes
     }
 
     /** Start time in seconds of thumbnail $index. */
-    public static function start(int $duration, int $index): int
+    public static function start(float $duration, int $index): int
     {
         return (int)floor($duration / (self::THUMBNAILS + 1) * ($index + 1));
     }
@@ -87,7 +87,7 @@ final class Scenes
      * @param string $labelFormat default label with the scene number, e.g. "Scene %d"
      * @return list<array{index: int, start: int, time: string, thumb: string, label: string, aria: string}>
      */
-    public static function build(string $uuid, int $duration, int $count, array $titles, string $labelFormat): array
+    public static function build(string $uuid, float $duration, int $count, array $titles, string $labelFormat): array
     {
         if ($duration <= 0 || preg_match('/^[A-Za-z0-9-]{1,64}$/', $uuid) !== 1) {
             return [];

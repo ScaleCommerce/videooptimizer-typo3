@@ -20,7 +20,7 @@
                 </div>
                 <div class="vo-split__text">
                     <f:if condition="{split.eyebrow}"><p class="vo-split__eyebrow">{split.eyebrow}</p></f:if>
-                    <f:if condition="{split.headline}"><h2 class="vo-split__headline">{split.headline}</h2></f:if>
+                    <f:render partial="Headline" arguments="{headline: split.headline, class: 'vo-split__headline'}" />
                     <f:if condition="{split.text}"><div class="vo-split__body"><f:format.html>{split.text}</f:format.html></div></f:if>
                     <f:if condition="{split.cta}">
                         <f:link.typolink parameter="{split.cta.link}" class="vo-split__cta">{split.cta.label}</f:link.typolink>

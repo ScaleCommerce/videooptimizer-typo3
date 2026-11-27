@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
-import { bindMiniPlayer, keepsPlayingWhenHidden, shouldPin } from '../../Resources/Public/Js/mini-player.js';
+import { bindMiniPlayer, keepsPlayingWhenHidden, shouldPin, startedByVisitor } from '../../Resources/Public/Js/mini-player.js';
 
 class FakeElement extends EventTarget {
     classes = new Set();
@@ -32,6 +32,7 @@ class FakeElement extends EventTarget {
 let observer;
 let mediaQuery;
 let modal;
+let activation;
 let win;
 let doc;
 
@@ -49,12 +50,17 @@ class FakeObserver {
 
 class FakeVideo extends FakeElement {
     paused = true;
+    muted = false;
+    focused = 0;
+    focus() {
+        this.focused += 1;
+    }
     pause() {
         this.paused = true;
     }
 }
 
-function setUp({ withVideo = true, startedAtLoad = false } = {}) {
+function setUp({ withVideo = true } = {}) {
     const media = new FakeElement();
     const box = new FakeElement();
     const close = new FakeElement();
@@ -63,19 +69,21 @@ function setUp({ withVideo = true, startedAtLoad = false } = {}) {
     const video = withVideo ? new FakeVideo() : null;
     const frame = withVideo ? null : new FakeElement();
     frame?.setAttribute('src', 'https://player.videooptimizer.eu/embed/a');
-    const bound = bindMiniPlayer(media, { video, frame, hostedSrc: 'https://player.videooptimizer.eu/embed/a', startedAtLoad }, win, doc);
+    const bound = bindMiniPlayer(media, { video, frame, hostedSrc: 'https://player.videooptimizer.eu/embed/a' }, win, doc);
     return { media, box, close, video, frame, bound };
 }
 
 beforeEach(() => {
     mediaQuery = { matches: true, listeners: [], addEventListener(_, fn) { this.listeners.push(fn); }, removeEventListener() {} };
     modal = false;
+    activation = { isActive: true };
     win = Object.assign(new EventTarget(), {
+        navigator: { userActivation: activation },
         IntersectionObserver: FakeObserver,
         matchMedia: () => mediaQuery,
         setTimeout: (fn) => fn(),
     });
-    doc = { querySelector: () => (modal ? {} : null), activeElement: null };
+    doc = Object.assign(new EventTarget(), { querySelector: () => (modal ? {} : null), activeElement: null });
 });
 
 test('a player is pinned only after playback started, out of view, on a wide viewport and without a modal', () => {
@@ -92,6 +100,8 @@ test('a mini player element keeps playing out of view only on wide viewports unt
     const media = new FakeElement();
     assert.equal(keepsPlayingWhenHidden(media, win), false, 'no mini player');
     media.setAttribute('data-vo-mini', '');
+    assert.equal(keepsPlayingWhenHidden(media, win), false, 'autoplay that nobody took over still pauses');
+    media.setAttribute('data-vo-mini-started', '');
     assert.equal(keepsPlayingWhenHidden(media, win), true);
     mediaQuery.matches = false;
     assert.equal(keepsPlayingWhenHidden(media, win), false);
@@ -186,8 +196,91 @@ test('a hosted player counts as started when the iframe takes the focus; closing
     assert.equal(media.hasAttribute('data-vo-mini-dismissed'), false);
 });
 
-test('a hosted autoplay player is started at once', () => {
-    const { media } = setUp({ withVideo: false, startedAtLoad: true });
+test('autoplay and play while scrolling do not count as the visitor starting playback', () => {
+    const { media, video } = setUp();
+    activation.isActive = false;
+    video.muted = true;
+    video.dispatchEvent(new Event('play'));
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), false);
+    assert.equal(startedByVisitor(video, win), false);
+
+    activation.isActive = true;
+    video.dispatchEvent(new Event('play'));
+    assert.equal(startedByVisitor(video, win), true);
     observer.report(0);
     assert.equal(media.classList.contains('vo-media--pinned'), true);
+});
+
+test('without the user activation API only playback with sound counts', () => {
+    const video = new FakeVideo();
+    const bare = { navigator: {} };
+    video.muted = true;
+    assert.equal(startedByVisitor(video, bare), false);
+    video.muted = false;
+    assert.equal(startedByVisitor(video, bare), true);
+});
+
+test('a hosted player (also with autoplay in its URL) is not started until the visitor acts', () => {
+    const { media, frame } = setUp({ withVideo: false });
+    frame.setAttribute('src', 'https://player.videooptimizer.eu/embed/a?autoplay=1');
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), false);
+});
+
+test('a scene click starts a hosted player for the mini player', () => {
+    const { media } = setUp({ withVideo: false });
+    media.dispatchEvent(new Event('vo-start'));
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), true);
+});
+
+test('opening a lightbox unpins and pauses the mini player', () => {
+    const { media, video } = setUp();
+    video.paused = false;
+    video.dispatchEvent(new Event('play'));
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), true);
+
+    doc.dispatchEvent(new Event('vo:lightbox-open'));
+    assert.equal(media.classList.contains('vo-media--pinned'), false);
+    assert.equal(video.paused, true);
+    assert.equal(video.focused, 0, 'the lightbox takes the focus');
+});
+
+test('closing the mini player moves the focus to the video, or to the box for a hosted player', () => {
+    const { video, close } = setUp();
+    video.dispatchEvent(new Event('play'));
+    observer.report(0);
+    close.dispatchEvent(new Event('click'));
+    assert.equal(video.focused, 1);
+
+    const hosted = setUp({ withVideo: false });
+    hosted.media.dispatchEvent(new Event('vo-start'));
+    observer.report(0);
+    let focused = 0;
+    hosted.box.focus = () => {
+        focused += 1;
+    };
+    hosted.box.dispatchEvent(Object.assign(new Event('keydown'), { key: 'Escape' }));
+    assert.equal(focused, 1);
+    assert.equal(hosted.box.getAttribute('tabindex'), '-1');
+});
+
+test('unmuting or seeking an autoplaying video by hand is the visitor taking over, autoplay itself is not', () => {
+    for (const event of ['volumechange', 'seeking']) {
+        const { media, video } = setUp();
+        activation.isActive = false;
+        video.dispatchEvent(new Event('play')); // autoplay
+        video.dispatchEvent(new Event(event));
+        observer.report(0);
+        assert.equal(media.classList.contains('vo-media--pinned'), false, event + ' without a gesture');
+        assert.equal(media.hasAttribute('data-vo-mini-started'), false);
+
+        activation.isActive = true;
+        video.dispatchEvent(new Event(event));
+        assert.equal(media.hasAttribute('data-vo-mini-started'), true, event);
+        observer.report(0);
+        assert.equal(media.classList.contains('vo-media--pinned'), true, event);
+    }
 });
