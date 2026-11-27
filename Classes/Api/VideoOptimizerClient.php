@@ -663,7 +663,10 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 throw $exception;
             }
 
-            return is_array($body['data'] ?? null) ? array_values(array_filter($body['data'], 'is_array')) : [];
+            // Documented shape: {data: {thumbnails: [{index, url}]}}.
+            $thumbnails = is_array($body['data'] ?? null) ? ($body['data']['thumbnails'] ?? null) : null;
+
+            return is_array($thumbnails) ? array_values(array_filter($thumbnails, 'is_array')) : [];
         });
     }
 
