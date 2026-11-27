@@ -389,7 +389,7 @@ abstract class AbstractVideoController extends ActionController
      * @param array<string, mixed> $video shaped video
      * @return array{hls: string, mp4: string, poster: string, tracks: list<array{src: string, srclang: string, label: string, kind: string, default: bool}>, options: array<string, mixed>, json: string}|null
      */
-    protected function buildNative(array $video, bool $heroMode = false): ?array
+    protected function buildNative(array $video, bool $heroMode = false, bool $direct = false): ?array
     {
         if ($this->playerMode() !== 'native' || ($video['processing'] ?? true) !== false) {
             return null;
@@ -404,7 +404,8 @@ abstract class AbstractVideoController extends ActionController
             $this->effectivePlayerSettings($heroMode),
             (string)($video['title_label'] ?? ''),
             $this->unavailableLabel(),
-            $heroMode
+            $heroMode,
+            $direct
         );
     }
 
@@ -448,7 +449,7 @@ abstract class AbstractVideoController extends ActionController
     protected function buildSurface(array $video): array
     {
         $embed = $this->buildEmbed($video);
-        $native = $this->buildNative($video);
+        $native = $this->buildNative($video, false, $this->presentation() === 'direct');
         $aspect = $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
         // Aspect ratio (digits only) and the theme's accent color (validated), for the style attribute.
         $style = implode('; ', array_filter([

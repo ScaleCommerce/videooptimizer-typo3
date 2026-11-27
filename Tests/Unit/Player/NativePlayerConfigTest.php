@@ -119,9 +119,9 @@ final class NativePlayerConfigTest extends TestCase
      * @param array<string, mixed> $settings
      * @return array<string, mixed>
      */
-    private static function options(array $theme, array $settings = [], bool $background = false): array
+    private static function options(array $theme, array $settings = [], bool $background = false, bool $direct = false): array
     {
-        return NativePlayerConfig::build(self::embed(['theme' => $theme + self::THEME]), $settings + self::SETTINGS, '', '', $background)['options'];
+        return NativePlayerConfig::build(self::embed(['theme' => $theme + self::THEME]), $settings + self::SETTINGS, '', '', $background, $direct)['options'];
     }
 
     #[Test]
@@ -181,9 +181,39 @@ final class NativePlayerConfigTest extends TestCase
     #[Test]
     public function aHiddenControlBarInTheThemeOrTheElementHidesTheControls(): void
     {
-        self::assertFalse(self::options(['controls' => false])['controls']);
+        self::assertFalse(self::options(['controls' => false, 'autoplay' => true])['controls'], 'theme without control bar and autoplay');
         self::assertFalse(self::options([], ['controls' => false])['controls']);
         self::assertTrue(self::options([])['controls']);
+    }
+
+    #[Test]
+    public function aThemeWithoutControlBarOnlyAppliesWhenTheVideoAutoplays(): void
+    {
+        self::assertTrue(self::options(['controls' => false])['controls'], 'no autoplay: keep the controls');
+        self::assertTrue(self::options(['controls' => false, 'mutedStart' => true])['controls']);
+        self::assertTrue(self::options(['controls' => false], ['autoplay' => false])['controls']);
+        self::assertFalse(self::options(['controls' => false], ['autoplay' => true])['controls'], 'element autoplay counts too');
+        self::assertTrue(self::options(['controls' => true, 'autoplay' => true])['controls']);
+    }
+
+    #[Test]
+    public function aNonInteractiveThemeMakesOnlyADirectAutoplayingPlayerStatic(): void
+    {
+        $theme = ['interactive' => false, 'autoplay' => true];
+
+        $direct = self::options($theme, [], false, true);
+        self::assertTrue($direct['static']);
+        self::assertFalse($direct['controls'], 'no focusable controls');
+
+        $behindAClick = self::options($theme);
+        self::assertFalse($behindAClick['static']);
+        self::assertTrue($behindAClick['controls']);
+
+        $noAutoplay = self::options(['interactive' => false], [], false, true);
+        self::assertFalse($noAutoplay['static'], 'a player that does not autoplay stays operable');
+        self::assertTrue($noAutoplay['controls']);
+
+        self::assertFalse(self::options(['autoplay' => true], [], false, true)['static']);
     }
 
     #[Test]

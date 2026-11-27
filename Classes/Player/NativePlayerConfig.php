@@ -31,8 +31,13 @@ final class NativePlayerConfig
      * control bar, autoplay (muted), loop and preload. An element option that was set explicitly wins
      * (autoplay, loop, muted can only be switched on there, controls only off). A background video
      * (hero) takes only the preload and accent from the theme.
+     *
+     * A theme without control bar (`controls: false`) only applies when the video really autoplays
+     * (muted); otherwise visitors keep the controls. A theme with `interactive: false` makes the
+     * player a static background (no pointer events, no controls, `static` option) only when it is
+     * shown directly and autoplays; behind a click it stays operable.
      */
-    public static function build(array $embed, array $settings, string $title = '', string $unavailable = '', bool $background = false): ?array
+    public static function build(array $embed, array $settings, string $title = '', string $unavailable = '', bool $background = false, bool $direct = false): ?array
     {
         $hls = '';
         $mp4Sources = [];
@@ -59,8 +64,10 @@ final class NativePlayerConfig
         $poster = MediaUrl::safe($embed['poster'] ?? '');
         $theme = is_array($embed['theme'] ?? null) ? $embed['theme'] : [];
         $themeFlag = static fn (string $key): bool => !$background && ($theme[$key] ?? false) === true;
-        $controls = $settings['controls'] && ($background || ($theme['controls'] ?? true) !== false);
         $autoplay = $settings['autoplay'] || $themeFlag('autoplay');
+        $static = $direct && !$background && $autoplay && ($theme['interactive'] ?? true) === false;
+        $controls = $settings['controls'] && !$static
+            && ($background || !$autoplay || ($theme['controls'] ?? true) !== false);
         $muted = $settings['muted'] || $themeFlag('mutedStart') || $autoplay;
         $loop = $settings['loop'] || $themeFlag('loopButton');
         // The organization theme defaults to "auto"; the native player never loads segments before
@@ -73,6 +80,7 @@ final class NativePlayerConfig
             'mp4' => $mp4,
             'poster' => $poster,
             'controls' => $controls,
+            'static' => $static,
             'autoplay' => $autoplay,
             // Browsers only allow autoplay without sound.
             'muted' => $muted,
