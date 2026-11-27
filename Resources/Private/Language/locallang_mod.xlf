@@ -526,6 +526,9 @@
             <trans-unit id="list.quality.help">
                 <source>"Quality" produces roughly 2.5 to 3 times the file size and CDN traffic of "Performance". Changing it re-encodes nothing by itself.</source>
             </trans-unit>
+            <trans-unit id="subtitles.download.submit">
+                <source>Download</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

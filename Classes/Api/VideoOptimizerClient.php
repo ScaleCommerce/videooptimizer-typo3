@@ -791,6 +791,18 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
 
+    /**
+     * The stored WebVTT file of one language (SRT uploads come back converted).
+     */
+    public function downloadSubtitle(string $uuid, string $language): string
+    {
+        $uuid = $this->assertUuid($uuid, 'video ID');
+        $language = $this->assertLanguageCode($language);
+        $body = $this->request('GET', '/videos/' . rawurlencode($uuid) . '/subtitles/' . rawurlencode($language), ['vo_raw' => true]);
+
+        return (string)($body['raw'] ?? '');
+    }
+
     public function deleteSubtitle(string $uuid, string $language): void
     {
         $uuid = $this->assertUuid($uuid, 'video ID');
@@ -1406,7 +1418,10 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             throw new VideoOptimizerException('VideoOptimizer API token is not configured.');
         }
 
-        $options['headers'] = ['Accept' => 'application/json'] + ($options['headers'] ?? []);
+        // Raw mode: the endpoint answers with a file (e.g. WebVTT), not JSON.
+        $raw = ($options['vo_raw'] ?? false) === true;
+        unset($options['vo_raw']);
+        $options['headers'] = ['Accept' => $raw ? '*/*' : 'application/json'] + ($options['headers'] ?? []);
         $options['headers']['Authorization'] = 'Bearer ' . $token;
         // Overrides TYPO3's default `User-Agent: TYPO3` ($GLOBALS['TYPO3_CONF_VARS']['HTTP']['headers']).
         $options['headers']['User-Agent'] = $this->userAgent->get();
@@ -1443,9 +1458,12 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             }
 
             $status = $response->getStatusCode();
-            $raw = (string)$response->getBody();
-            $body = json_decode($raw, true);
+            $rawBody = (string)$response->getBody();
+            $body = json_decode($rawBody, true);
 
+            if ($status < 400 && $raw) {
+                return ['raw' => $rawBody];
+            }
             if ($status < 400 && is_array($body)) {
                 return $body;
             }
@@ -1459,13 +1477,13 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             $this->logger?->log(
                 $status === 404 ? 'debug' : ($status >= 500 ? 'error' : 'warning'),
                 'VideoOptimizer API error response.',
-                ['method' => $method, 'path' => $path, 'status' => $status, 'body' => mb_substr($raw, 0, 4000)]
+                ['method' => $method, 'path' => $path, 'status' => $status, 'body' => mb_substr($rawBody, 0, 4000)]
             );
 
             $message = sprintf(
                 'VideoOptimizer API error (HTTP %d): %s',
                 $status,
-                $this->extractErrorMessage($raw, $body)
+                $this->extractErrorMessage($rawBody, $body)
             );
             if ($status === 429) {
                 $rateLimitParts = [];

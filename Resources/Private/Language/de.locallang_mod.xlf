@@ -699,6 +699,10 @@
                 <source>"Quality" produces roughly 2.5 to 3 times the file size and CDN traffic of "Performance". Changing it re-encodes nothing by itself.</source>
                 <target>„Qualität“ erzeugt etwa die 2,5- bis 3-fache Dateigröße und CDN-Traffic von „Performance“. Eine Änderung encodiert für sich genommen nichts neu.</target>
             </trans-unit>
+            <trans-unit id="subtitles.download.submit">
+                <source>Download</source>
+                <target>Herunterladen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

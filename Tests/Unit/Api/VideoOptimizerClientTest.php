@@ -177,6 +177,26 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function downloadsASubtitleAsRawText(): void
+    {
+        $vtt = "WEBVTT\n\n00:00.000 --> 00:01.000\nHallo";
+        $client = $this->client([new Response(200, ['Content-Type' => 'text/vtt'], $vtt)]);
+
+        self::assertSame($vtt, $client->downloadSubtitle(self::UUID, 'de'));
+        self::assertSame('GET', $this->history[0]['request']->getMethod());
+        self::assertSame('/api/v1/videos/' . self::UUID . '/subtitles/de', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    #[Test]
+    public function subtitleDownloadErrorsAreApiErrors(): void
+    {
+        $client = $this->client([self::json(['message' => 'Subtitle not found'], 404)]);
+
+        $this->expectException(ApiErrorException::class);
+        $client->downloadSubtitle(self::UUID, 'de');
+    }
+
+    #[Test]
     public function rejectsInvalidSubtitleLanguageCodes(): void
     {
         $this->expectException(\ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException::class);

@@ -33,6 +33,7 @@ return [
                 'setThumbnail',
                 'subtitles',
                 'uploadSubtitle',
+                'downloadSubtitle',
                 'deleteSubtitle',
                 'deleteSubtitleLanguage',
             ],

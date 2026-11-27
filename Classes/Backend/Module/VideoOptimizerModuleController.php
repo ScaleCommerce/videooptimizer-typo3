@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScaleCommerce\VideoOptimizer\Backend\Module;
 
+use ScaleCommerce\VideoOptimizer\Backend\Http\SubtitleDownload;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -689,6 +690,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         ));
         $view->assign('errorMessage', $errorMessage);
         $view->assign('backUrl', $this->moduleUrl('videos', ['libraryId' => $libraryId]));
+        $view->assign('downloadSubtitleUrl', $this->moduleUrl('downloadSubtitle', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('uploadSubtitleUrl', $this->moduleUrl('uploadSubtitle', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('deleteSubtitleUrl', $this->moduleUrl('deleteSubtitle', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('uploadSubtitleToken', $this->formToken('uploadSubtitle', $videoUuid));
@@ -764,6 +766,30 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         return $this->redirect('subtitles', null, null, ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]);
+    }
+
+    /**
+     * Download the stored WebVTT file of one language (read-only, GET).
+     */
+    public function downloadSubtitleAction(string $libraryId = '', string $videoUuid = '', string $language = ''): ResponseInterface
+    {
+        $language = trim($language);
+        if ($language === '' || $videoUuid === '') {
+            $this->flash('flash.subtitle.languageMissing', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]);
+        }
+
+        try {
+            $vtt = $this->client->downloadSubtitle($videoUuid, $language);
+            $title = (string)($this->client->getVideo($videoUuid)['title'] ?? '');
+        } catch (VideoOptimizerException $exception) {
+            $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]);
+        }
+
+        return SubtitleDownload::response($vtt, $title, $language);
     }
 
     public function deleteSubtitleAction(
