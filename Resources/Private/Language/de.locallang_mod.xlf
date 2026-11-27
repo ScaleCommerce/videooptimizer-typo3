@@ -647,6 +647,14 @@
                 <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
                 <target>Auch fertige Varianten neu encodieren (nach Änderung der Encodierqualität erforderlich)</target>
             </trans-unit>
+            <trans-unit id="flash.ingest.videoPlatform">
+                <source>Link to a video file, not to a video page: links to video platforms such as YouTube cannot be imported.</source>
+                <target>Bitte verlinken Sie eine Videodatei, nicht eine Videoseite: Links zu Videoplattformen wie YouTube lassen sich nicht importieren.</target>
+            </trans-unit>
+            <trans-unit id="videos.ingest.urlHint">
+                <source>Link to a video file (e.g. .mp4), not to a video page such as YouTube.</source>
+                <target>Verlinken Sie eine Videodatei (z. B. .mp4), nicht eine Videoseite wie YouTube.</target>
+            </trans-unit>
             <trans-unit id="subtitles.languages.title">
                 <source>Subtitle languages of the organization</source>
                 <target>Untertitelsprachen der Organisation</target>

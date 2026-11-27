@@ -87,6 +87,36 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function apiErrorsExposeTheMachineReadableCode(): void
+    {
+        $client = $this->client([self::json(
+            ['statusCode' => 400, 'message' => 'Video platform links are not supported.', 'data' => ['code' => 'source_url_video_platform']],
+            400
+        )]);
+
+        try {
+            $client->ingestVideoFromUrl(self::UUID, 'https://www.youtube.com/watch?v=abc');
+            self::fail('Expected an ApiErrorException.');
+        } catch (ApiErrorException $exception) {
+            self::assertSame(400, $exception->getHttpStatus());
+            self::assertSame('source_url_video_platform', $exception->getApiCode());
+        }
+    }
+
+    #[Test]
+    public function apiErrorsWithoutCodeHaveNone(): void
+    {
+        $client = $this->client([self::json(['message' => 'Nope'], 400)]);
+
+        try {
+            $client->ingestVideoFromUrl(self::UUID, 'https://example.com/a.mp4');
+            self::fail('Expected an ApiErrorException.');
+        } catch (ApiErrorException $exception) {
+            self::assertNull($exception->getApiCode());
+        }
+    }
+
+    #[Test]
     public function reprocessSendsForceOnlyWhenRequested(): void
     {
         $client = $this->client([self::json(['data' => ['queued' => 2]]), self::json(['data' => ['queued' => 2]])]);

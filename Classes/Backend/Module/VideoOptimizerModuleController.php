@@ -484,6 +484,12 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 $this->parseMetadata($metadata),
             );
             $this->flash('flash.ingest.done', ContextualFeedbackSeverity::OK, [substr((string)$result['uuid'], 0, 8)]);
+        } catch (ApiErrorException $exception) {
+            if ($exception->getApiCode() === 'source_url_video_platform') {
+                $this->flash('flash.ingest.videoPlatform', ContextualFeedbackSeverity::ERROR);
+            } else {
+                $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+            }
         } catch (VideoOptimizerException $exception) {
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }

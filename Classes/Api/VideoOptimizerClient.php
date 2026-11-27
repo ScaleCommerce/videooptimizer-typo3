@@ -1223,6 +1223,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                         'network' => $exception instanceof NetworkException,
                         'status' => $exception instanceof ApiErrorException ? $exception->getHttpStatus() : 0,
                         'message' => $exception->getMessage(),
+                        'code' => $exception instanceof ApiErrorException ? $exception->getApiCode() : null,
                     ],
                 ], [], self::NEGATIVE_TTL);
             }
@@ -1248,7 +1249,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
 
         return ($failure['network'] ?? false) === true
             ? new NetworkException($message)
-            : new ApiErrorException($message, (int)($failure['status'] ?? 0));
+            : new ApiErrorException($message, (int)($failure['status'] ?? 0), null, is_string($failure['code'] ?? null) ? $failure['code'] : null);
     }
 
     private function flushTags(string ...$tags): void
@@ -1460,7 +1461,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 }
             }
 
-            throw new ApiErrorException($message, $status);
+            throw new ApiErrorException($message, $status, null, $this->extractErrorCode($body));
         }
 
         throw new NetworkException(
@@ -1494,6 +1495,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         return trim($raw) === '' ? 'empty response' : 'unexpected response';
+    }
+
+    /**
+     * Machine-readable error code (`data.code`, e.g. `source_url_video_platform`) or null.
+     */
+    private function extractErrorCode(mixed $decoded): ?string
+    {
+        $code = is_array($decoded) && is_array($decoded['data'] ?? null) ? ($decoded['data']['code'] ?? null) : null;
+
+        return is_string($code) && preg_match('/^[a-z0-9_.-]{1,64}$/i', $code) === 1 ? $code : null;
     }
 
     private function cleanText(string $text, int $maxLength): string

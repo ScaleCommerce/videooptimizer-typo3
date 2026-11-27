@@ -487,6 +487,12 @@
             <trans-unit id="list.reprocess.force">
                 <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
             </trans-unit>
+            <trans-unit id="flash.ingest.videoPlatform">
+                <source>Link to a video file, not to a video page: links to video platforms such as YouTube cannot be imported.</source>
+            </trans-unit>
+            <trans-unit id="videos.ingest.urlHint">
+                <source>Link to a video file (e.g. .mp4), not to a video page such as YouTube.</source>
+            </trans-unit>
             <trans-unit id="subtitles.languages.title">
                 <source>Subtitle languages of the organization</source>
             </trans-unit>

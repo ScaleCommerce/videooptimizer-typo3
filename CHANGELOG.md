@@ -13,6 +13,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 - Thumbnail picker lists the frames of a video ([#1](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/1)).
 - Create-library form disables add-on encodings that are not unlocked ([#3](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/3)).
 - Library edit form preselects only the library's own codec and resolutions ([#3](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/3)).
+- URL import explains rejected video platform links such as YouTube ([#6](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/6)).
 
 ## [1.0.3] - 2026-11-27
 
