@@ -30,6 +30,19 @@ final class EncodingOptionsTest extends TestCase
     }
 
     #[Test]
+    public function editChoicesAlwaysContainTheActiveKeys(): void
+    {
+        self::assertSame(
+            [
+                ['value' => '720p', 'selected' => true],
+                ['value' => '1080p', 'selected' => false],
+                ['value' => '2160p', 'selected' => true],
+            ],
+            EncodingOptions::editChoices(['720p', '1080p'], ['720p', '2160p', '720p'])
+        );
+    }
+
+    #[Test]
     public function toleratesMissingFieldsAndSkipsInvalidEntries(): void
     {
         self::assertSame(

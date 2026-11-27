@@ -30,6 +30,16 @@ final class VideoOptimizerClientTest extends TestCase
     /** @var list<array{request: \Psr\Http\Message\RequestInterface}> */
     private array $history = [];
 
+    /** In-memory stand-in for the extension cache. */
+    private \stdClass $store;
+
+    protected function setUp(): void
+    {
+        $this->store = new \stdClass();
+        $this->store->entries = [];
+        $this->store->flushed = [];
+    }
+
     /**
      * @param list<Response> $responses
      */
@@ -43,8 +53,18 @@ final class VideoOptimizerClientTest extends TestCase
         $factory = $this->createStub(GuzzleClientFactory::class);
         $factory->method('getClient')->willReturn($http);
 
+        $store = $this->store;
         $cache = $this->createStub(FrontendInterface::class);
-        $cache->method('get')->willReturn(false);
+        $cache->method('get')->willReturnCallback(static fn(string $id): mixed => $store->entries[$id] ?? false);
+        $cache->method('set')->willReturnCallback(static function (string $id, mixed $data, array $tags = []) use ($store): void {
+            $store->entries[$id] = $data;
+        });
+        $cache->method('flushByTag')->willReturnCallback(static function (string $tag) use ($store): void {
+            $store->flushed[] = $tag;
+        });
+        $cache->method('flushByTags')->willReturnCallback(static function (array $tags) use ($store): void {
+            array_push($store->flushed, ...$tags);
+        });
         $cacheManager = $this->createStub(CacheManager::class);
         $cacheManager->method('getCache')->willReturn($cache);
 
@@ -162,10 +182,60 @@ final class VideoOptimizerClientTest extends TestCase
     public function readsTheFailureReasonOfAVideo(): void
     {
         self::assertSame('Download failed: HTTP 404', VideoOptimizerClient::errorReason(['status' => 'failed', 'error' => ' Download failed: HTTP 404 ']));
-        self::assertSame('Bad file', VideoOptimizerClient::errorReason(['error' => "<b>Bad</b>\n file"]));
+        self::assertSame('Bad file', VideoOptimizerClient::errorReason(['error' => "Bad\n\tfile"]));
+        self::assertSame('File too large (<2GB allowed)', VideoOptimizerClient::errorReason(['error' => 'File too large (<2GB allowed)']));
         self::assertSame('', VideoOptimizerClient::errorReason(['error' => null]));
         self::assertSame('', VideoOptimizerClient::errorReason(['error' => true]));
         self::assertSame('', VideoOptimizerClient::errorReason([]));
         self::assertSame(300, mb_strlen(VideoOptimizerClient::errorReason(['error' => str_repeat('x', 1000)])));
+    }
+
+    #[Test]
+    public function negativeCacheKeepsTheApiErrorCode(): void
+    {
+        $client = $this->client([self::json(
+            ['message' => 'Not for you', 'data' => ['code' => 'some_code']],
+            403
+        )]);
+
+        foreach ([1, 2] as $attempt) {
+            try {
+                $client->listSubtitleLanguages();
+                self::fail('Expected an ApiErrorException.');
+            } catch (ApiErrorException $exception) {
+                self::assertSame(403, $exception->getHttpStatus(), 'attempt ' . $attempt);
+                self::assertSame('some_code', $exception->getApiCode(), 'attempt ' . $attempt);
+            }
+        }
+        // Only one HTTP call: the second failure came from the negative cache.
+        self::assertCount(1, $this->history);
+    }
+
+    #[Test]
+    public function subtitleChangesFlushTheLanguageUsageCounts(): void
+    {
+        $client = $this->client([self::json(['data' => ['deleted' => true]])]);
+
+        $client->deleteSubtitle(self::UUID, 'de');
+
+        self::assertContains('vo_sublangs', $this->store->flushed);
+        self::assertContains('vo_video_' . self::UUID, $this->store->flushed);
+    }
+
+    #[Test]
+    public function thumbnailsAreCachedUnderTheNewKeyShape(): void
+    {
+        $client = $this->client([self::json(['data' => ['thumbnails' => [['index' => 0, 'url' => 'https://cdn.videooptimizer.eu/a.jpg']]]])]);
+        // A pre-1.0.4 entry (list shape) must not be served.
+        $this->store->entries[$this->legacyKey('thumbs:' . self::UUID)] = ['payload' => [['data' => 'x']], 'fetchedAt' => time(), 'tags' => []];
+
+        self::assertSame([['index' => 0, 'url' => 'https://cdn.videooptimizer.eu/a.jpg']], $client->listThumbnails(self::UUID));
+    }
+
+    private function legacyKey(string $suffix): string
+    {
+        $method = new \ReflectionMethod(VideoOptimizerClient::class, 'key');
+
+        return $method->invoke($this->client([]), $suffix);
     }
 }

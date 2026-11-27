@@ -93,13 +93,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             }
             $id = (string)($library['id'] ?? '');
             $resolutionKeys = array_values(array_filter(array_map('trim', explode(',', (string)($library['resolutions'] ?? '')))));
-            $resolutionOptions = [];
-            foreach (array_map('strval', (array)($library['available_resolutions'] ?? [])) as $availableResolution) {
-                $resolutionOptions[] = [
-                    'value' => $availableResolution,
-                    'selected' => in_array($availableResolution, $resolutionKeys, true),
-                ];
-            }
+            $resolutionOptions = EncodingOptions::editChoices((array)($library['available_resolutions'] ?? []), $resolutionKeys);
             $libraryRows[] = [
                 'id' => $id,
                 'name' => (string)($library['name'] ?? ''),

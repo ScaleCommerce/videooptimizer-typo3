@@ -687,6 +687,18 @@
                 <source>The subtitle language %s is still used by videos. Delete those subtitles first.</source>
                 <target>Die Untertitelsprache %s wird noch von Videos verwendet. Löschen Sie zuerst deren Untertitel.</target>
             </trans-unit>
+            <trans-unit id="list.quality.unchanged">
+                <source>unchanged</source>
+                <target>unverändert</target>
+            </trans-unit>
+            <trans-unit id="list.reprocess.confirmForce">
+                <source>Re-encode ALL renditions of this library, including finished ones? This is limited to 5 reprocess calls per hour.</source>
+                <target>ALLE Varianten dieser Bibliothek neu encodieren, auch bereits fertige? Das ist auf 5 Reprozessierungen pro Stunde begrenzt.</target>
+            </trans-unit>
+            <trans-unit id="list.quality.help">
+                <source>"Quality" produces roughly 2.5 to 3 times the file size and CDN traffic of "Performance". Changing it re-encodes nothing by itself.</source>
+                <target>„Qualität“ erzeugt etwa die 2,5- bis 3-fache Dateigröße und CDN-Traffic von „Performance“. Eine Änderung encodiert für sich genommen nichts neu.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

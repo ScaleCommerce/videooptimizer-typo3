@@ -668,7 +668,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         if (!is_string($error)) {
             return '';
         }
-        $text = preg_replace('/[\x00-\x1F\x7F\s]+/u', ' ', strip_tags($error)) ?? '';
+        // No strip_tags (it would cut "file <2GB"): the output is always escaped by Fluid / textContent.
+        $text = preg_replace('/[\x00-\x1F\x7F\s]+/u', ' ', $error) ?? '';
 
         return mb_substr(trim($text), 0, self::MAX_FAILURE_REASON_LENGTH);
     }
@@ -682,7 +683,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     {
         $uuid = $this->assertUuid($uuid, 'video ID');
 
-        return $this->remember('thumbs:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
+        return $this->remember('thumbs2:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
             try {
                 $body = $this->request('GET', '/videos/' . rawurlencode($uuid) . '/thumbnails');
             } catch (ApiErrorException $exception) {
@@ -781,7 +782,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             }
         }
 
-        $this->flushTags('vo_video_' . $uuid);
+        $this->flushTags('vo_video_' . $uuid, 'vo_sublangs');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
@@ -791,7 +792,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $uuid = $this->assertUuid($uuid, 'video ID');
         $language = $this->assertLanguageCode($language);
         $this->request('DELETE', '/videos/' . rawurlencode($uuid) . '/subtitles/' . rawurlencode($language));
-        $this->flushTags('vo_video_' . $uuid);
+        $this->flushTags('vo_video_' . $uuid, 'vo_sublangs');
     }
 
     // ------------------------------------------------------------------

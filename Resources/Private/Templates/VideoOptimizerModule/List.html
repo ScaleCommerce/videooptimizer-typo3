@@ -118,10 +118,11 @@
                                         <div class="col-md-3">
                                             <label for="vo-edit-quality-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.quality" /></label>
                                             <select id="vo-edit-quality-{library.id}" name="encodingQuality" class="form-select">
-                                                <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
+                                                <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.unchanged" /></option>
                                                 <option value="performance"{f:if(condition: '{library.encodingQuality} == \'performance\'', then: ' selected')}><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.performance" /></option>
                                                 <option value="quality"{f:if(condition: '{library.encodingQuality} == \'quality\'', then: ' selected')}><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.quality" /></option>
                                             </select>
+                                            <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.help" /></div>
                                         </div>
                                         <div class="col-12 d-flex flex-wrap align-items-center gap-3">
                                             <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.submit" /></button>
@@ -132,7 +133,7 @@
                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                     <!-- Reprocess needs media-managed storage; delivery-only libraries answer with 400 -->
                                     <f:if condition="{library.media_managed}">
-                                        <form action="{library.reprocessUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
+                                        <form action="{library.reprocessUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.confirm')}" data-vo-confirm-force="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.confirmForce')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
                                             <input type="hidden" name="libraryId" value="{library.id}">
                                             <input type="hidden" name="formToken" value="{library.reprocessToken}">
                                             <div class="form-check form-check-inline">
@@ -197,6 +198,7 @@
                     <option value="performance"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.performance" /></option>
                     <option value="quality"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.quality" /></option>
                 </select>
+                <div class="form-text"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.help" /></div>
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.submit" /></button>

@@ -113,7 +113,7 @@
                                 <input type="hidden" name="videoUuid" value="{videoUuid}">
                                 <input type="hidden" name="formToken" value="{deleteLanguageToken}">
                                 <input type="hidden" name="language" value="{language.code}">
-                                <button type="submit" class="btn btn-danger btn-sm"><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.delete.submit" /></button>
+                                <button type="submit" class="btn btn-danger btn-sm"{f:if(condition: '{language.videoCount} > 0', then: ' disabled')}><core:icon identifier="actions-delete" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:subtitles.languages.delete.submit" /></button>
                             </form>
                         </td>
                     </tr>
