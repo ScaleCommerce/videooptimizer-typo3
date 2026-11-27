@@ -544,6 +544,12 @@
             <trans-unit id="flash.video.metadataUnchanged">
                 <source>Metadata unchanged.</source>
             </trans-unit>
+            <trans-unit id="videos.paging.shown">
+                <source>Showing %1$d of %2$d videos.</source>
+            </trans-unit>
+            <trans-unit id="videos.paging.more">
+                <source>Load more</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

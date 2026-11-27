@@ -278,19 +278,25 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     /**
      * One page of videos (a single API request), optionally restricted to a library.
      *
+     * @param list<string> $tags only videos carrying ALL of these tags
+     * @param bool $fresh bypass the cache (backend module: always current state, e.g. while encoding)
      * @return array{items: list<array<string, mixed>>, nextCursor: ?string}
      */
-    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null): array
+    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null, array $tags = [], bool $fresh = false): array
     {
         $limit = max(1, min(100, $limit));
         $query = ['limit' => $limit];
-        $tags = ['vo_lists'];
+        $cacheTags = ['vo_lists'];
 
         $libraryId = trim((string)$libraryId);
         if ($libraryId !== '') {
             $libraryId = $this->assertLibraryId($libraryId);
             $query['library_id'] = $libraryId;
-            $tags[] = 'vo_library_' . $libraryId;
+            $cacheTags[] = 'vo_library_' . $libraryId;
+        }
+        $tags = $this->normalizeTags($tags);
+        if ($tags !== []) {
+            $query['tags'] = implode(',', $tags);
         }
         $cursor = trim((string)$cursor);
         if ($cursor !== '') {
@@ -300,7 +306,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             $query['cursor'] = $cursor;
         }
 
-        return $this->remember('page|' . md5(serialize($query)), $tags, function () use ($query): array {
+        $load = function () use ($query): array {
             $body = $this->request('GET', '/videos', ['query' => $query]);
             $items = [];
             foreach (is_array($body['data'] ?? null) ? $body['data'] : [] as $item) {
@@ -315,7 +321,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 'items' => $items,
                 'nextCursor' => (($pagination['has_more'] ?? false) === true && $next !== '') ? $next : null,
             ];
-        });
+        };
+
+        return $fresh ? $load() : $this->remember('page|' . md5(serialize($query)), $cacheTags, $load);
     }
 
     /**

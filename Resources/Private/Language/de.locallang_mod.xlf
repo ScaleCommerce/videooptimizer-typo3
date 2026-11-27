@@ -723,6 +723,14 @@
                 <source>Metadata unchanged.</source>
                 <target>Metadaten unverändert.</target>
             </trans-unit>
+            <trans-unit id="videos.paging.shown">
+                <source>Showing %1$d of %2$d videos.</source>
+                <target>%1$d von %2$d Videos angezeigt.</target>
+            </trans-unit>
+            <trans-unit id="videos.paging.more">
+                <source>Load more</source>
+                <target>Mehr laden</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

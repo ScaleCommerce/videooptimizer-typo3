@@ -245,6 +245,48 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function videoPagesCarryCursorTagsAndLibrary(): void
+    {
+        $client = $this->client([self::json([
+            'data' => [['uuid' => self::UUID]],
+            'pagination' => ['has_more' => true, 'next_cursor' => 'abc123'],
+        ])]);
+
+        $page = $client->listVideosPage(60, 'prev1', self::UUID, ['Sale', 'new'], true);
+
+        parse_str($this->history[0]['request']->getUri()->getQuery(), $query);
+        self::assertSame(['limit' => '60', 'library_id' => self::UUID, 'tags' => 'Sale,new', 'cursor' => 'prev1'], $query);
+        self::assertSame('abc123', $page['nextCursor']);
+        self::assertCount(1, $page['items']);
+    }
+
+    #[Test]
+    public function freshVideoPagesAreNotCached(): void
+    {
+        $body = ['data' => [['uuid' => self::UUID]], 'pagination' => ['has_more' => false]];
+        $client = $this->client([self::json($body), self::json($body)]);
+
+        $client->listVideosPage(60, null, null, [], true);
+        $client->listVideosPage(60, null, null, [], true);
+
+        self::assertCount(2, $this->history);
+        self::assertSame([], $this->store->entries);
+    }
+
+    #[Test]
+    public function cachedVideoPagesAreKeyedByTheirFilters(): void
+    {
+        $body = ['data' => [['uuid' => self::UUID]], 'pagination' => ['has_more' => false]];
+        $client = $this->client([self::json($body), self::json($body)]);
+
+        $client->listVideosPage(12, null, null, ['a']);
+        $client->listVideosPage(12, null, null, ['a']);
+        $client->listVideosPage(12, null, null, ['b']);
+
+        self::assertCount(2, $this->history);
+    }
+
+    #[Test]
     public function rejectsInvalidSubtitleLanguageCodes(): void
     {
         $this->expectException(\ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException::class);

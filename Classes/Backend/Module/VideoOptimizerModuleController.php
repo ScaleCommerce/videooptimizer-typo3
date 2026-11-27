@@ -6,6 +6,7 @@ namespace ScaleCommerce\VideoOptimizer\Backend\Module;
 
 use ScaleCommerce\VideoOptimizer\Backend\Http\SubtitleDownload;
 use ScaleCommerce\VideoOptimizer\Backend\Input\VideoInput;
+use ScaleCommerce\VideoOptimizer\Backend\Input\VideoPaging;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -286,20 +287,32 @@ final class VideoOptimizerModuleController extends ActionController implements L
     // Videos of a library
     // ------------------------------------------------------------------
 
-    public function videosAction(string $libraryId = '', string $tagFilter = ''): ResponseInterface
+    public function videosAction(string $libraryId = '', string $tagFilter = '', int $pages = 1): ResponseInterface
     {
         $libraryId = trim($libraryId);
         if ($libraryId === '') {
             return $this->redirect('list');
         }
+        $pages = VideoPaging::clampPages($pages);
+        $tagFilter = trim($tagFilter);
 
         $library = [];
         $videos = [];
         $allTags = [];
+        $nextCursor = null;
+        $loadedPages = $pages;
         $errorMessage = '';
         try {
             $library = $this->client->getLibrary($libraryId);
-            $videos = $this->client->listVideosByLibrary($libraryId);
+            $filterTags = VideoInput::parseTags($tagFilter);
+            // Always the current state (no cache): the list shows encoding progress.
+            $result = VideoPaging::load(
+                fn(?string $cursor): array => $this->client->listVideosPage(VideoPaging::PAGE_SIZE, $cursor, $libraryId, $filterTags, true),
+                $pages,
+            );
+            $videos = $result['items'];
+            $nextCursor = $result['nextCursor'];
+            $loadedPages = $result['pages'];
         } catch (VideoOptimizerException $exception) {
             $errorMessage = $exception->getMessage();
         }
@@ -313,22 +326,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
             $allTags = [];
         }
 
-        $tagFilter = trim($tagFilter);
-        if ($tagFilter !== '') {
-            $wanted = array_map('strtolower', array_filter(array_map('trim', explode(',', $tagFilter))));
-            $videos = array_values(array_filter(
-                array_filter($videos, 'is_array'),
-                static function (array $video) use ($wanted): bool {
-                    $tags = array_map(static fn($t) => strtolower(trim((string)$t)), (array)($video['tags'] ?? []));
-
-                    return count(array_intersect($wanted, $tags)) > 0;
-                },
-            ));
-        }
-
         $hasProcessing = false;
         foreach ($videos as $video) {
-            if (is_array($video) && (string)($video['status'] ?? '') === 'processing') {
+            if ((string)($video['status'] ?? '') === 'processing') {
                 $hasProcessing = true;
                 break;
             }
@@ -338,12 +338,16 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('library', $library);
         $view->assign('libraryId', $libraryId);
         $view->assign('videoRows', $this->formatVideoRows($videos, $libraryId));
-        $view->assign('count', count($videos));
+        $view->assign('count', $tagFilter === '' && isset($library['video_count']) ? (int)$library['video_count'] : count($videos));
+        $view->assign('loaded', count($videos));
+        $view->assign('pages', $loadedPages);
+        $view->assign('hasMore', $nextCursor !== null);
+        $view->assign('loadMoreUrl', $nextCursor !== null ? $this->moduleUrl('videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $loadedPages + 1]) : '');
         $view->assign('errorMessage', $errorMessage);
         $view->assign('tagFilter', $tagFilter);
         $view->assign('allTags', array_map(static fn(array $t) => (string)($t['name'] ?? ''), array_filter($allTags, 'is_array')));
         $view->assign('hasProcessing', $hasProcessing);
-        $view->assign('autoRefreshUrl', $hasProcessing ? $this->moduleUrl('videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]) : '');
+        $view->assign('autoRefreshUrl', $hasProcessing ? $this->moduleUrl('videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $loadedPages]) : '');
         $view->assign('backUrl', $this->moduleUrl('list'));
         $view->assign('videosUrl', $this->moduleUrl('videos', ['libraryId' => $libraryId]));
         // A GET form drops the action URL's query string, so carry the route token as a hidden field.
@@ -499,21 +503,22 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $formToken = '',
         string $title = '',
         string $tagFilter = '',
+        int $pages = 1,
     ): ResponseInterface {
-        if (($denied = $this->guardMutation('manage', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter])) !== null) {
+        if (($denied = $this->guardMutation('manage', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages])) !== null) {
             return $denied;
         }
         if (!$this->validateFormToken($formToken, 'rename', $videoUuid)) {
             $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
 
-            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
         }
 
         $title = trim($title);
         if ($title === '') {
             $this->flash('flash.video.titleRequired', ContextualFeedbackSeverity::ERROR);
 
-            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
         }
 
         try {
@@ -523,7 +528,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }
 
-        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
     }
 
     public function setTagsAction(
@@ -532,14 +537,15 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $formToken = '',
         string $tags = '',
         string $tagFilter = '',
+        int $pages = 1,
     ): ResponseInterface {
-        if (($denied = $this->guardMutation('manage', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter])) !== null) {
+        if (($denied = $this->guardMutation('manage', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages])) !== null) {
             return $denied;
         }
         if (!$this->validateFormToken($formToken, 'setTags', $videoUuid)) {
             $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
 
-            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
         }
 
         try {
@@ -549,7 +555,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }
 
-        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
     }
 
     public function setMetadataAction(
@@ -558,8 +564,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $formToken = '',
         string $metadata = '',
         string $tagFilter = '',
+        int $pages = 1,
     ): ResponseInterface {
-        $redirectArguments = ['libraryId' => $libraryId, 'tagFilter' => $tagFilter];
+        $redirectArguments = ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages];
         if (($denied = $this->guardMutation('manage', 'videos', $redirectArguments)) !== null) {
             return $denied;
         }
@@ -591,14 +598,15 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $videoUuid = '',
         string $formToken = '',
         string $tagFilter = '',
+        int $pages = 1,
     ): ResponseInterface {
-        if (($denied = $this->guardMutation('delete', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter])) !== null) {
+        if (($denied = $this->guardMutation('delete', 'videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages])) !== null) {
             return $denied;
         }
         if (!$this->validateFormToken($formToken, 'deleteVideo', $videoUuid)) {
             $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
 
-            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+            return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
         }
 
         try {
@@ -608,7 +616,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }
 
-        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter]);
+        return $this->redirect('videos', null, null, ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $pages]);
     }
 
     // ------------------------------------------------------------------
