@@ -244,6 +244,12 @@
             <trans-unit id="vo_focus_y.label">
                 <source>Focal point Y (%)</source>
             </trans-unit>
+            <trans-unit id="vo_scroll_play.label">
+                <source>Play while scrolling</source>
+            </trans-unit>
+            <trans-unit id="vo_scroll_play.description">
+                <source>Native player, shown directly: starts muted when at least half of it is visible and pauses when it scrolls out. A pause by the visitor sticks. Not with reduced motion or data saver.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

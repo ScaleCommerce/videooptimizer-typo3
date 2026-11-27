@@ -213,6 +213,7 @@ Good to know:
   With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
   `poster.videooptimizer.eu` for media, images and connections.
 - **Format** (single, split, spotlight): *original* (default) or 16:9, 9:16, 1:1, 4:5, 21:9. The player area takes the ratio and the video and poster fill it (cropped); the focal point X/Y in percent decides which part stays visible (native player and poster; the hosted player centers). 9:16 and 4:5 are at most 420 px wide. In a lightbox only the poster takes the format.
+- **Play while scrolling** (single, split, spotlight, chapters; native player shown directly): the video starts muted when at least half of it is visible and pauses when it scrolls out of view; a pause by the visitor sticks. Reduced motion and data saver keep it still.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the
   default —, lightbox, link to a page/URL, or no button), overlay strength, height (compact / default /
   full screen) and text alignment.

@@ -629,7 +629,7 @@ abstract class AbstractVideoController extends ActionController
     /**
      * The element's player options; a hero whose options were never touched plays as a background video.
      *
-     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool}
      */
     protected function effectivePlayerSettings(bool $heroMode = false): array
     {
@@ -646,6 +646,7 @@ abstract class AbstractVideoController extends ActionController
                 'start_time' => 0,
                 'fit_cover' => true,
                 'subtitle_lang' => $settings['subtitle_lang'],
+                'scroll_play' => false,
             ];
         }
 
@@ -671,7 +672,7 @@ abstract class AbstractVideoController extends ActionController
      * The hosted player only overrides the video's theme for params that are present, so all four
      * playback flags are sent explicitly (deterministic output).
      *
-     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string} $settings
+     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool} $settings
      * @return array<string, string>
      */
     private function buildPlayerParams(array $settings): array
@@ -698,7 +699,7 @@ abstract class AbstractVideoController extends ActionController
     /**
      * The player options stored on the current content record (TCA vo_* fields), validated.
      *
-     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool}
      */
     protected function playerSettings(): array
     {
@@ -719,6 +720,7 @@ abstract class AbstractVideoController extends ActionController
             'fit_cover' => (int)($row['vo_fit_cover'] ?? 0) === 1
                 || (ElementOptions::format($row) !== 'original' && $this->presentation() !== 'lightbox'),
             'subtitle_lang' => $lang,
+            'scroll_play' => (int)($row['vo_scroll_play'] ?? 0) === 1,
         ];
     }
 

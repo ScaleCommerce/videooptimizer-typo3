@@ -55,6 +55,7 @@ export function parseConfig(raw) {
         poster: data.poster ? safeUrl(data.poster) : '',
         controls: data.controls !== false,
         autoplay: data.autoplay === true,
+        scroll: data.scroll === true,
         muted: data.muted === true,
         loop: data.loop === true,
         preload: ['auto', 'metadata', 'none'].includes(data.preload) ? data.preload : 'metadata',

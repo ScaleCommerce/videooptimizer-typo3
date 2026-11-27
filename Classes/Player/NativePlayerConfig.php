@@ -23,7 +23,7 @@ final class NativePlayerConfig
 
     /**
      * @param array<string, mixed> $embed payload of GET /embed/{uuid}
-     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string} $settings
+     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play?: bool} $settings
      * @return array{hls: string, mp4: string, poster: string, tracks: list<array{src: string, srclang: string, label: string, kind: string, default: bool}>, options: array<string, mixed>, json: string}|null
      *         null when the video has no playable source (not ready, or unknown to the API)
      *
@@ -64,7 +64,9 @@ final class NativePlayerConfig
         $poster = MediaUrl::safe($embed['poster'] ?? '');
         $theme = is_array($embed['theme'] ?? null) ? $embed['theme'] : [];
         $themeFlag = static fn (string $key): bool => !$background && ($theme[$key] ?? false) === true;
-        $autoplay = $settings['autoplay'] || $themeFlag('autoplay');
+        // Play while scrolling: a directly shown player starts muted while it is mostly visible.
+        $scroll = !$background && $direct && ($settings['scroll_play'] ?? false) === true;
+        $autoplay = $settings['autoplay'] || $themeFlag('autoplay') || $scroll;
         $static = $direct && !$background && $autoplay && ($theme['interactive'] ?? true) === false;
         // Hidden only for a directly shown, muted autoplay; players started by a click (facade,
         // lightbox, cards) play with sound and keep their controls.
@@ -84,6 +86,7 @@ final class NativePlayerConfig
             'controls' => $controls,
             'static' => $static,
             'autoplay' => $autoplay,
+            'scroll' => $scroll,
             // Browsers only allow autoplay without sound.
             'muted' => $muted,
             'loop' => $loop,

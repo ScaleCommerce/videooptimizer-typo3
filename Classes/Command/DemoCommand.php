@@ -67,6 +67,10 @@ class DemoCommand extends Command
             'ctype' => 'videooptimizer_videosingle', 'header' => '10) Single video, 1:1 format (hosted)', 'sorting' => 2560, 'videoUuid' => true,
             'fields' => ['vo_format' => '1-1'],
         ],
+        [
+            'ctype' => 'videooptimizer_videosingle', 'header' => '11) Single video, plays while scrolling (native)', 'sorting' => 2816, 'videoUuid' => true,
+            'fields' => ['vo_player_mode' => 'native', 'vo_scroll_play' => 1],
+        ],
     ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int

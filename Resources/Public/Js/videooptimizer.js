@@ -27,6 +27,9 @@ const [
     import('./chapters.js' + version),
 ]);
 
+// Play while scrolling: start at this share of the player in view, pause below it.
+const SCROLL_THRESHOLD = 0.5;
+
 const IFRAME_ALLOW = 'autoplay; fullscreen; picture-in-picture';
 
 let dialog = null;
@@ -84,7 +87,7 @@ function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false,
     if (!click && !still && cfg.autoplay) {
         attached.then(() => {
             if (!gone && !skipAutoplay()) {
-                stopAutoplay = autoplayWhileVisible(video, wrap);
+                stopAutoplay = autoplayWhileVisible(video, wrap, cfg.scroll ? SCROLL_THRESHOLD : undefined);
             }
         });
     }
@@ -340,7 +343,7 @@ function initDirect(wrap) {
     // Other modules (chapters) attach the source on demand through this.
     wrap.__voStart = setUp;
     // The source is attached shortly before the player scrolls into view, so hls.js is only
-    // downloaded when a player is (nearly) visible.
+    // downloaded when a player is (nearly) visible; play while scrolling waits until it is half in view.
     let stop = null;
     stop = observeVisibility(
         wrap,
@@ -350,8 +353,8 @@ function initDirect(wrap) {
                 setUp();
             }
         },
-        '300px',
-        0
+        cfg.scroll ? '0px' : '300px',
+        cfg.scroll ? SCROLL_THRESHOLD : 0
     );
 }
 

@@ -41,6 +41,14 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => 'left',
         ],
     ],
+    'vo_scroll_play' => [
+        'label' => $lll . 'vo_scroll_play.label',
+        'description' => $lll . 'vo_scroll_play.description',
+        'config' => [
+            'type' => 'check',
+            'default' => 0,
+        ],
+    ],
     'vo_format' => [
         'label' => $lll . 'vo_format.label',
         'description' => $lll . 'vo_format.description',
@@ -112,7 +120,7 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
 
 $playerOptions = "
     --div--;{$lll}vo_player.div,
-    vo_player_mode, vo_presentation, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_format, vo_focus_x, vo_focus_y, vo_subtitle_lang";
+    vo_player_mode, vo_presentation, vo_autoplay, vo_scroll_play, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_format, vo_focus_x, vo_focus_y, vo_subtitle_lang";
 
 $showItemSplit = "
     --palette--;;headers,
@@ -147,7 +155,7 @@ $showItemChapters = "
     vo_library_id,
     vo_video_uuid,
     --div--;{$lll}vo_player.div,
-    vo_player_mode, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_subtitle_lang,
+    vo_player_mode, vo_autoplay, vo_scroll_play, vo_loop, vo_muted, vo_controls, vo_start_time, vo_subtitle_lang,
     --div--;core.form.tabs:appearance,
     --palette--;;frames,
     --div--;core.form.tabs:categories,
@@ -175,10 +183,16 @@ foreach ($recordTypes as $type) {
     );
 }
 
-// The single video element offers the format as well.
+// The single video element offers the format and play while scrolling as well.
 ExtensionManagementUtility::addToAllTCAtypes(
     'tt_content',
     'vo_format, vo_focus_x, vo_focus_y',
     'videooptimizer_videosingle',
     'after:vo_fit_cover'
+);
+ExtensionManagementUtility::addToAllTCAtypes(
+    'tt_content',
+    'vo_scroll_play',
+    'videooptimizer_videosingle',
+    'after:vo_autoplay'
 );

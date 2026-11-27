@@ -320,4 +320,25 @@ final class NativePlayerConfigTest extends TestCase
             self::assertSame([], NativePlayerConfig::tracks([['src' => 'https://l.cdn.videooptimizer.eu/x.vtt', 'srclang' => $tag]]), var_export($tag, true));
         }
     }
+
+    #[Test]
+    public function playWhileScrollingStartsMutedOnlyForADirectlyShownPlayer(): void
+    {
+        $settings = ['scroll_play' => true] + self::SETTINGS;
+
+        $direct = NativePlayerConfig::build(self::embed(), $settings, '', '', false, true);
+        self::assertTrue($direct['options']['scroll']);
+        self::assertTrue($direct['options']['autoplay']);
+        self::assertTrue($direct['options']['muted']);
+        self::assertTrue($direct['options']['controls'], 'the visitor keeps the controls');
+
+        $click = NativePlayerConfig::build(self::embed(), $settings, '', '', false, false);
+        self::assertFalse($click['options']['scroll']);
+        self::assertFalse($click['options']['autoplay']);
+
+        $background = NativePlayerConfig::build(self::embed(), $settings, '', '', true, true);
+        self::assertFalse($background['options']['scroll']);
+
+        self::assertFalse(NativePlayerConfig::build(self::embed(), self::SETTINGS, '', '', false, true)['options']['scroll']);
+    }
 }
