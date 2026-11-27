@@ -137,6 +137,7 @@ use them) — no build step, no TypoScript to include.
 | `cacheTtl` | `VO_CACHE_TTL` | Soft TTL in seconds for cached API responses (default `300`). Stale copies are still served for up to 24 h if the API is unreachable. **Here the environment variable wins.** |
 | `demoVideoUuid` | `VO_DEMO_VIDEO_UUID` | Fallback video for elements without a selected video. Leave both empty in production. |
 | `webhookSecret` | `VO_WEBHOOK_SECRET` | Signing secret of the VideoOptimizer webhook. Empty = webhook receiver disabled. |
+| `storageOrigin` | – | Origin of the object storage behind the presigned upload URLs (default `https://object-storage.scale.sc`). Browser uploads PUT there and the backend CSP allows it in `connect-src`; only change it for a self-hosted platform. |
 
 > **Production tip:** values from the extension configuration are stored in `config/system/settings.php`.
 > For the API token and the webhook secret, prefer the environment variables (`VO_API_TOKEN`,
@@ -170,8 +171,8 @@ Admins can do everything. For editors, edit their backend user group (`be_groups
 | Tab → field | Grant | Allows |
 |---|---|---|
 | Module Permissions → *Allowed modules* | **VideoOptimizer** | Open the backend module (read-only without the options below) |
-| Module Permissions → *Custom module options* → VideoOptimizer module | **Manage libraries and videos** | Create/edit libraries, rename and tag videos, thumbnails, subtitles |
-| | **Upload and ingest videos** | File upload and URL import |
+| Module Permissions → *Custom module options* → VideoOptimizer module | **Manage libraries and videos** | Create/edit libraries, rename, tag and edit metadata of videos, thumbnails and custom posters, subtitles |
+| | **Upload and ingest videos** | File upload (browser and server) and URL import |
 | | **Delete and reprocess** | Delete libraries, videos and subtitles; reprocess a library |
 | Record Permissions → *Table permissions* | modify `tt_content` | Use the content elements |
 | Record Permissions → *Explicitly allow field values* | the five VideoOptimizer types (only if the group restricts content types) | Insert the content elements |
@@ -227,12 +228,22 @@ Good to know:
 
 - Create a library, edit name, description and encoding ladder, **reprocess** all of its videos, delete it.
 - Open a library to **upload** a video file or **import** one from a public `https://` URL (with title,
-  tags and metadata), filter by tag, rename/tag/delete videos.
-- **Thumbnail**: pick one of the auto-generated frames as poster.
-- **Subtitles**: upload or replace `.vtt`/`.srt` tracks per language, delete tracks.
+  tags and metadata). Libraries are paged (60 videos, **Load more**); the **tag filter** shows videos that
+  carry *all* entered tags. Rename, tag, edit the **metadata** (`key: value` per line, up to 10 keys; removing a
+  line deletes the key; invalid lines are reported and nothing is saved) and delete videos.
+- **Browser upload**: the file goes straight from your browser to the platform's object storage in parts
+  (progress, automatic retry, cancel), then the module polls the encoding status and shows the failure reason
+  if the platform rejects the video. The API token never reaches the browser: the module only gets presigned
+  storage URLs through authenticated backend AJAX routes. If the browser cannot reach the storage, use
+  **Upload via server instead** (the classic form upload, limited by PHP's upload limits).
+- **Thumbnail** page: pick one of the auto-generated frames as poster, or set a **custom poster**: upload a
+  JPEG/PNG/WebP image (up to 20 MB), choose one from the TYPO3 file list (only your own file mounts), or
+  remove the custom poster. The platform processes the image and activates it automatically.
+- **Subtitles**: upload or replace `.vtt`/`.srt` tracks per language, **download** the stored WebVTT file,
+  delete tracks.
 
-Destructive actions ask for confirmation in a TYPO3 dialog. While videos are encoding, the page refreshes
-itself (but not while you're typing).
+Destructive actions ask for confirmation in a TYPO3 dialog. While videos are encoding, the module checks
+just those videos and reloads the list once one has finished (but not while you're typing).
 
 <div align="center">
 
@@ -275,7 +286,9 @@ appears several times on a page is described once. Turn it off per site with
 | Content elements render nothing at all / no styling | The site set is not added to the site | Add **VideoOptimizer content elements** to the site's sets. |
 | Library tiles or the video picker show a warning | The API was unreachable or rejected the token when the form loaded | Check the token and its `library:view` permission; the stored selection is kept. |
 | Editors can open the module but can't upload or delete | Missing custom module options | Grant the VideoOptimizer options in the editor group (see [Permissions](#permissions)). |
-| Upload fails for large files | PHP or web-server upload limits | Raise `upload_max_filesize` / `post_max_size` (and e.g. nginx `client_max_body_size`); the module accepts up to 5 GiB. |
+| Browser upload fails right at the start ("network error") or the progress never moves | The browser cannot reach the object storage: the backend CSP does not allow it (`storageOrigin` differs from the storage host of your platform), or a proxy/ad blocker blocks it | Check the browser console for a CSP or CORS message; set `storageOrigin` to the storage host (`cache:flush` afterwards) or use **Upload via server instead**. |
+| Browser upload fails with "The storage did not return an ETag" | The storage's CORS settings do not expose the `ETag` header | Platform side: expose `ETag` in the bucket CORS configuration (the platform's storage does). |
+| Upload via server fails for large files | PHP or web-server upload limits | Raise `upload_max_filesize` / `post_max_size` (and e.g. nginx `client_max_body_size`); the module accepts up to 5 GiB. |
 | Webhook answers **503** | No `webhookSecret` configured | Set the secret. |
 | Webhook answers **401** | Wrong secret, or the delivery is older than 5 minutes (clock skew) | Copy the secret again; check the server time. |
 | A changed video shows up late | No webhook and no refresh command | Set up the webhook or `videooptimizer:cache:refresh`; or flush the caches. |

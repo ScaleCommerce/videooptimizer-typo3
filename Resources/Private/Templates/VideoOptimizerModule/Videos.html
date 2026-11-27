@@ -159,7 +159,10 @@
         </div>
         <f:if condition="{videoRows}">
             <p class="text-body-secondary vo-paging-info">
-                <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.shown" arguments="{0: loaded, 1: count}" />
+                <f:if condition="{tagFilter}">
+                    <f:then><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.loaded" arguments="{0: loaded}" /></f:then>
+                    <f:else><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.shown" arguments="{0: loaded, 1: count}" /></f:else>
+                </f:if>
                 <f:if condition="{hasMore}">
                     <a href="{loadMoreUrl}" class="btn btn-default btn-sm ms-2"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.paging.more" /></a>
                 </f:if>

@@ -37,6 +37,7 @@ jobs:
 
       - name: XLF well-formed and en/de ids in parity
         run: |
+          sudo apt-get update
           sudo apt-get install -y --no-install-recommends libxml2-utils
           find Resources Configuration -name '*.xlf' -print0 | xargs -0 xmllint --noout
           php Build/xlf-parity.php
@@ -64,4 +65,4 @@ jobs:
           done
 
       - name: Unit tests
-        run: node --test Tests/JavaScript
+        run: node --test Tests/JavaScript/*.test.mjs

@@ -5,22 +5,26 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 ### Upgrade
-- Run `cache:flush` after updating (new backend AJAX routes and a wider backend CSP). Browser uploads PUT straight to the platform's presigned storage URLs (CSP `connect-src https://*.videooptimizer.eu` is added); the server-side upload form stays as fallback.
+- Run `cache:flush` after updating (new backend AJAX routes, wider backend CSP).
+- Browser uploads PUT to the platform's object storage; the backend CSP now allows `connect-src https://object-storage.scale.sc`. For a self-hosted platform set the extension configuration `storageOrigin` to its storage origin, then `cache:flush`.
 
 ### Added
-- Browser upload of videos in the module: presigned multipart straight to storage with progress, retry and cancel, token stays on the server ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
+- Browser upload of videos in the module: presigned multipart straight to storage with progress, retry and cancel; the server-side form stays as fallback ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
 - Status polling after upload until `ready` or `failed`, showing the API's `error` ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
 - Custom poster: upload an image, pick one from the TYPO3 file list, remove it ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
-- Subtitles can be downloaded as WebVTT in the module ([#8](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/8)).
-- Metadata of existing videos can be edited in the module; removing a line deletes its key ([#9](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/9)).
+- Extension configuration `storageOrigin` (default `https://object-storage.scale.sc`) ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
+- Subtitle download (WebVTT) in the module ([#8](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/8)).
+- Metadata editing of existing videos in the module ([#9](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/9)).
+- GitHub Actions: PHP syntax, XLF parity, PHPStan and PHPUnit on PHP 8.4/8.5, JavaScript syntax and tests ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
+- Unit tests for the AJAX endpoints, webhook receiver, URL checks and the content element controllers ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
 
 ### Changed
-- The module's video list loads 60 videos per page with "Load more" instead of at most 20 pages of 100; loaded pages survive edits ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
-- The module's tag filter runs on the API: several tags now match videos carrying ALL of them (was: any of them) ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
+- Module video lists load 60 videos per page with "Load more" (was: at most 20 pages of 100); loaded pages survive edits ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
+- Module tag filter runs on the API: several tags match videos carrying all of them (was: any of them) ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
+- While videos encode, the module polls only those videos and reloads the list once one has finished ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
 
-### Quality
-- GitHub Actions: PHP syntax, XLF parity, PHPStan (level 6 with baseline) and PHPUnit on PHP 8.4/8.5, JavaScript syntax and unit tests ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
-- Unit tests for the module's AJAX endpoints, webhook receiver, `MediaUrl` and the content element controllers; 40 to 176 PHP tests plus 13 JavaScript tests ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
+### Security
+- Presigned storage URLs are only accepted on the configured storage origin; changing AJAX routes need module access and the custom option ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
 
 ## [1.0.5] - 2026-11-27
 
