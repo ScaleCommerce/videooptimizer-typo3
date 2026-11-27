@@ -4,6 +4,8 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-27
+
 ### Upgrade
 - Run `cache:flush` after updating (new backend AJAX routes, wider backend CSP).
 - Browser uploads PUT to the platform's object storage; the backend CSP now allows `connect-src https://object-storage.scale.sc`. For a self-hosted platform set the extension configuration `storageOrigin` to its storage origin, then `cache:flush`.
