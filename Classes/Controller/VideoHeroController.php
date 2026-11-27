@@ -30,7 +30,7 @@ class VideoHeroController extends AbstractVideoController
         }
 
         $this->addVideoStructuredData($video);
-        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null);
+        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
 
         $embedUrl = '';
         if (is_array($video) && !$video['processing']) {

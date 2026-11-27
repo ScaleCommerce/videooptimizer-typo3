@@ -4,6 +4,11 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-11-27
+
+### Fixed
+- Library changes now reach pages and cached videos of single, hero and detail elements via `vo_library_<id>` tags ([#7](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/7)).
+
 ## [1.0.4] - 2026-11-27
 
 ### Added

@@ -334,12 +334,14 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     public function flushVideo(string $uuid, ?string $libraryId = null): void
     {
         $tags = ['vo_video_' . $this->assertUuid($uuid, 'video ID'), 'vo_lists'];
+        // Pages are flushed by video and lists only; the library tag stays on the API cache.
+        $pageTags = $tags;
         $libraryId = trim((string)$libraryId);
         if ($libraryId !== '') {
             $tags[] = 'vo_library_' . $this->assertLibraryId($libraryId);
         }
         $this->flushTags(...$tags);
-        $this->flushPageCacheTags($tags);
+        $this->flushPageCacheTags($pageTags);
     }
 
     /**
@@ -461,7 +463,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $library = is_array($body['data'] ?? null) ? $body['data'] : [];
 
         if ($library !== []) {
-            $this->flushTags('vo_library_' . $id, 'vo_lists');
+            // Only a changed ladder or quality re-encodes videos; a rename leaves pages valid.
+            $reencodes = array_intersect_key($data, array_flip(['codec', 'resolutions', 'encoding_quality'])) !== [];
+            $this->flushLibraryTags($id, $reencodes);
         }
 
         return $library;
@@ -471,7 +475,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     {
         $id = $this->assertLibraryId($id);
         $this->request('DELETE', '/libraries/' . rawurlencode($id));
-        $this->flushTags('vo_library_' . $id, 'vo_lists');
+        $this->flushLibraryTags($id);
     }
 
     /**
@@ -485,7 +489,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $id = $this->assertLibraryId($id);
         $options = $force ? ['json' => ['force' => true]] : [];
         $body = $this->request('POST', '/libraries/' . rawurlencode($id) . '/reprocess', $options, retry: false);
-        $this->flushTags('vo_library_' . $id, 'vo_lists');
+        $this->flushLibraryTags($id);
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
@@ -1231,6 +1235,14 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             throw $exception;
         }
 
+        // A video entry also belongs to its library, so library flushes drop it too.
+        if (str_starts_with($suffix, 'video:') && is_array($payload)
+            && is_string($payload['library_id'] ?? null)
+            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payload['library_id']) === 1
+        ) {
+            $tags[] = 'vo_library_' . $payload['library_id'];
+        }
+
         $envelope = ['payload' => $payload, 'fetchedAt' => $now, 'tags' => $tags];
         if ($payload === []) {
             // Empty results (e.g. unknown IDs) are only remembered briefly.
@@ -1251,6 +1263,18 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         return ($failure['network'] ?? false) === true
             ? new NetworkException($message)
             : new ApiErrorException($message, (int)($failure['status'] ?? 0), null, is_string($failure['code'] ?? null) ? $failure['code'] : null);
+    }
+
+    /**
+     * API cache and page cache of a library's videos and lists (pages carry vo_library_<id>).
+     */
+    private function flushLibraryTags(string $id, bool $pages = true): void
+    {
+        $tags = ['vo_library_' . $id, 'vo_lists'];
+        $this->flushTags(...$tags);
+        if ($pages) {
+            $this->flushPageCacheTags($tags);
+        }
     }
 
     private function flushTags(string ...$tags): void

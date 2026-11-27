@@ -26,7 +26,7 @@ class VideoSingleController extends AbstractVideoController
         }
 
         $this->addVideoStructuredData($video);
-        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null);
+        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
 
         $this->view->assign('video', $video);
         $this->view->assign('embed', $embed);
