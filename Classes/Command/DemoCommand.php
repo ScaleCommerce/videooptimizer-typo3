@@ -65,7 +65,7 @@ class DemoCommand extends Command
         ],
         [
             'ctype' => 'videooptimizer_videosingle', 'header' => '10) Single video, 1:1 format (hosted)', 'sorting' => 2560, 'videoUuid' => true,
-            'fields' => ['vo_format' => '1-1'],
+            'fields' => ['vo_format' => '1-1', 'vo_focus_x' => 50, 'vo_focus_y' => 50],
         ],
         [
             'ctype' => 'videooptimizer_videosingle', 'header' => '11) Single video, plays while scrolling (native)', 'sorting' => 2816, 'videoUuid' => true,
@@ -81,7 +81,7 @@ class DemoCommand extends Command
         ],
         [
             'ctype' => 'videooptimizer_videosingle', 'header' => '14) Single video, 4:5 format (native)', 'sorting' => 3584, 'videoUuid' => true,
-            'fields' => ['vo_format' => '4-5', 'vo_player_mode' => 'native'],
+            'fields' => ['vo_format' => '4-5', 'vo_player_mode' => 'native', 'vo_focus_x' => 50, 'vo_focus_y' => 30],
         ],
     ];
 

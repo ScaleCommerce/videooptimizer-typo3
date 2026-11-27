@@ -6,7 +6,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ### Upgrade
 - Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` and `Js/mini-player.js` are new sub-modules of `Js/videooptimizer.js` (copy them along when you serve the JavaScript yourself).
-- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`, `vo_format`, `vo_focus_x`, `vo_focus_y`, `vo_scroll_play`, `vo_mini_player`), then `cache:flush`. Re-run `extension:setup` if the Install Tool's database analyzer still lists the new columns.
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`, `vo_format`, `vo_focus_x`, `vo_focus_y`, `vo_scroll_play`, `vo_mini_player`), then `cache:flush`. New columns get 50 (focal point) and 5 (scenes) as default through `ext_tables.sql`. Re-run `extension:setup` if the Install Tool's database analyzer still lists the new columns.
 
 ### Changed
 - Autoplaying native players (hero, single, ...) now pause once less than 25 % of them is visible (was: only when completely out of view) ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
