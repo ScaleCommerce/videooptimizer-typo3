@@ -573,7 +573,7 @@ abstract class AbstractVideoController extends ActionController
         $row = $this->currentRecord();
 
         $lang = trim((string)($row['vo_subtitle_lang'] ?? ''));
-        if (preg_match('/^([a-z]{2,3}(-[A-Za-z0-9]{2,8})?|off)$/', $lang) !== 1) {
+        if ($lang !== 'off' && preg_match(NativePlayerConfig::LANGUAGE_PATTERN, $lang) !== 1) {
             $lang = '';
         }
 

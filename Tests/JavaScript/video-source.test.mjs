@@ -156,9 +156,18 @@ test('a failed hls.js load falls back and is retried later', async () => {
         loads += 1;
         throw new Error('network');
     });
+    const warn = console.warn;
+    const warnings = [];
+    console.warn = (...args) => warnings.push(args);
     const first = new FakeVideo();
-    await attachVideoSource(first, sources);
+    try {
+        await attachVideoSource(first, sources);
+    } finally {
+        console.warn = warn;
+    }
     assert.equal(first.src, sources.mp4);
+    assert.equal(warnings.length, 1, 'a failed hls.js import is logged');
+    assert.match(String(warnings[0][0]), /hls\.js could not be loaded/);
 
     setHlsLoader(async () => ({ default: FakeHls }));
     await attachVideoSource(new FakeVideo(), sources);
@@ -263,6 +272,11 @@ test('parseConfig keeps only valid tracks', () => {
         { src: 'https://l.cdn.videooptimizer.eu/de.vtt', srclang: 'de', label: 'Deutsch', kind: 'captions', default: true },
     ]);
     assert.deepEqual(parseConfig(JSON.stringify({ mp4: sources.mp4 })).tracks, []);
+
+    const tags = (list) =>
+        parseConfig(JSON.stringify({ mp4: sources.mp4, tracks: list.map((srclang) => ({ src: 'https://l.cdn.videooptimizer.eu/x.vtt', srclang })) })).tracks.map((t) => t.srclang);
+    assert.deepEqual(tags(['de', 'de-DE', 'de-x-simple', 'zh-Hant-TW']), ['de', 'de-DE', 'de-x-simple', 'zh-Hant-TW']);
+    assert.deepEqual(tags(['d', 'de_DE', 'de-', 'de--x']), []);
 });
 
 class FakeButton extends EventTarget {

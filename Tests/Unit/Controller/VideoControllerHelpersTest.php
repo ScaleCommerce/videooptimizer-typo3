@@ -163,6 +163,14 @@ final class VideoControllerHelpersTest extends TestCase
     }
 
     #[Test]
+    public function subtitleLanguagesAcceptPrivateUseSubtags(): void
+    {
+        self::assertSame('de-x-simple', $this->controller(['vo_subtitle_lang' => 'de-x-simple'])->call('playerQueryParams')['cc']);
+        self::assertSame('off', $this->controller(['vo_subtitle_lang' => 'off'])->call('playerQueryParams')['cc']);
+        self::assertArrayNotHasKey('cc', $this->controller(['vo_subtitle_lang' => 'de_DE'])->call('playerQueryParams'));
+    }
+
+    #[Test]
     public function invalidSubtitleLanguagesAndStartTimesAreIgnored(): void
     {
         $params = $this->controller(['vo_subtitle_lang' => '"><script>', 'vo_start_time' => -5])->call('playerQueryParams');

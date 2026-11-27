@@ -1,7 +1,7 @@
 // Source handling of the native player: hls.js (loaded on demand), native HLS (Safari) or MP4.
 // Plain ES module without dependencies on the page, so it can be unit-tested with node.
 
-let loadHlsModule = () => import('./vendor/hls.light.min.mjs');
+let loadHlsModule = () => import('./vendor/hls.light-1.7.4.min.js');
 let hlsPromise = null;
 
 /** Replaces the hls.js loader (tests) and forgets a loaded copy. */
@@ -16,7 +16,10 @@ function loadHls() {
     hlsPromise ??= Promise.resolve()
         .then(() => loadHlsModule())
         .then((module) => module.default)
-        .catch(() => {
+        .catch((error) => {
+            // The player falls back to native HLS / MP4; the cause is worth a line in the console
+            // (e.g. a web server sending a wrong MIME type for the module).
+            console.warn('VideoOptimizer: hls.js could not be loaded, falling back to MP4.', error);
             // A transient network error must not disable hls.js for the rest of the page.
             hlsPromise = null;
             return null;

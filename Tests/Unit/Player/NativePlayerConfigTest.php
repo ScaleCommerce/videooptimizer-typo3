@@ -272,4 +272,18 @@ final class NativePlayerConfigTest extends TestCase
         $config = NativePlayerConfig::build(self::embed(['tracks' => self::rawTracks()]), self::SETTINGS, '', '', true);
         self::assertSame([], $config['tracks']);
     }
+
+    #[Test]
+    public function languageTagsFollowBcp47(): void
+    {
+        foreach (['de', 'de-DE', 'de-x-simple', 'zh-Hant-TW', 'eng'] as $tag) {
+            self::assertSame(1, preg_match(NativePlayerConfig::LANGUAGE_PATTERN, $tag), $tag);
+            self::assertCount(1, NativePlayerConfig::tracks([['src' => 'https://l.cdn.videooptimizer.eu/x.vtt', 'srclang' => $tag]]), $tag);
+        }
+        foreach (['d', 'de_DE', 'de-', 'de--x', 'de-DE-', '-de', ''] as $tag) {
+            self::assertSame(0, preg_match(NativePlayerConfig::LANGUAGE_PATTERN, $tag), var_export($tag, true));
+            self::assertSame(0, preg_match(NativePlayerConfig::LANGUAGE_PATTERN, $tag . "\n"), 'trailing newline');
+            self::assertSame([], NativePlayerConfig::tracks([['src' => 'https://l.cdn.videooptimizer.eu/x.vtt', 'srclang' => $tag]]), var_export($tag, true));
+        }
+    }
 }

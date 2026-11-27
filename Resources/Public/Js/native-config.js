@@ -1,6 +1,6 @@
 // Validation of the data the server hands to the browser (data-vo-native). Pure functions, no DOM.
 
-const LANGUAGE = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/;
+const LANGUAGE = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/;
 const ALLOWED_HOST = 'videooptimizer.eu';
 const ACCENT = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([0-9.,%\s/-]+\))$/i;
 

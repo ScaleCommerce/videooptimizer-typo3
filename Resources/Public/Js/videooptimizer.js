@@ -1,17 +1,22 @@
 // Frontend of the VideoOptimizer content elements (ES module, loaded with type="module"):
 // native player (hls.js loaded only when needed), click-to-play facade, lightbox dialog and the
 // background video of the hero. The hosted player stays a plain iframe.
-import {
-    attachVideoSource,
-    autoplayWhileVisible,
-    destroyVideoSource,
-    applyTracks,
-    bindPlaybackToggle,
-    markUnavailable,
-    motionReduced,
-    observeVisibility,
-} from './video-source.js';
-import { parseConfig, safeUrl } from './native-config.js';
+// The sub-modules carry the version query of this entry (TYPO3 appends it to the script URL), so a
+// browser cache that keeps JavaScript for a year cannot pair a new entry with an old sub-module.
+const version = new URL(import.meta.url).search;
+const [
+    {
+        attachVideoSource,
+        applyTracks,
+        autoplayWhileVisible,
+        bindPlaybackToggle,
+        destroyVideoSource,
+        markUnavailable,
+        motionReduced,
+        observeVisibility,
+    },
+    { parseConfig, safeUrl },
+] = await Promise.all([import('./video-source.js' + version), import('./native-config.js' + version)]);
 
 const IFRAME_ALLOW = 'autoplay; fullscreen; picture-in-picture';
 

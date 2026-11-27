@@ -13,6 +13,9 @@ use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
  */
 final class NativePlayerConfig
 {
+    /** BCP 47 language tag, e.g. de, de-DE, de-x-simple, zh-Hant-TW (no underscores, no empty subtags). */
+    public const LANGUAGE_PATTERN = '/^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$/D';
+
     private const HLS_TYPE = 'application/vnd.apple.mpegurl';
 
     private const JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
@@ -134,7 +137,7 @@ final class NativePlayerConfig
             }
             $src = MediaUrl::safe($track['src'] ?? '');
             $language = is_string($track['srclang'] ?? null) ? trim($track['srclang']) : '';
-            if ($src === '' || preg_match('/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/', $language) !== 1) {
+            if ($src === '' || preg_match(self::LANGUAGE_PATTERN, $language) !== 1) {
                 continue;
             }
             $label = is_string($track['label'] ?? null) ? trim(strip_tags($track['label'])) : '';
