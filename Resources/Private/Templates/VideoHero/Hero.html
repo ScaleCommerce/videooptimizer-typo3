@@ -21,12 +21,18 @@
                 </f:then>
                 <f:else>
                     <f:if condition="{embedUrl}">
-                        <iframe class="vo-hero__media" src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"
+                        <f:if condition="{stillUrl}"><f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" /></f:if>
+                        <iframe class="vo-hero__media" src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"<f:if condition="{stillUrl}"> data-vo-still="{stillUrl}"</f:if>
                                 allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
                     </f:if>
                 </f:else>
             </f:if>
             <div class="vo-hero__overlay"></div>
+            <f:if condition="{native}">
+                <button type="button" class="vo-hero__toggle" data-vo-toggle="" hidden
+                        data-vo-label-play="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:hero.play')}"
+                        data-vo-label-pause="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:hero.pause')}"><span class="vo-hero__toggle-icon" aria-hidden="true"></span></button>
+            </f:if>
             <div class="vo-hero__content">
                 <p class="vo-hero__eyebrow">{hero.eyebrow}</p>
                 <h2 class="vo-hero__title" id="vo-hero-title-{elementUid}">{video.title_label}</h2>

@@ -6,7 +6,9 @@ import {
     autoplayWhileVisible,
     destroyVideoSource,
     applyTracks,
+    bindPlaybackToggle,
     markUnavailable,
+    motionReduced,
     observeVisibility,
 } from './video-source.js';
 import { parseConfig, safeUrl } from './native-config.js';
@@ -33,7 +35,7 @@ function applyStartTime(video, start) {
  * lightbox): playback starts at once and with sound, otherwise autoplay is muted and only while the
  * video is visible. Returns a function that tears everything down.
  */
-function setUpVideo(video, wrap, cfg, { click = false } = {}) {
+function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false, still = false, onUnplayable = null } = {}) {
     video.controls = cfg.controls;
     video.loop = cfg.loop;
     video.muted = click ? false : cfg.muted || cfg.autoplay;
@@ -60,10 +62,12 @@ function setUpVideo(video, wrap, cfg, { click = false } = {}) {
         {
             autoplay: click,
             deferLoad: !click,
-            onUnplayable: () => markUnavailable(wrap, video, cfg.unavailable),
+            shouldPlay,
+            onUnplayable: () => (onUnplayable ?? (() => markUnavailable(wrap, video, cfg.unavailable)))(),
         }
     );
-    if (!click && cfg.autoplay) {
+    // With reduced motion / data saver nothing starts by itself (`still`).
+    if (!click && !still && cfg.autoplay) {
         attached.then(() => {
             if (!gone) {
                 stopAutoplay = autoplayWhileVisible(video, wrap);
@@ -71,7 +75,7 @@ function setUpVideo(video, wrap, cfg, { click = false } = {}) {
         });
     }
 
-    return () => {
+    const teardown = () => {
         gone = true;
         stopAutoplay?.();
         destroyVideoSource(video);
@@ -79,6 +83,8 @@ function setUpVideo(video, wrap, cfg, { click = false } = {}) {
         video.removeAttribute('src');
         video.load();
     };
+    teardown.attached = attached;
+    return teardown;
 }
 
 function buildNativePlayer(cfg) {
@@ -119,6 +125,32 @@ function buildPlayer(trigger, embedAttribute = 'data-vo-embed') {
 // ---------------------------------------------------------------------------------------------
 
 let teardownPlayer = null;
+let inertElements = [];
+
+// Escape closes the lightbox wherever the focus is inside this document (close button, native
+// controls). Focus inside a cross-origin iframe never reaches the page: browsers give the iframe
+// the keyboard there, so the close button and the backdrop remain the way out.
+function onKeydown(event) {
+    if (event.key === 'Escape' && dialog) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeLightbox();
+    }
+}
+
+// showModal() already makes the page inert in current browsers; this covers the rest explicitly
+// (and screen readers that ignore the top layer).
+function inertPage(except) {
+    inertElements = [...document.body.children].filter(
+        (element) => element !== except && !element.hasAttribute('inert') && !['SCRIPT', 'STYLE', 'LINK'].includes(element.tagName)
+    );
+    inertElements.forEach((element) => element.setAttribute('inert', ''));
+}
+
+function restorePage() {
+    inertElements.forEach((element) => element.removeAttribute('inert'));
+    inertElements = [];
+}
 
 function closeLightbox() {
     if (!dialog) {
@@ -128,6 +160,8 @@ function closeLightbox() {
     dialog = null;
     teardownPlayer?.();
     teardownPlayer = null;
+    document.removeEventListener('keydown', onKeydown, true);
+    restorePage();
     if (current.open) {
         current.close();
     }
@@ -174,7 +208,11 @@ function openLightbox(player, title, closeLabel, trigger) {
     document.body.appendChild(el);
     dialog = el;
     teardownPlayer = player.teardown;
+    inertPage(el);
+    document.addEventListener('keydown', onKeydown, true);
     el.showModal();
+    // Focus starts on the close button, not inside an iframe, so Escape works right away.
+    closeBtn.focus();
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -274,12 +312,43 @@ function initHero(video) {
     }
     video.setAttribute('data-vo-ready', '');
     cfg.controls = false;
-    setUpVideo(video, video.parentElement ?? video, cfg);
+    const section = video.closest('.vo-hero');
+    const button = section?.querySelector('[data-vo-toggle]');
+    const still = motionReduced();
+    let toggle = null;
+    const teardown = setUpVideo(video, section ?? video, cfg, {
+        still,
+        // A click on the button before the source is ready is honoured once it is.
+        shouldPlay: () => toggle?.shouldPlay() ?? false,
+        onUnplayable: () => {
+            video.removeAttribute('src');
+            button?.setAttribute('hidden', '');
+        },
+    });
+    if (button) {
+        toggle = bindPlaybackToggle(video, button, teardown.attached, {
+            play: button.getAttribute('data-vo-label-play') || 'Play background video',
+            pause: button.getAttribute('data-vo-label-pause') || 'Pause background video',
+        });
+    }
+}
+
+// Hosted hero with reduced motion: the iframe would autoplay a looping video, so it is swapped for
+// the still (autoplay off) player URL the server rendered next to it.
+function initHostedHero(frame) {
+    if (!motionReduced()) {
+        return;
+    }
+    const still = safeUrl(frame.getAttribute('data-vo-still') || '');
+    if (still) {
+        frame.src = still;
+    }
 }
 
 function init() {
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
+    document.querySelectorAll('iframe[data-vo-still]').forEach(initHostedHero);
 }
 
 if (document.readyState === 'loading') {

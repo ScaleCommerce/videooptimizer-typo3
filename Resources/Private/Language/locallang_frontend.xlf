@@ -69,6 +69,12 @@
             <trans-unit id="facade.play">
                 <source>Play video: %s</source>
             </trans-unit>
+            <trans-unit id="hero.pause">
+                <source>Pause background video</source>
+            </trans-unit>
+            <trans-unit id="hero.play">
+                <source>Play background video</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

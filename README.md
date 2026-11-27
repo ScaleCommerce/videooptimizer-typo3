@@ -206,7 +206,7 @@ Good to know:
   of single/detail (*direct* — the default —, *facade* with poster and play button, or *lightbox*),
   autoplay (muted), loop, muted, controls, start position, cover fit, subtitle language. The native player
   takes the video's player theme (control bar, autoplay, loop, accent color; preload is capped at `metadata`, so no video data is fetched before playback) and loads hls.js only when needed (bundled hls.js light, Apache-2.0, see
-  `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4.
+  `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4. The lightbox is a modal `<dialog>` (Escape closes it unless the focus sits inside a cross-origin iframe; close button and backdrop always work); the native hero has a pause button and does not autoplay with reduced motion.
   With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
   `poster.videooptimizer.eu` for media, images and connections.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the

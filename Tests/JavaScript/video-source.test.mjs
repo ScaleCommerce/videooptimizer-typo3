@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
-import { applyTracks, attachVideoSource, destroyVideoSource, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
+import { applyTracks, attachVideoSource, bindPlaybackToggle, destroyVideoSource, motionReduced, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
 import { parseConfig, safeUrl } from '../../Resources/Public/Js/native-config.js';
 
 globalThis.window = globalThis;
@@ -263,4 +263,84 @@ test('parseConfig keeps only valid tracks', () => {
         { src: 'https://l.cdn.videooptimizer.eu/de.vtt', srclang: 'de', label: 'Deutsch', kind: 'captions', default: true },
     ]);
     assert.deepEqual(parseConfig(JSON.stringify({ mp4: sources.mp4 })).tracks, []);
+});
+
+class FakeButton extends EventTarget {
+    attributes = { hidden: '' };
+    classes = new Set();
+    classList = { toggle: (name, on) => (on ? this.classes.add(name) : this.classes.delete(name)) };
+    setAttribute(name, value) {
+        this.attributes[name] = value;
+    }
+    removeAttribute(name) {
+        delete this.attributes[name];
+    }
+    click() {
+        this.dispatchEvent(new Event('click'));
+    }
+}
+const labels = { play: 'Play', pause: 'Pause' };
+
+test('the toggle button is shown, labelled and follows the video state', async () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    bindPlaybackToggle(video, button, Promise.resolve(), labels);
+
+    assert.equal('hidden' in button.attributes, false);
+    assert.equal(button.attributes['aria-label'], 'Play');
+    assert.equal(button.classes.has('is-paused'), true);
+
+    await Promise.resolve();
+    button.click();
+    assert.equal(video.paused, false);
+    video.dispatchEvent(new Event('play'));
+    assert.equal(button.attributes['aria-label'], 'Pause');
+    assert.equal(button.classes.has('is-paused'), false);
+
+    video.pause = () => {
+        video.paused = true;
+    };
+    button.click();
+    video.dispatchEvent(new Event('pause'));
+    assert.equal(video.paused, true);
+    assert.equal(button.attributes['aria-label'], 'Play');
+});
+
+test('a click before the source is ready is remembered once and consumed by shouldPlay', async () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    let resolve;
+    const toggle = bindPlaybackToggle(video, button, new Promise((r) => (resolve = r)), labels);
+
+    button.click();
+    assert.equal(video.plays, 0, 'nothing to play yet');
+    assert.equal(button.attributes['aria-label'], 'Pause', 'the button already shows the requested state');
+    assert.equal(toggle.shouldPlay(), true);
+    assert.equal(toggle.shouldPlay(), false, 'consumed once');
+
+    button.click();
+    button.click();
+    assert.equal(toggle.shouldPlay(), false, 'a second click cancels the request');
+    resolve();
+});
+
+test('unbind removes the listeners', async () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    const toggle = bindPlaybackToggle(video, button, Promise.resolve(), labels);
+    await Promise.resolve();
+    toggle.unbind();
+    button.click();
+    assert.equal(video.plays, 0);
+});
+
+test('motionReduced follows prefers-reduced-motion and data saver', () => {
+    const win = (reduce, saveData) => ({
+        matchMedia: () => ({ matches: reduce }),
+        navigator: { connection: { saveData } },
+    });
+    assert.equal(motionReduced(win(true, false)), true);
+    assert.equal(motionReduced(win(false, true)), true);
+    assert.equal(motionReduced(win(false, false)), false);
+    assert.equal(motionReduced({}), false);
 });

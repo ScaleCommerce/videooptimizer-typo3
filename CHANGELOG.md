@@ -9,6 +9,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 - `Js/videooptimizer.js` is an ES module now: custom templates that load it must add `type="module"` (`<f:asset.script ... type="module" />`).
 
 ### Added
+- Accessibility: lightbox `<dialog>` closes with Escape and starts on the close button, the page behind is inert; pause/play button for the native hero background; with prefers-reduced-motion or data saver background videos do not start (hosted hero swaps to a still player) ([#17](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/17)).
 - Responsive posters: `posterSrcset` as `srcset` + `sizes` on the hero and facade poster; the hero preloads its poster with `fetchpriority="high"` ([#16](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/16)).
 - JSON-LD `uploadDate` from the embed config when it was loaded for the element, else `created_at` ([#16](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/16)).
 - Subtitle tracks of the video as `<track>` elements (language, label, kind; `default` from the API or the element's subtitle language) with `crossorigin="anonymous"` on the native player ([#15](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/15)).

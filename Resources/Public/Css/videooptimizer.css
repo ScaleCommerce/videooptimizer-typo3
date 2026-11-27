@@ -542,7 +542,7 @@ body {
 
 /* The decorative background iframe is hidden for reduced motion; the poster stays. */
 @media (prefers-reduced-motion: reduce) {
-    .vo-hero__media {
+    iframe.vo-hero__media {
         display: none;
     }
 }
@@ -651,4 +651,53 @@ body:has(dialog.vo-lightbox[open]) {
 
 .vo-hero__video {
     object-fit: cover;
+}
+
+/* Pause/play button of the native background video */
+.vo-hero__toggle {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.6);
+    color: #fff;
+    cursor: pointer;
+}
+
+.vo-hero__toggle[hidden] {
+    display: none;
+}
+
+.vo-hero__toggle:hover {
+    background: rgba(15, 23, 42, 0.85);
+}
+
+.vo-hero__toggle:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+/* Pause bars; the play triangle while paused */
+.vo-hero__toggle-icon {
+    display: block;
+    width: 14px;
+    height: 16px;
+    margin: 0 auto;
+    border-left: 4px solid currentColor;
+    border-right: 4px solid currentColor;
+}
+
+.vo-hero__toggle.is-paused .vo-hero__toggle-icon {
+    width: 0;
+    height: 0;
+    margin-left: 17px;
+    border-left: 14px solid currentColor;
+    border-right: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
 }

@@ -91,6 +91,14 @@
                 <source>Play video: %s</source>
                 <target>Video abspielen: %s</target>
             </trans-unit>
+            <trans-unit id="hero.pause" approved="yes">
+                <source>Pause background video</source>
+                <target>Hintergrundvideo anhalten</target>
+            </trans-unit>
+            <trans-unit id="hero.play" approved="yes">
+                <source>Play background video</source>
+                <target>Hintergrundvideo abspielen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

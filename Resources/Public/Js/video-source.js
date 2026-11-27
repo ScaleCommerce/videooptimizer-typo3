@@ -245,3 +245,65 @@ export function applyTracks(video, tracks, doc = document) {
         video.appendChild(element);
     }
 }
+
+/**
+ * True when the visitor asked for less motion or the browser's data saver is on: background videos
+ * must not start by themselves then.
+ */
+export function motionReduced(win = window) {
+    const reduce = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    return !!reduce || win.navigator?.connection?.saveData === true;
+}
+
+/**
+ * Pause/play button for a background video (WCAG 2.2.2). The button follows the video's state
+ * (aria-label, title, `is-paused`). Until the source is attached (hls.js may still be loading) a
+ * click cannot play anything; it is remembered and honoured once `attached` resolves. Returns
+ * `{ shouldPlay, unbind }`: `shouldPlay()` is for attachVideoSource (consumed once).
+ */
+export function bindPlaybackToggle(video, button, attached, labels) {
+    let ready = false;
+    let playRequested = false;
+    const update = (paused) => {
+        const label = paused ? labels.play : labels.pause;
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+        button.classList.toggle('is-paused', paused);
+    };
+    const onClick = () => {
+        if (!ready) {
+            playRequested = !playRequested;
+            update(!playRequested);
+            return;
+        }
+        // From here on the video's own state is the truth.
+        playRequested = false;
+        if (video.paused) {
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+    };
+    const sync = () => update(video.paused);
+    button.addEventListener('click', onClick);
+    video.addEventListener('play', sync);
+    video.addEventListener('pause', sync);
+    update(true);
+    button.removeAttribute('hidden');
+    attached.then(() => {
+        ready = true;
+    });
+
+    return {
+        shouldPlay: () => {
+            const requested = playRequested;
+            playRequested = false;
+            return requested;
+        },
+        unbind: () => {
+            button.removeEventListener('click', onClick);
+            video.removeEventListener('play', sync);
+            video.removeEventListener('pause', sync);
+        },
+    };
+}
