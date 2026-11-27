@@ -4,6 +4,8 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-27
+
 ### Added
 - Library encoding quality (performance/quality) and forced reprocess ([#4](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/4)).
 - Subtitle languages can be deleted ([#5](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/5)).
