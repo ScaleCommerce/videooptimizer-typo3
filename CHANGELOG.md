@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Every request to the VideoOptimizer API now sends a `User-Agent` header
+  `VideoOptimizer-TYPO3/<version> (TYPO3 <version>; PHP <version>; +<site URL>)` (instead of TYPO3's
+  default `TYPO3`), so the VideoOptimizer platform can show which extension versions an organization runs.
+  The site URL is the base of the current site (on the command line: the first configured site) and is
+  left out when none is known. No visitor data is sent.
+- Unit tests (PHPUnit) for the `User-Agent` builder: `composer install && vendor/bin/phpunit`.
+
 ## [1.0.2] - 2026-11-24
 
 ### Fixed

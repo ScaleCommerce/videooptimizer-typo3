@@ -314,6 +314,12 @@ call the VideoOptimizer REST API through TYPO3's HTTP client (so proxy and TLS s
 browser only receives video metadata and `https://*.videooptimizer.eu` media URLs; every ID that ends up
 in an API path is validated first.
 
+Every API request identifies the installation with a `User-Agent` header, so your organization's
+VideoOptimizer admins can see which extension versions are in use:
+`VideoOptimizer-TYPO3/1.0.3 (TYPO3 14.3.12; PHP 8.5.1; +https://www.example.com)` — extension, TYPO3 and
+PHP version plus the base URL of the site (or, on the command line, of the first configured site). No
+visitor data is part of it.
+
 API responses are cached per token in the `videooptimizer` cache with a soft TTL. When a refresh fails,
 the last good copy is served for up to 24 hours and the failure itself is cached for 30 seconds, so an
 API outage never blocks page rendering (frontend timeouts are 2 s to connect, 8 s overall, with at most
@@ -333,8 +339,9 @@ Code style: PSR-12, strict types; backend JavaScript is plain ES modules (no bui
 CSS. The extension ships an optional demo site set (`scalecommerce/videooptimizer-demo`) and the console
 command `videooptimizer:demo` (Development context only), which place all five elements on the root page.
 
-Automated tests (unit tests for the API client, functional render tests) are planned; until then,
-changes are verified manually against a demo installation.
+Unit tests: `composer install && vendor/bin/phpunit` inside the extension directory (so far they cover the
+`User-Agent` builder). More tests (API client, functional render tests) are planned; until then, changes
+are verified manually against a demo installation.
 
 ## Contributing
 

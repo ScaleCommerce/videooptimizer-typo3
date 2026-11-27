@@ -34,9 +34,17 @@
         "typo3/cms-fluid-styled-content": "^14.3",
         "typo3/cms-frontend": "^14.3"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^13.0"
+    },
     "autoload": {
         "psr-4": {
             "ScaleCommerce\\VideoOptimizer\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ScaleCommerce\\VideoOptimizer\\Tests\\": "Tests/"
         }
     },
     "extra": {

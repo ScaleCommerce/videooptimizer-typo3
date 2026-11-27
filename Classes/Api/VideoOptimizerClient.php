@@ -58,6 +58,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         private readonly CacheManager $cacheManager,
         private readonly GuzzleClientFactory $guzzleClientFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
+        private readonly UserAgent $userAgent,
     ) {
     }
 
@@ -1349,6 +1350,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
 
         $options['headers'] = ['Accept' => 'application/json'] + ($options['headers'] ?? []);
         $options['headers']['Authorization'] = 'Bearer ' . $token;
+        // Overrides TYPO3's default `User-Agent: TYPO3` ($GLOBALS['TYPO3_CONF_VARS']['HTTP']['headers']).
+        $options['headers']['User-Agent'] = $this->userAgent->get();
         $options += [
             'http_errors' => false,
             'allow_redirects' => false,
