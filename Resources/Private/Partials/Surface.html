@@ -3,6 +3,12 @@
     Player of single/detail: hosted or native, direct or behind a click (facade / lightbox).
     surface is built in AbstractVideoController::buildSurface(); every URL in it is validated there.
 </f:comment>
+<f:if condition="{surface.media}">
+    <f:then><div class="{surface.media.class}"><f:render section="Player" arguments="{surface: surface}" /></div></f:then>
+    <f:else><f:render section="Player" arguments="{surface: surface}" /></f:else>
+</f:if>
+
+<f:section name="Player">
 <f:if condition="{surface.presentation} == 'direct'">
     <f:then>
         <f:if condition="{surface.native}">
@@ -34,4 +40,5 @@
         </f:if>
     </f:else>
 </f:if>
+</f:section>
 </html>

@@ -212,6 +212,7 @@ Good to know:
   `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4. The lightbox is a modal `<dialog>` (Escape closes it unless the focus sits inside a cross-origin iframe; close button and backdrop always work); the native hero has a pause button and does not autoplay with reduced motion.
   With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
   `poster.videooptimizer.eu` for media, images and connections.
+- **Format** (single, split, spotlight): *original* (default) or 16:9, 9:16, 1:1, 4:5, 21:9. The player area takes the ratio and the video and poster fill it (cropped); the focal point X/Y in percent decides which part stays visible (native player and poster; the hosted player centers). 9:16 and 4:5 are at most 420 px wide. In a lightbox only the poster takes the format.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the
   default —, lightbox, link to a page/URL, or no button), overlay strength, height (compact / default /
   full screen) and text alignment.

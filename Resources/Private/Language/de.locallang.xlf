@@ -294,6 +294,30 @@
                 <source>One title per line, in the order of the scenes. Empty lines keep "Scene n".</source>
                 <target>Ein Titel pro Zeile, in der Reihenfolge der Szenen. Leere Zeilen behalten „Szene n“.</target>
             </trans-unit>
+            <trans-unit id="vo_format.label">
+                <source>Format</source>
+                <target>Format</target>
+            </trans-unit>
+            <trans-unit id="vo_format.description">
+                <source>Crops the video to a fixed aspect ratio (the video fills it, native player and poster). In a lightbox only the poster takes the format. The hosted player ignores the focal point.</source>
+                <target>Beschneidet das Video auf ein festes Seitenverhältnis (das Video füllt die Fläche, nativer Player und Poster). In einer Lightbox übernimmt nur das Poster das Format. Der gehostete Player ignoriert den Bildausschnitt.</target>
+            </trans-unit>
+            <trans-unit id="vo_format.original">
+                <source>Original (video ratio)</source>
+                <target>Original (Seitenverhältnis des Videos)</target>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.label">
+                <source>Focal point X (%)</source>
+                <target>Bildausschnitt X (%)</target>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.description">
+                <source>Which part stays visible when the format crops the video: 0 = left/top, 50 = center, 100 = right/bottom.</source>
+                <target>Welcher Teil sichtbar bleibt, wenn das Format das Video beschneidet: 0 = links/oben, 50 = Mitte, 100 = rechts/unten.</target>
+            </trans-unit>
+            <trans-unit id="vo_focus_y.label">
+                <source>Focal point Y (%)</source>
+                <target>Bildausschnitt Y (%)</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

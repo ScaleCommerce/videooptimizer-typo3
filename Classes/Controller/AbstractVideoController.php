@@ -7,6 +7,7 @@ namespace ScaleCommerce\VideoOptimizer\Controller;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use ScaleCommerce\VideoOptimizer\Player\AssetVersion;
+use ScaleCommerce\VideoOptimizer\Player\ElementOptions;
 use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
@@ -287,8 +288,21 @@ abstract class AbstractVideoController extends ActionController
         return [
             'src' => $src,
             'title' => (string)($video['title_label'] ?? ''),
-            'aspect' => $this->aspectRatioFromResolution((string)($video['resolution'] ?? '')),
+            'aspect' => $this->surfaceAspect($video),
         ];
+    }
+
+    /**
+     * Format of the video surface: the fixed ratio chosen on the element, or the video's own.
+     * Lightbox presentations show the video itself uncropped; only their poster takes the format.
+     *
+     * @param array<string, mixed> $video shaped video
+     */
+    protected function surfaceAspect(array $video): string
+    {
+        $format = ElementOptions::aspect(ElementOptions::format($this->currentRecord()));
+
+        return $format !== '' ? $format : $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
     }
 
     /**
@@ -504,10 +518,14 @@ abstract class AbstractVideoController extends ActionController
     {
         $embed = $this->buildEmbed($video);
         $native = $this->buildNative($video, false, $this->presentation() === 'direct');
-        $aspect = $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
-        // Aspect ratio (digits only) and the theme's accent color (validated), for the style attribute.
+        $aspect = $this->surfaceAspect($video);
+        $format = ElementOptions::format($this->currentRecord());
+        $focal = ElementOptions::focal($this->currentRecord());
+        // Aspect ratio (digits only), the focal point (integers) and the theme's accent color
+        // (validated), for the style attribute.
         $style = implode('; ', array_filter([
             $aspect !== '' ? 'aspect-ratio: ' . $aspect : '',
+            $format !== 'original' ? sprintf('--vo-focus: %d%% %d%%', $focal['x'], $focal['y']) : '',
             ($native['options']['accent'] ?? '') !== '' ? '--vo-accent: ' . $native['options']['accent'] : '',
         ]));
 
@@ -527,7 +545,23 @@ abstract class AbstractVideoController extends ActionController
             'embed' => $embed,
             'native' => $native,
             'assetVersion' => AssetVersion::get(),
+            'media' => $this->mediaWrapper($format),
         ];
+    }
+
+    /**
+     * Wrapper around the player for the options that need one (format, later scroll and mini player);
+     * null keeps the markup of elements without such options.
+     *
+     * @return array{class: string}|null
+     */
+    protected function mediaWrapper(string $format): ?array
+    {
+        if ($format === 'original') {
+            return null;
+        }
+
+        return ['class' => 'vo-media vo-media--format-' . $format . (ElementOptions::isPortrait($format) ? ' vo-media--portrait' : '')];
     }
 
     /**
@@ -681,7 +715,9 @@ abstract class AbstractVideoController extends ActionController
             'muted' => (int)($row['vo_muted'] ?? 0) === 1,
             'controls' => !array_key_exists('vo_controls', $row) || (int)$row['vo_controls'] !== 0,
             'start_time' => max(0, min(86400, (int)($row['vo_start_time'] ?? 0))),
-            'fit_cover' => (int)($row['vo_fit_cover'] ?? 0) === 1,
+            // A fixed format crops the video to fill it (not in a lightbox, which shows the whole video).
+            'fit_cover' => (int)($row['vo_fit_cover'] ?? 0) === 1
+                || (ElementOptions::format($row) !== 'original' && $this->presentation() !== 'lightbox'),
             'subtitle_lang' => $lang,
         ];
     }

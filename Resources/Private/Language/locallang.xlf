@@ -226,6 +226,24 @@
             <trans-unit id="vo_scene_titles.description">
                 <source>One title per line, in the order of the scenes. Empty lines keep "Scene n".</source>
             </trans-unit>
+            <trans-unit id="vo_format.label">
+                <source>Format</source>
+            </trans-unit>
+            <trans-unit id="vo_format.description">
+                <source>Crops the video to a fixed aspect ratio (the video fills it, native player and poster). In a lightbox only the poster takes the format. The hosted player ignores the focal point.</source>
+            </trans-unit>
+            <trans-unit id="vo_format.original">
+                <source>Original (video ratio)</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.label">
+                <source>Focal point X (%)</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.description">
+                <source>Which part stays visible when the format crops the video: 0 = left/top, 50 = center, 100 = right/bottom.</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_y.label">
+                <source>Focal point Y (%)</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

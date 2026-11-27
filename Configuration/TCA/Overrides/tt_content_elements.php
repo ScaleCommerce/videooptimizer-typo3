@@ -41,6 +41,40 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => 'left',
         ],
     ],
+    'vo_format' => [
+        'label' => $lll . 'vo_format.label',
+        'description' => $lll . 'vo_format.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => $lll . 'vo_format.original', 'value' => 'original'],
+                ['label' => '16:9', 'value' => '16-9'],
+                ['label' => '9:16', 'value' => '9-16'],
+                ['label' => '1:1', 'value' => '1-1'],
+                ['label' => '4:5', 'value' => '4-5'],
+                ['label' => '21:9', 'value' => '21-9'],
+            ],
+            'default' => 'original',
+        ],
+    ],
+    'vo_focus_x' => [
+        'label' => $lll . 'vo_focus_x.label',
+        'description' => $lll . 'vo_focus_x.description',
+        'config' => [
+            'type' => 'number',
+            'default' => 50,
+            'range' => ['lower' => 0, 'upper' => 100],
+        ],
+    ],
+    'vo_focus_y' => [
+        'label' => $lll . 'vo_focus_y.label',
+        'config' => [
+            'type' => 'number',
+            'default' => 50,
+            'range' => ['lower' => 0, 'upper' => 100],
+        ],
+    ],
     'vo_scene_count' => [
         'label' => $lll . 'vo_scene_count.label',
         'config' => [
@@ -78,7 +112,7 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
 
 $playerOptions = "
     --div--;{$lll}vo_player.div,
-    vo_player_mode, vo_presentation, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_subtitle_lang";
+    vo_player_mode, vo_presentation, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_fit_cover, vo_format, vo_focus_x, vo_focus_y, vo_subtitle_lang";
 
 $showItemSplit = "
     --palette--;;headers,
@@ -140,3 +174,11 @@ foreach ($recordTypes as $type) {
         $type['additional']
     );
 }
+
+// The single video element offers the format as well.
+ExtensionManagementUtility::addToAllTCAtypes(
+    'tt_content',
+    'vo_format, vo_focus_x, vo_focus_y',
+    'videooptimizer_videosingle',
+    'after:vo_fit_cover'
+);

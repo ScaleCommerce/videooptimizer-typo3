@@ -372,6 +372,45 @@ final class VideoControllerHelpersTest extends TestCase
         self::assertSame('', $this->controller(['vo_presentation' => 'facade'], 300, null)->call('buildSurface', self::VIDEO)['posterSrcset']);
     }
 
+    #[Test]
+    public function aFormatSetsTheAspectRatioFocalPointAndCoverFit(): void
+    {
+        $record = ['vo_format' => '9-16', 'vo_focus_x' => 30, 'vo_focus_y' => 70, 'vo_player_mode' => 'native'];
+        $surface = $this->controller($record, 300, self::EMBED)->call('buildSurface', self::VIDEO);
+
+        self::assertSame('9/16', $surface['aspect']);
+        self::assertStringContainsString('aspect-ratio: 9/16', $surface['style']);
+        self::assertStringContainsString('--vo-focus: 30% 70%', $surface['style']);
+        self::assertTrue($surface['native']['options']['cover']);
+        self::assertStringContainsString('vo-media--portrait', $surface['media']['class']);
+
+        $hosted = $this->controller(['vo_format' => '1-1'])->call('buildSurface', self::VIDEO);
+        self::assertSame('1/1', $hosted['embed']['aspect']);
+        self::assertStringContainsString('fit=cover', $hosted['embed']['src']);
+        self::assertStringNotContainsString('portrait', $hosted['media']['class']);
+    }
+
+    #[Test]
+    public function theOriginalFormatKeepsTheVideoRatioAndTheMarkup(): void
+    {
+        $surface = $this->controller([])->call('buildSurface', self::VIDEO);
+
+        self::assertSame('1920/1080', $surface['aspect']);
+        self::assertNull($surface['media']);
+        self::assertStringNotContainsString('--vo-focus', $surface['style']);
+    }
+
+    #[Test]
+    public function aLightboxKeepsTheVideoUncroppedAndOnlyTheFacadeTakesTheFormat(): void
+    {
+        $record = ['vo_format' => '9-16', 'vo_presentation' => 'lightbox', 'vo_player_mode' => 'native'];
+        $surface = $this->controller($record, 300, self::EMBED)->call('buildSurface', self::VIDEO);
+
+        self::assertSame('9/16', $surface['aspect']);
+        self::assertFalse($surface['native']['options']['cover']);
+        self::assertStringNotContainsString('fit=cover', $surface['clickSrc']);
+    }
+
     /**
      * @param list<\Throwable|array<string, mixed>> $results one entry per loadEmbed() call
      */
