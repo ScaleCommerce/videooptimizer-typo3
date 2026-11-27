@@ -179,3 +179,45 @@ export async function pollVideo(statusUrl, uuid, done, { signal, delays = [POLL_
   }
 }
 
+
+/**
+ * Decides when an uploaded custom poster counts as done. The API activates a processed poster by
+ * itself (`poster.source` becomes "custom"); if it is ready but still not active after a few polls,
+ * the caller selects it once as fallback. An earlier custom poster may still report "ready" on the
+ * first polls, so a new upload only counts after it was seen processing (or its URL changed), with
+ * a short grace period for processing that finished between two polls.
+ *
+ * check(video, attempt) returns 'wait', 'select', 'done' or 'failed'.
+ */
+export function createPosterWatcher(previous = {}) {
+  let sawProcessing = !['ready', 'failed'].includes(previous.customStatus);
+  let selected = false;
+
+  return (video, attempt) => {
+    const status = video.poster?.customStatus;
+    if (status === 'processing' || (previous.posterUrl && video.posterUrl && video.posterUrl !== previous.posterUrl)) {
+      sawProcessing = true;
+    }
+    if (status === 'processing') {
+      return 'wait';
+    }
+    if (!sawProcessing && attempt < 3) {
+      return 'wait';
+    }
+    if (status === 'failed') {
+      return 'failed';
+    }
+    if (status !== 'ready') {
+      return 'wait';
+    }
+    if (video.poster?.source === 'custom') {
+      return 'done';
+    }
+    if (attempt >= 5 && !selected) {
+      selected = true;
+      return 'select';
+    }
+
+    return 'wait';
+  };
+}

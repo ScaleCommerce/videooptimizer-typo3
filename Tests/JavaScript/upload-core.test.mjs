@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  UploadAbort, format, formatBytes, pollVideo, uploadParts, withParams,
+  UploadAbort, createPosterWatcher, format, formatBytes, pollVideo, uploadParts, withParams,
 } from '../../Resources/Public/JavaScript/upload-core.js';
 
 const file = (size) => ({ size, slice: (start, end) => ({ size: Math.min(end, size) - start }) });
@@ -158,4 +158,44 @@ test('pollVideo stops when cancelled', async () => {
     pollVideo('https://x.example/s', 'u1', () => false, { signal: controller.signal, delays: [60000, 60000], request: async () => ({}) }),
     UploadAbort,
   );
+});
+
+const poster = (customStatus, source = 'thumbnail', posterUrl = 'u1') => ({ poster: { customStatus, source }, posterUrl });
+
+test('a new poster is done once it is ready and active', () => {
+  const check = createPosterWatcher({ customStatus: 'none' });
+  assert.equal(check(poster('processing'), 0), 'wait');
+  assert.equal(check(poster('ready', 'thumbnail'), 1), 'wait');
+  assert.equal(check(poster('ready', 'custom'), 2), 'done');
+});
+
+test('a ready but never activated poster is selected once after five polls', () => {
+  const check = createPosterWatcher({ customStatus: 'none' });
+  check(poster('processing'), 0);
+  const verdicts = [1, 2, 3, 4, 5, 6, 7].map((attempt) => check(poster('ready', 'thumbnail'), attempt));
+  assert.deepEqual(verdicts, ['wait', 'wait', 'wait', 'wait', 'select', 'wait', 'wait']);
+});
+
+test('an earlier ready poster does not end the wait before the new upload was processed', () => {
+  const check = createPosterWatcher({ customStatus: 'ready', posterUrl: 'u1' });
+  assert.equal(check(poster('ready', 'custom', 'u1'), 0), 'wait');
+  assert.equal(check(poster('ready', 'custom', 'u1'), 1), 'wait');
+  assert.equal(check(poster('processing', 'custom', 'u1'), 2), 'wait');
+  assert.equal(check(poster('ready', 'custom', 'u1'), 3), 'done');
+});
+
+test('a changed poster URL counts as processed', () => {
+  const check = createPosterWatcher({ customStatus: 'ready', posterUrl: 'u1' });
+  assert.equal(check(poster('ready', 'custom', 'u2'), 0), 'done');
+});
+
+test('processing that was missed between two polls ends after the grace period', () => {
+  const check = createPosterWatcher({ customStatus: 'ready', posterUrl: 'u1' });
+  assert.equal(check(poster('ready', 'custom', 'u1'), 2), 'wait');
+  assert.equal(check(poster('ready', 'custom', 'u1'), 3), 'done');
+});
+
+test('a failed poster is reported', () => {
+  const check = createPosterWatcher({ customStatus: 'none' });
+  assert.equal(check(poster('failed'), 0), 'failed');
 });

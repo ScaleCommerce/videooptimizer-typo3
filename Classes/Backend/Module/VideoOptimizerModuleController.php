@@ -678,7 +678,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             'status' => 'videooptimizer_video_status',
             'files' => 'videooptimizer_poster_files',
             'fromFile' => 'videooptimizer_poster_from_file',
-        ], 'js.poster.', ['customStatus' => $customStatus, 'source' => (string)($poster['source'] ?? '')]));
+        ], 'js.poster.', ['customStatus' => $customStatus, 'source' => (string)($poster['source'] ?? ''), 'posterUrl' => MediaUrl::safe($video['poster_url'] ?? '')]));
 
         $this->addBackButton($view, $this->moduleUrl('videos', ['libraryId' => $libraryId]), 'nav.backToVideos');
         return $this->renderView($view, 'Thumbnail', 'thumbnail.docTitle', $videoTitle);

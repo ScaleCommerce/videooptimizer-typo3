@@ -14,7 +14,7 @@
 import Modal from '@typo3/backend/modal.js';
 import { SeverityEnum } from '@typo3/backend/enum/severity.js';
 import {
-  UploadAbort, format, formatBytes, pollVideo, putBlob, requestJson, uploadParts, withParams,
+  UploadAbort, createPosterWatcher, format, formatBytes, pollVideo, putBlob, requestJson, uploadParts, withParams,
 } from '@scalecommerce/videooptimizer/upload-core.js';
 
 const el = (tag, className, text) => {
@@ -256,17 +256,13 @@ class PosterEditor {
   /** Poll until the custom poster is processed and active (or failed), then reload. */
   async waitForPoster() {
     this.setMessage(this.labels.processing);
-    let sawProcessing = !['ready', 'failed'].includes(this.config.state?.customStatus);
+    const watcher = createPosterWatcher(this.config.state);
     const video = await pollVideo(this.config.urls.status, this.config.videoUuid, (v, attempt) => {
-      const status = v.poster?.customStatus;
-      if (status === 'processing') {
-        sawProcessing = true;
-        return false;
+      const verdict = watcher(v, attempt);
+      if (verdict === 'select') {
+        requestJson('POST', this.config.urls.select, { uuid: this.config.videoUuid, source: 'custom' }).catch(() => {});
       }
-      if (status === 'failed') {
-        return sawProcessing || attempt >= 3;
-      }
-      return status === 'ready' && (v.poster?.source === 'custom' || attempt >= 5) && (sawProcessing || attempt >= 3);
+      return verdict === 'done' || verdict === 'failed';
     }, { delays: [2000, 5000], maxMs: 2 * 60 * 1000 });
 
     if (video.poster?.customStatus === 'failed') {
