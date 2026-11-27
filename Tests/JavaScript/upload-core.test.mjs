@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  UploadAbort, createPosterWatcher, format, formatBytes, pollVideo, uploadParts, withParams,
+  UploadAbort, createPosterWatcher, format, refreshList, formatBytes, pollVideo, uploadParts, withParams,
 } from '../../Resources/Public/JavaScript/upload-core.js';
 
 const file = (size) => ({ size, slice: (start, end) => ({ size: Math.min(end, size) - start }) });
@@ -198,4 +198,23 @@ test('processing that was missed between two polls ends after the grace period',
 test('a failed poster is reported', () => {
   const check = createPosterWatcher({ customStatus: 'none' });
   assert.equal(check(poster('failed'), 0), 'failed');
+});
+
+const node = (name) => ({ name, replaced: null, replaceWith(other) { this.replaced = other; } });
+const doc = (list) => ({ querySelector: (selector) => (selector === '[data-vo-list]' ? list : null) });
+
+test('refreshList swaps the fresh list into the page', async () => {
+  const current = node('old');
+  const fresh = node('new');
+  const replaced = await refreshList('https://x.example/list', doc(current), { fetchText: async () => '<html>', parse: () => doc(fresh) });
+
+  assert.equal(replaced, true);
+  assert.equal(current.replaced, fresh);
+});
+
+test('refreshList leaves the page alone when either side has no list', async () => {
+  const current = node('old');
+  assert.equal(await refreshList('u', doc(current), { fetchText: async () => '', parse: () => doc(null) }), false);
+  assert.equal(await refreshList('u', doc(null), { fetchText: async () => '', parse: () => doc(node('new')) }), false);
+  assert.equal(current.replaced, null);
 });

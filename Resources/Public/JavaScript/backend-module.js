@@ -6,6 +6,7 @@
  */
 import Modal from '@typo3/backend/modal.js';
 import { SeverityEnum } from '@typo3/backend/enum/severity.js';
+import { refreshList } from '@scalecommerce/videooptimizer/upload-core.js';
 
 document.addEventListener('submit', (event) => {
     const form = event.target;
@@ -47,7 +48,7 @@ if (refreshRoot !== null && refreshRoot.dataset.voAutoRefresh) {
     };
 
     // Ask for each encoding video individually instead of reloading (and re-reading) the whole list;
-    // reload once one of them has finished (or failed).
+    // refresh the list once one of them has finished (or failed).
     const finished = async () => {
         const rows = Array.from(document.querySelectorAll('[data-vo-processing]'));
         for (const row of rows) {
@@ -67,11 +68,15 @@ if (refreshRoot !== null && refreshRoot.dataset.voAutoRefresh) {
     };
 
     const tick = async () => {
-        if (document.hidden || busy() || !(await finished())) {
-            window.setTimeout(tick, 10000);
-            return;
+        // Nothing encoding (e.g. everything is ready): no requests at all.
+        if (!document.hidden && !busy() && document.querySelector('[data-vo-processing]') !== null && await finished()) {
+            try {
+                await refreshList(window.location.href, document);
+            } catch (e) {
+                // keep the old list; the next tick tries again
+            }
         }
-        window.location.reload();
+        window.setTimeout(tick, 10000);
     };
 
     window.setTimeout(tick, 10000);

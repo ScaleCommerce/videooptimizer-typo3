@@ -7,7 +7,7 @@
 <f:layout name="Module" />
 
 <f:section name="Content">
-    <div{f:if(condition: hasProcessing, then: ' data-vo-auto-refresh="{statusUrl}"')}>
+    <div data-vo-auto-refresh="{statusUrl}">
         <h1>
             {library.name}
             <f:if condition="{hasProcessing}">
@@ -46,6 +46,7 @@
             </div>
         </form>
 
+        <div data-vo-list>
         <div class="table-fit">
             <table class="table table-hover vo-table">
                 <thead>
@@ -168,6 +169,7 @@
                 </f:if>
             </p>
         </f:if>
+        </div>
     </div>
 
     <f:if condition="{library.media_managed}">

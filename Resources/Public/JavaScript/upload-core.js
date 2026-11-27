@@ -221,3 +221,23 @@ export function createPosterWatcher(previous = {}) {
     return 'wait';
   };
 }
+
+/**
+ * Re-reads the page and swaps its video list (`[data-vo-list]`: table and paging line) into `root`,
+ * so a new or finished video shows up without a reload and without losing the open panels.
+ * Resolves true when the list was replaced.
+ */
+export async function refreshList(url, root, {
+  fetchText = async (u) => (await fetch(u, { credentials: 'same-origin', headers: { Accept: 'text/html' } })).text(),
+  parse = (html) => new DOMParser().parseFromString(html, 'text/html'),
+} = {}) {
+  const next = parse(await fetchText(url));
+  const current = root.querySelector('[data-vo-list]');
+  const fresh = next.querySelector('[data-vo-list]');
+  if (!current || !fresh) {
+    return false;
+  }
+  current.replaceWith(fresh);
+
+  return true;
+}

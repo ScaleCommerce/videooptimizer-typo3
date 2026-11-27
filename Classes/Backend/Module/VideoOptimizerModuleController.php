@@ -355,8 +355,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('tagFilter', $tagFilter);
         $view->assign('allTags', array_map(static fn(array $t) => (string)($t['name'] ?? ''), array_filter($allTags, 'is_array')));
         $view->assign('hasProcessing', $hasProcessing);
-        // Only the encoding videos are polled (one status call each); the list reloads once one finished.
-        $view->assign('statusUrl', $hasProcessing ? (string)GeneralUtility::makeInstance(BackendUriBuilder::class)->buildUriFromRoute('ajax_videooptimizer_video_status') : '');
+        // Only encoding videos are polled (one status call each); the list is refreshed once one finished.
+        $view->assign('statusUrl', (string)GeneralUtility::makeInstance(BackendUriBuilder::class)->buildUriFromRoute('ajax_videooptimizer_video_status'));
         $view->assign('backUrl', $this->moduleUrl('list'));
         $view->assign('videosUrl', $this->moduleUrl('videos', ['libraryId' => $libraryId]));
         // A GET form drops the action URL's query string, so carry the route token as a hidden field.

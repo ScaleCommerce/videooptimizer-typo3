@@ -14,7 +14,7 @@
 import Modal from '@typo3/backend/modal.js';
 import { SeverityEnum } from '@typo3/backend/enum/severity.js';
 import {
-  UploadAbort, createPosterWatcher, format, formatBytes, pollVideo, putBlob, requestJson, uploadParts, withParams,
+  UploadAbort, createPosterWatcher, format, formatBytes, pollVideo, putBlob, refreshList, requestJson, uploadParts, withParams,
 } from '@scalecommerce/videooptimizer/upload-core.js';
 
 const el = (tag, className, text) => {
@@ -144,6 +144,7 @@ class VideoUpload {
         tags: this.field('tags'),
         metadata: this.field('metadata'),
       });
+      await this.refresh(); // the new video shows up as "processing" right away
       await this.watch(uuid);
     } catch (error) {
       cancel.remove();
@@ -164,6 +165,7 @@ class VideoUpload {
       const video = await pollVideo(this.config.urls.status, uuid, (v) => v.status === 'ready' || v.status === 'failed' || v.ready === true);
       this.progress.value = 100;
       cancelPoll.remove();
+      await this.refresh();
       if (video.status === 'failed') {
         this.setMessage(video.error ? format(this.labels.failed, video.error) : this.labels.failedNoReason, 'danger');
       } else {
@@ -175,6 +177,15 @@ class VideoUpload {
       this.progress.remove();
       this.setMessage(this.labels.pollLost, 'warning');
       this.addAction(this.labels.showList, 'btn-primary', () => window.location.reload());
+    }
+  }
+
+  /** Swap the fresh video list into the page (no reload); failures are not fatal. */
+  async refresh() {
+    try {
+      await refreshList(window.location.href, document);
+    } catch (e) {
+      // the "Show videos" button still reloads the page
     }
   }
 
