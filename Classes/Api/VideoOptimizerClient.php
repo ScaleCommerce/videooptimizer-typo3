@@ -293,11 +293,11 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                     return [];
                 }
                 if ($exception->getHttpStatus() === 429 || $exception->getHttpStatus() >= 500) {
-                    $this->markEmbedFailure();
+                    $this->markEmbedFailure('HTTP ' . $exception->getHttpStatus());
                 }
                 throw $exception;
             } catch (NetworkException $exception) {
-                $this->markEmbedFailure();
+                $this->markEmbedFailure($exception->getMessage());
                 throw $exception;
             }
 
@@ -315,9 +315,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
     }
 
-    private function markEmbedFailure(): void
+    /**
+     * Pauses /embed for a minute. Logged once per pause, not once per skipped lookup.
+     */
+    private function markEmbedFailure(string $reason): void
     {
+        if ($this->embedFailFast()) {
+            return;
+        }
         $this->getCache()->set($this->key('embed-failfast'), 1, [], self::EMBED_FAILFAST_SECONDS);
+        $this->logger?->warning('VideoOptimizer /embed failed, pausing embed requests for a minute.', ['reason' => $reason]);
     }
 
     /**
@@ -363,17 +370,18 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             foreach ($chunk as $uuid) {
                 $promises[$uuid] = $this->client()->requestAsync('GET', self::BASE_URL . '/embed/' . rawurlencode($uuid), $options);
             }
-            $failed = false;
+            $failed = '';
             foreach (\GuzzleHttp\Promise\Utils::settle($promises)->wait() as $uuid => $result) {
                 $response = $result['value'] ?? null;
                 if (!$response instanceof ResponseInterface) {
-                    $failed = true;
+                    $reason = $result['reason'] ?? null;
+                    $failed = $reason instanceof \Throwable ? $reason->getMessage() : 'transport error';
                     continue;
                 }
                 $status = $response->getStatusCode();
                 $body = json_decode((string)$response->getBody(), true);
                 if ($status === 429 || $status >= 500) {
-                    $failed = true;
+                    $failed = 'HTTP ' . $status;
                 } elseif ($status === 404 || ($status < 400 && is_array($body))) {
                     $payload = $status < 400 && is_array($body['data'] ?? null) ? $body['data'] : [];
                     $envelope = ['payload' => $payload, 'fetchedAt' => time(), 'tags' => ['vo_video_' . $uuid]];
@@ -383,8 +391,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                     $cache->set($this->key('embed:' . $uuid), $envelope, $envelope['tags'], self::CACHE_LIFETIME);
                 }
             }
-            if ($failed) {
-                $this->markEmbedFailure();
+            if ($failed !== '') {
+                $this->markEmbedFailure($failed);
 
                 return;
             }

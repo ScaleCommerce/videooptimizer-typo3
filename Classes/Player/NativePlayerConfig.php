@@ -32,8 +32,8 @@ final class NativePlayerConfig
      * (autoplay, loop, muted can only be switched on there, controls only off). A background video
      * (hero) takes only the preload and accent from the theme.
      *
-     * A theme without control bar (`controls: false`) only applies when the video really autoplays
-     * (muted); otherwise visitors keep the controls. A theme with `interactive: false` makes the
+     * A theme without control bar (`controls: false`) only applies to a directly shown video that
+     * really autoplays (muted); otherwise, and for everything started by a click, visitors keep the controls. A theme with `interactive: false` makes the
      * player a static background (no pointer events, no controls, `static` option) only when it is
      * shown directly and autoplays; behind a click it stays operable.
      */
@@ -66,8 +66,10 @@ final class NativePlayerConfig
         $themeFlag = static fn (string $key): bool => !$background && ($theme[$key] ?? false) === true;
         $autoplay = $settings['autoplay'] || $themeFlag('autoplay');
         $static = $direct && !$background && $autoplay && ($theme['interactive'] ?? true) === false;
+        // Hidden only for a directly shown, muted autoplay; players started by a click (facade,
+        // lightbox, cards) play with sound and keep their controls.
         $controls = $settings['controls'] && !$static
-            && ($background || !$autoplay || ($theme['controls'] ?? true) !== false);
+            && ($background || !$direct || !$autoplay || ($theme['controls'] ?? true) !== false);
         $muted = $settings['muted'] || $themeFlag('mutedStart') || $autoplay;
         $loop = $settings['loop'] || $themeFlag('loopButton');
         // The organization theme defaults to "auto"; the native player never loads segments before

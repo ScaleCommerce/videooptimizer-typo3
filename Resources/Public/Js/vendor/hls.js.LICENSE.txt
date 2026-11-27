@@ -1,5 +1,5 @@
 Third-party notice: hls.light-1.7.4.min.js is hls.js v1.7.4 (light build, https://github.com/video-dev/hls.js),
-unmodified except for the removed source map reference and the file extension (.js, so every web server
+unmodified except for the removed source map reference, an added one-line banner comment at the top and the file extension (.js, so every web server
 sends a JavaScript MIME type; ES module syntax). Copyright (c) 2017 Dailymotion (http://www.dailymotion.com).
 Licensed under the Apache License, Version 2.0; the full text follows.
 

@@ -7,11 +7,12 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 ### Upgrade
 - Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns `vo_player_mode` and `vo_presentation`, then `cache:flush`. Existing elements keep the hosted player, shown directly.
 - `Js/videooptimizer.js` is an ES module now: custom templates that load it must add `type="module"` (`<f:asset.script ... type="module" />`).
+- The 2.0.0 rule `@media (prefers-reduced-motion) { .vo-hero__media { display: none } }` is gone. Overridden `Hero.html` templates must switch the hosted iframe to `data-vo-src` plus a `<noscript>` iframe, add the `data-vo-toggle` button and load `Js/videooptimizer.js` as a module with `data-vo-version="{assetVersion}"` ([#17](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/17)).
 
 ### Changed
 - Hosted heroes and the hosted facade/lightbox now also call `GET /embed` (poster `srcset`, cached with the video) ([#16](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/16)).
 - The hosted hero iframe is loaded by `Js/videooptimizer.js` (a `<noscript>` iframe plays without JavaScript); with reduced motion it loads only after play ([#17](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/17)).
-- Theme `controls: false` only applies to autoplaying videos, `interactive: false` only to directly shown autoplaying players ([#14](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/14)).
+- Theme `controls: false` only applies to directly shown, muted autoplaying videos (not to facade, lightbox or cards), `interactive: false` only to directly shown autoplaying players ([#14](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/14)).
 
 ### Added
 - Accessibility: pause/play button on every autoplaying native player (hero and single/detail) and on the hosted hero (swaps the iframe for the poster); prefers-reduced-motion and data saver keep them still; lightbox `<dialog>` closes with Escape and starts on the close button, the page behind is inert; ([#17](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/17)).
@@ -24,7 +25,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 - Native hero: background `<video>` that plays only while visible ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
 - Frontend CSP mutations (effective with the site's frontend CSP): `img-src`/`media-src`/`connect-src` `https://*.cdn.videooptimizer.eu`, `img-src https://poster.videooptimizer.eu`, `media-src blob:`, `frame-src https://*.videooptimizer.eu` ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
 - hls.js light 1.7.4 bundled as `Js/vendor/hls.light-1.7.4.min.js` (Apache-2.0, license in `Js/vendor/`); a failed load logs a console warning and falls back to MP4 ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
-- Grid/list cards load their embed configs in parallel (max 8); after a transport error, 429 or 5xx the rest of the request and the next minute fall back to the hosted player ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
+- Grid/list cards load their embed configs in parallel (max 8); after a transport error, 429 or 5xx the rest of the request and the next minute fall back to the hosted player; such a page is cached for 60 s at most ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
 
 ## [2.0.0] - 2026-11-27
 

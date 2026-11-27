@@ -181,19 +181,23 @@ final class NativePlayerConfigTest extends TestCase
     #[Test]
     public function aHiddenControlBarInTheThemeOrTheElementHidesTheControls(): void
     {
-        self::assertFalse(self::options(['controls' => false, 'autoplay' => true])['controls'], 'theme without control bar and autoplay');
+        self::assertFalse(self::options(['controls' => false, 'autoplay' => true], [], false, true)['controls'], 'theme without control bar and autoplay');
         self::assertFalse(self::options([], ['controls' => false])['controls']);
         self::assertTrue(self::options([])['controls']);
     }
 
     #[Test]
-    public function aThemeWithoutControlBarOnlyAppliesWhenTheVideoAutoplays(): void
+    public function aThemeWithoutControlBarOnlyAppliesToADirectMutedAutoplay(): void
     {
-        self::assertTrue(self::options(['controls' => false])['controls'], 'no autoplay: keep the controls');
-        self::assertTrue(self::options(['controls' => false, 'mutedStart' => true])['controls']);
-        self::assertTrue(self::options(['controls' => false], ['autoplay' => false])['controls']);
-        self::assertFalse(self::options(['controls' => false], ['autoplay' => true])['controls'], 'element autoplay counts too');
-        self::assertTrue(self::options(['controls' => true, 'autoplay' => true])['controls']);
+        $theme = ['controls' => false, 'autoplay' => true];
+
+        self::assertFalse(self::options($theme, [], false, true)['controls'], 'direct autoplay');
+        self::assertTrue(self::options($theme)['controls'], 'started by a click (facade, lightbox, card): sound and controls');
+        self::assertTrue(self::options(['controls' => false], [], false, true)['controls'], 'direct but no autoplay');
+        self::assertTrue(self::options(['controls' => false, 'mutedStart' => true], [], false, true)['controls']);
+        self::assertFalse(self::options(['controls' => false], ['autoplay' => true], false, true)['controls'], 'element autoplay counts too');
+        self::assertTrue(self::options(['controls' => true, 'autoplay' => true], [], false, true)['controls']);
+        self::assertFalse(self::options([], ['controls' => false])['controls'], 'the element can always hide the controls');
     }
 
     #[Test]

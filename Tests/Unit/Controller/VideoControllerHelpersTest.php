@@ -384,6 +384,7 @@ final class VideoControllerHelpersTest extends TestCase
             public array $calls = [];
             /** @var list<list<string>> */
             public array $prefetched = [];
+            public int $degraded = 0;
 
             protected function currentRecord(): array
             {
@@ -406,6 +407,11 @@ final class VideoControllerHelpersTest extends TestCase
                 $this->prefetched[] = $uuids;
             }
 
+            protected function degradePageCache(): void
+            {
+                $this->degraded++;
+            }
+
             protected function unavailableLabel(): string
             {
                 return '';
@@ -417,11 +423,11 @@ final class VideoControllerHelpersTest extends TestCase
             }
 
             /**
-             * @return array{calls: list<string>, prefetched: list<list<string>>}
+             * @return array{calls: list<string>, prefetched: list<list<string>>, degraded: int}
              */
             public function state(): array
             {
-                return ['calls' => $this->calls, 'prefetched' => $this->prefetched];
+                return ['calls' => $this->calls, 'prefetched' => $this->prefetched, 'degraded' => $this->degraded];
             }
         };
         $controller->results = $results;
@@ -430,36 +436,41 @@ final class VideoControllerHelpersTest extends TestCase
     }
 
     #[Test]
-    public function afterOneTransportErrorTheRestOfTheRequestSkipsEmbedLookups(): void
+    public function aFailedEmbedLookupFallsBackToHostedAndShortensThePageCache(): void
     {
-        $controller = $this->brokenEmbedController([new NetworkException('down')]);
+        $controller = $this->brokenEmbedController([new NetworkException('down'), self::EMBED]);
 
         self::assertNull($controller->call('embedConfig', 'a'));
-        self::assertNull($controller->call('embedConfig', 'b'));
-        self::assertNull($controller->call('embedConfig', 'c'));
-        self::assertSame(['a'], $controller->state()['calls']);
-    }
+        self::assertSame(1, $controller->state()['degraded']);
 
-    #[Test]
-    public function rateLimitsAndServerErrorsBreakTheRequestButAMissingVideoDoesNot(): void
-    {
-        foreach ([429, 500, 503] as $status) {
-            $controller = $this->brokenEmbedController([new ApiErrorException('x', $status)]);
-            $controller->call('embedConfig', 'a');
-            $controller->call('embedConfig', 'b');
-            self::assertSame(['a'], $controller->state()['calls'], (string)$status);
-        }
-
-        $controller = $this->brokenEmbedController([new ApiErrorException('nope', 404), self::EMBED]);
-        self::assertNull($controller->call('embedConfig', 'a'));
-        self::assertNotNull($controller->call('embedConfig', 'b'));
+        self::assertNotNull($controller->call('embedConfig', 'b'), 'a later (cached) lookup is not blocked by the earlier failure');
+        self::assertSame(1, $controller->state()['degraded']);
         self::assertSame(['a', 'b'], $controller->state()['calls']);
     }
 
     #[Test]
-    public function nativeCardsPrefetchTheirEmbedsOnceAndFallBackToHostedAfterAFailure(): void
+    public function aMissingVideoIsNotADegradedPage(): void
     {
-        $controller = $this->brokenEmbedController([new NetworkException('down')]);
+        $controller = $this->brokenEmbedController([[]]);
+
+        self::assertNull($controller->call('embedConfig', 'a'));
+        self::assertSame(0, $controller->state()['degraded']);
+    }
+
+    #[Test]
+    public function theDegradedPageLifetimeIsCappedAtSixtySeconds(): void
+    {
+        $controller = $this->controller([], 3600);
+        $controller->call('degradePageCache');
+        $controller->call('registerPageCache', ['abc-1'], false);
+
+        self::assertSame([60, 3600], $this->lifetimes, 'the collector keeps the smaller value');
+    }
+
+    #[Test]
+    public function nativeCardsPrefetchOnceAndOnlyTheFailedOnesFallBackToHosted(): void
+    {
+        $controller = $this->brokenEmbedController([new NetworkException('down'), self::EMBED, self::EMBED]);
         $videos = [
             ['uuid' => 'a', 'processing' => false, 'title_label' => 'A'],
             ['uuid' => 'b', 'processing' => true, 'title_label' => 'B'],
@@ -470,7 +481,10 @@ final class VideoControllerHelpersTest extends TestCase
         $cards = $controller->call('withNativeCards', $videos);
 
         self::assertSame([['a', 'c', 'd']], $controller->state()['prefetched']);
-        self::assertSame(['a'], $controller->state()['calls'], 'one failed lookup, then no more');
-        self::assertSame(['', '', '', ''], array_column($cards, 'native_json'));
+        self::assertSame('', $cards[0]['native_json'], 'the failed card falls back to hosted');
+        self::assertSame('', $cards[1]['native_json'], 'processing');
+        self::assertStringContainsString('master.m3u8', $cards[2]['native_json']);
+        self::assertStringContainsString('master.m3u8', $cards[3]['native_json'], 'cached cards stay native');
+        self::assertSame(1, $controller->state()['degraded']);
     }
 }

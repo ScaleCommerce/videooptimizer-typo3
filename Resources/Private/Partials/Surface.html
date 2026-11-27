@@ -16,7 +16,7 @@
     </f:then>
     <f:else>
         <f:if condition="{surface.native} || {surface.embed}">
-            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{surface.assetVersion}" />
             <div class="vo-surface" data-vo-surface="{surface.presentation}" data-vo-title="{surface.title}"
                  data-vo-close-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close')}"
                  <f:if condition="{surface.native}">data-vo-native="{surface.native.json}"</f:if>

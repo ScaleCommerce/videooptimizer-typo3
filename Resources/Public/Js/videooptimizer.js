@@ -1,9 +1,12 @@
 // Frontend of the VideoOptimizer content elements (ES module, loaded with type="module"):
 // native player (hls.js loaded only when needed), click-to-play facade, lightbox dialog and the
 // background video of the hero. The hosted player stays a plain iframe.
-// The sub-modules carry the version query of this entry (TYPO3 appends it to the script URL), so a
-// browser cache that keeps JavaScript for a year cannot pair a new entry with an old sub-module.
-const version = new URL(import.meta.url).search;
+// The sub-modules are imported with a version stamp the server computes from all module files
+// (data-vo-version on this script's tag), so a browser cache that keeps JavaScript for a year, or a
+// TYPO3 that rewrites the entry's file name, cannot pair a new entry with an old sub-module. Without
+// the attribute the version query of the entry URL is used.
+const stamp = document.querySelector('script[type="module"][data-vo-version]')?.getAttribute('data-vo-version') ?? '';
+const version = /^[0-9a-f]{6,64}$/.test(stamp) ? '?v=' + stamp : new URL(import.meta.url).search;
 const [
     {
         attachVideoSource,

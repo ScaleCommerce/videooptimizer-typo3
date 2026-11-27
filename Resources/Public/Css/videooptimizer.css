@@ -540,8 +540,6 @@ body {
     font-weight: 600;
 }
 
-/* The decorative background iframe is hidden for reduced motion; the poster stays. */
-
 body:has(dialog.vo-lightbox[open]) {
     overflow: hidden;
 }

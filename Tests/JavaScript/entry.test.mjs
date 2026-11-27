@@ -26,7 +26,9 @@ test('the entry imports only what the sub-modules export', () => {
     }
 });
 
-test('the sub-modules are imported with the version of the entry', () => {
+test('the sub-modules are imported with the server version stamp, falling back to the entry query', () => {
+    assert.match(entry, /data-vo-version/);
+    assert.match(entry, /new URL\(import\.meta\.url\)\.search/);
     assert.match(entry, /import\('\.\/video-source\.js' \+ version\)/);
     assert.match(entry, /import\('\.\/native-config\.js' \+ version\)/);
 });

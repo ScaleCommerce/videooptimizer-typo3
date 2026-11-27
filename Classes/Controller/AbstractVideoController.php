@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ScaleCommerce\VideoOptimizer\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
+use ScaleCommerce\VideoOptimizer\Player\AssetVersion;
 use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
-use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
-use ScaleCommerce\VideoOptimizer\Api\NetworkException;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
@@ -47,12 +47,19 @@ abstract class AbstractVideoController extends ActionController
     /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
     private array $uploadDates = [];
 
-    /** Set after the first /embed failure of this request (see embedConfig()). */
-    private bool $embedBroken = false;
-
     public function __construct(
         protected readonly VideoOptimizerClient $client,
     ) {
+    }
+
+    /**
+     * Every template gets the version stamp of the frontend modules (see AssetVersion).
+     */
+    protected function htmlResponse(?string $html = null): ResponseInterface
+    {
+        $this->view->assign('assetVersion', AssetVersion::get());
+
+        return parent::htmlResponse($html);
     }
 
     // ------------------------------------------------------------------
@@ -311,25 +318,32 @@ abstract class AbstractVideoController extends ActionController
      */
     protected function embedConfig(string $uuid): ?array
     {
-        // After the first transport error / 429 / 5xx the rest of the request does not try again:
-        // every further element falls back to the hosted player at once.
-        if ($this->embedBroken) {
-            return null;
-        }
+        // The client answers from the cache first (also stale entries), and after a transport error,
+        // 429 or 5xx it pauses /embed for a minute service-wide (VideoOptimizerClient::embedFailFast):
+        // later lookups that are not cached fail at once, without waiting for the API.
         try {
             $config = $this->loadEmbed($uuid);
-        } catch (VideoOptimizerException|\InvalidArgumentException $exception) {
-            if ($exception instanceof NetworkException
-                || ($exception instanceof ApiErrorException && ($exception->getHttpStatus() === 429 || $exception->getHttpStatus() >= 500))
-            ) {
-                $this->embedBroken = true;
-            }
+        } catch (VideoOptimizerException|\InvalidArgumentException) {
+            // This element falls back to the hosted player: do not keep that page in the page cache.
+            $this->degradePageCache();
 
             return null;
         }
         $this->rememberUploadDate($uuid, $config);
 
         return $config !== [] ? $config : null;
+    }
+
+    /**
+     * An /embed failure shortens the page cache lifetime like an API failure does (see
+     * PAGE_CACHE_ERROR_LIFETIME), so the hosted fallback does not outlive the outage.
+     */
+    protected function degradePageCache(): void
+    {
+        $collector = $this->request->getAttribute('frontend.cache.collector');
+        if ($collector instanceof CacheDataCollectorInterface) {
+            $collector->restrictMaximumLifetime(self::PAGE_CACHE_ERROR_LIFETIME);
+        }
     }
 
     /**
@@ -444,7 +458,7 @@ abstract class AbstractVideoController extends ActionController
      * Everything the Surface partial needs for single/detail.
      *
      * @param array<string, mixed> $video shaped video
-     * @return array{presentation: string, posterSrcset: string, posterSizes: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
+     * @return array{assetVersion: string, presentation: string, posterSrcset: string, posterSizes: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
      */
     protected function buildSurface(array $video): array
     {
@@ -472,6 +486,7 @@ abstract class AbstractVideoController extends ActionController
             'clickSrc' => (string)($video['lightbox_url'] ?? ''),
             'embed' => $embed,
             'native' => $native,
+            'assetVersion' => AssetVersion::get(),
         ];
     }
 

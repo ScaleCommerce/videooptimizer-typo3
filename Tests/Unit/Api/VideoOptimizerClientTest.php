@@ -92,6 +92,43 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function theEmbedPauseIsLoggedOncePerPauseNotPerSkippedLookup(): void
+    {
+        $messages = [];
+        $logger = $this->createStub(\Psr\Log\LoggerInterface::class);
+        $logger->method('warning')->willReturnCallback(static function (string|\Stringable $message) use (&$messages): void {
+            $messages[] = (string)$message;
+        });
+        $client = $this->client([new Response(503, [], '{}')]);
+        $client->setLogger($logger);
+
+        for ($i = 0; $i < 3; $i++) {
+            try {
+                $client->getEmbed($i === 0 ? self::UUID : ($i === 1 ? self::UUID_B : self::UUID_C));
+            } catch (\ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException) {
+            }
+        }
+
+        self::assertCount(1, array_filter($messages, static fn (string $m): bool => str_contains($m, 'pausing embed requests')));
+    }
+
+    #[Test]
+    public function prefetchLogsTheFailureThatPausesEmbedRequests(): void
+    {
+        $reasons = [];
+        $logger = $this->createStub(\Psr\Log\LoggerInterface::class);
+        $logger->method('warning')->willReturnCallback(static function (string|\Stringable $message, array $context = []) use (&$reasons): void {
+            $reasons[] = $context['reason'] ?? '';
+        });
+        $client = $this->client([new Response(429, [], '{}'), self::json(['data' => []])]);
+        $client->setLogger($logger);
+
+        $client->prefetchEmbeds([self::UUID, self::UUID_B]);
+
+        self::assertSame(['HTTP 429'], $reasons);
+    }
+
+    #[Test]
     public function aMissingVideoDoesNotPauseEmbedRequests(): void
     {
         $client = $this->client([new Response(404, [], '{}')]);

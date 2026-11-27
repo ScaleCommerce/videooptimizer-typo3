@@ -13,7 +13,7 @@
             </f:if>
             <f:if condition="{native}">
                 <f:then>
-                    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+                    <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{assetVersion}" />
                     <video class="vo-hero__media vo-hero__video" data-vo-native="{native.json}" data-vo-hero="" playsinline preload="{native.options.preload}"
                            aria-hidden="true" tabindex="-1"<f:if condition="{native.options.loop}"> loop</f:if> muted<f:if condition="{native.poster}"> poster="{native.poster}"</f:if>>
                         <f:if condition="{native.mp4}"><source src="{native.mp4}" type="video/mp4" /></f:if>
@@ -21,7 +21,7 @@
                 </f:then>
                 <f:else>
                     <f:if condition="{embedUrl}">
-                        <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+                        <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{assetVersion}" />
                         <f:comment>The script loads the player (not at all before a click with reduced motion); without JavaScript the noscript iframe plays as before.</f:comment>
                         <iframe class="vo-hero__media" data-vo-src="{embedUrl}" title="{video.title_label}" aria-hidden="true" tabindex="-1"
                                 allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
@@ -31,7 +31,7 @@
                 </f:else>
             </f:if>
             <div class="vo-hero__overlay"></div>
-            <f:if condition="{heroAutoplay}">
+            <f:if condition="{heroAutoplay} || {native}">
                 <button type="button" class="vo-toggle vo-hero__toggle" data-vo-toggle="" hidden
                         data-vo-label-play="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:hero.play')}"
                         data-vo-label-pause="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:hero.pause')}"><span class="vo-toggle__icon" aria-hidden="true"></span></button>
@@ -57,7 +57,7 @@
                             <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener">{ctaLabel} &#9654;</a>
                         </f:if>
                         <f:if condition="{hero.ctaMode} == 'lightbox' && {video.embed_src}">
-                            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" />
+                            <f:asset.script identifier="videooptimizer-lightbox" src="EXT:videooptimizer/Resources/Public/Js/videooptimizer.js" type="module" data-vo-version="{assetVersion}" />
                             <a class="vo-hero__cta" href="{video.embed_src}" target="_blank" rel="noopener"
                                data-vo-lightbox="" data-vo-embed="{video.lightbox_url}" data-vo-title="{video.title_label}"<f:if condition="{nativeLightbox}"> data-vo-native="{nativeLightbox.json}"</f:if>
                                data-vo-close-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:lightbox.close')}">{ctaLabel} &#9654;</a>
