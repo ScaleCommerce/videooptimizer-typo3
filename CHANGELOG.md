@@ -2,7 +2,7 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning: [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [2.1.0] - 2026-11-28
 
 ### Upgrade
 - Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns `vo_player_mode` and `vo_presentation`, then `cache:flush`. Existing elements keep the hosted player, shown directly.
