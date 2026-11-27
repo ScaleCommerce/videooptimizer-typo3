@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
+use ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException as ClientInvalidArgumentException;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use ScaleCommerce\VideoOptimizer\Backend\Fal\PosterFileBrowser;
@@ -15,7 +16,7 @@ use ScaleCommerce\VideoOptimizer\Backend\Input\InputException;
 use ScaleCommerce\VideoOptimizer\Backend\Input\UploadRequest;
 use ScaleCommerce\VideoOptimizer\Backend\Security\ModuleAccess;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
-use ScaleCommerce\VideoOptimizer\Security\PublicHttpsUrl;
+use ScaleCommerce\VideoOptimizer\Security\StorageOrigin;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
@@ -48,11 +49,12 @@ final class UploadController
                 throw new InputException('flash.upload.notManaged');
             }
 
+            $origin = $this->client->getStorageOrigin();
             $session = $this->client->initiateUpload($input['libraryId'], $input['filename'], $input['contentType'], $input['fileSize']);
             $parts = [];
             foreach (is_array($session['parts'] ?? null) ? $session['parts'] : [] as $part) {
                 $url = is_array($part) ? ($part['url'] ?? null) : null;
-                if (!is_string($url) || !PublicHttpsUrl::isAllowed($url)) {
+                if (!is_string($url) || !StorageOrigin::allows($origin, $url)) {
                     throw new VideoOptimizerException('VideoOptimizer upload failed: unexpected API response.');
                 }
                 $parts[] = ['partNumber' => (int)$part['partNumber'], 'url' => $url];
@@ -102,7 +104,7 @@ final class UploadController
         return $this->guarded($request, 'manage', function () use ($request): ResponseInterface {
             $input = UploadRequest::posterInitiate($this->body($request));
             $session = $this->client->initiatePosterUpload($input['uuid'], $input['contentType'], $input['fileSize']);
-            if (!PublicHttpsUrl::isAllowed($session['uploadUrl'])) {
+            if (!StorageOrigin::allows($this->client->getStorageOrigin(), $session['uploadUrl'])) {
                 throw new VideoOptimizerException('VideoOptimizer poster upload failed: unexpected API response.');
             }
 
@@ -117,6 +119,19 @@ final class UploadController
             $body = $this->body($request);
             $uuid = UploadRequest::uuid($body['uuid'] ?? null, 'flash.poster.badVideo');
             $this->client->completePosterUpload($uuid, is_string($body['key'] ?? null) ? $body['key'] : '');
+
+            return new JsonResponse(['success' => true]);
+        });
+    }
+
+    /** POST {uuid, source}: activate the custom poster or a thumbnail frame (fallback when the API did not activate it itself). */
+    public function posterSelectAction(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->guarded($request, 'manage', function () use ($request): ResponseInterface {
+            $body = $this->body($request);
+            $uuid = UploadRequest::uuid($body['uuid'] ?? null, 'flash.poster.badVideo');
+            $source = ($body['source'] ?? '') === 'thumbnail' ? 'thumbnail' : 'custom';
+            $this->client->selectPoster($uuid, $source);
 
             return new JsonResponse(['success' => true]);
         });
@@ -151,10 +166,18 @@ final class UploadController
             $uuid = UploadRequest::uuid($body['uuid'] ?? null, 'flash.poster.badVideo');
             $chosen = $this->posterFiles->resolve($this->backendUser(), is_string($body['file'] ?? null) ? $body['file'] : '');
 
-            $path = $chosen['file']->getStorage()->getFileForLocalProcessing($chosen['file'], false);
-            $session = $this->client->initiatePosterUpload($uuid, $chosen['contentType'], $chosen['size']);
-            $this->client->putToPresignedUrl($session['uploadUrl'], $path, $chosen['contentType']);
-            $this->client->completePosterUpload($uuid, $session['key']);
+            $storage = $chosen['file']->getStorage();
+            $path = $storage->getFileForLocalProcessing($chosen['file'], false);
+            try {
+                $session = $this->client->initiatePosterUpload($uuid, $chosen['contentType'], $chosen['size']);
+                $this->client->putToPresignedUrl($session['uploadUrl'], $path, $chosen['contentType']);
+                $this->client->completePosterUpload($uuid, $session['key']);
+            } finally {
+                // Local storages hand out the original file; remote drivers a temporary copy we must delete.
+                if ($storage->getDriverType() !== 'Local' && is_file($path)) {
+                    @unlink($path);
+                }
+            }
 
             return new JsonResponse(['success' => true]);
         });
@@ -197,7 +220,8 @@ final class UploadController
             return new JsonResponse(['error' => 'Method not allowed.'], 405);
         }
         $user = $GLOBALS['BE_USER'] ?? null;
-        $allowed = $permission === null ? ModuleAccess::mayView($user) : ModuleAccess::mayDo($user, $permission);
+        // Changes need module access AND the custom option.
+        $allowed = ModuleAccess::mayView($user) && ($permission === null || ModuleAccess::mayDo($user, $permission));
         if (!$allowed) {
             return new JsonResponse(['error' => $this->label('flash.noPermission')], 403);
         }
@@ -206,11 +230,18 @@ final class UploadController
             return $action();
         } catch (InputException $exception) {
             return new JsonResponse(['error' => $this->label($exception->labelKey, $exception->arguments), 'code' => $exception->labelKey], 400);
+        } catch (ClientInvalidArgumentException $exception) {
+            // Our own validation of a value (id, type, size, URL): the request was wrong, not the API.
+            return new JsonResponse(['error' => $exception->getMessage(), 'code' => 'invalid_request'], 400);
         } catch (VideoOptimizerException $exception) {
             $this->logger->warning('VideoOptimizer upload request failed: ' . $exception->getMessage(), ['exception' => $exception]);
             $code = $exception instanceof ApiErrorException ? $exception->getApiCode() : null;
 
             return new JsonResponse(['error' => $exception->getMessage(), 'code' => $code], 502);
+        } catch (\Throwable $exception) {
+            $this->logger->error('VideoOptimizer upload request crashed: ' . $exception->getMessage(), ['exception' => $exception]);
+
+            return new JsonResponse(['error' => 'The request could not be processed.', 'code' => 'internal_error'], 500);
         }
     }
 

@@ -11,6 +11,7 @@ use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ServerRequestInterface;
 use ScaleCommerce\VideoOptimizer\Security\PublicHttpsUrl;
+use ScaleCommerce\VideoOptimizer\Security\StorageOrigin;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Cache\CacheManager;
@@ -100,6 +101,15 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         return $secret;
+    }
+
+    /**
+     * Origin of the object storage behind the presigned upload URLs: extension configuration
+     * `storageOrigin`, default https://object-storage.scale.sc (also used for the backend CSP).
+     */
+    public function getStorageOrigin(): string
+    {
+        return StorageOrigin::normalize($this->extConf('storageOrigin'));
     }
 
     private function extConf(string $key): string
@@ -671,8 +681,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             if ($data['metadata'] === null) {
                 $payload['metadata'] = null;
             } elseif (is_array($data['metadata'])) {
-                // Up to 10 keys to set plus up to 10 keys to remove (null) in one merge.
-                $payload['metadata'] = $this->normalizeMetadata($data['metadata'], 20);
+                $payload['metadata'] = $this->normalizeMetadata($data['metadata']);
             }
         }
         if ($payload === []) {
@@ -841,7 +850,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      */
     public function putToPresignedUrl(string $url, string $filePath, string $contentType): void
     {
-        if (!PublicHttpsUrl::isAllowed($url)) {
+        if (!PublicHttpsUrl::isAllowed($url) || !StorageOrigin::allows($this->getStorageOrigin(), $url)) {
             throw new InvalidArgumentException('The storage URL is not allowed.');
         }
         $handle = is_file($filePath) ? fopen($filePath, 'rb') : false;
@@ -1506,6 +1515,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     private function normalizeMetadata(array $metadata, int $maxKeys = 10): array
     {
         $result = [];
+        $sets = 0;
         foreach ($metadata as $key => $value) {
             $key = trim((string)$key);
             if ($key === '' || mb_strlen($key) > 40 || preg_match('/^[a-z0-9][a-z0-9_.-]{0,39}$/', $key) !== 1) {
@@ -1523,10 +1533,12 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             if ($value === '') {
                 continue;
             }
-            $result[$key] = $value;
-            if (count($result) >= $maxKeys) {
-                break;
+            // The API limit counts the keys being set; removals (null) do not count.
+            if ($sets >= $maxKeys) {
+                continue;
             }
+            $result[$key] = $value;
+            $sets++;
         }
 
         return $result;

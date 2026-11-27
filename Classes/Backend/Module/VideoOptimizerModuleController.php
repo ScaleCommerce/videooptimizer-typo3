@@ -673,6 +673,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('posterConfig', $this->browserConfig($libraryId, $videoUuid, [
             'initiate' => 'videooptimizer_poster_initiate',
             'complete' => 'videooptimizer_poster_complete',
+            'select' => 'videooptimizer_poster_select',
             'remove' => 'videooptimizer_poster_remove',
             'status' => 'videooptimizer_video_status',
             'files' => 'videooptimizer_poster_files',

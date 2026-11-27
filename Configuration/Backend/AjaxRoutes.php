@@ -45,6 +45,11 @@ return [
         'methods' => ['POST'],
         'target' => UploadController::class . '::posterCompleteAction',
     ],
+    'videooptimizer_poster_select' => [
+        'path' => '/videooptimizer/poster/select',
+        'methods' => ['POST'],
+        'target' => UploadController::class . '::posterSelectAction',
+    ],
     'videooptimizer_poster_remove' => [
         'path' => '/videooptimizer/poster/remove',
         'methods' => ['POST'],

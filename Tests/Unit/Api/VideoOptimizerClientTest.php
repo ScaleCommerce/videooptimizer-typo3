@@ -142,23 +142,6 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
-    public function metadataUpdateKeepsRemovalsBeyondTenSets(): void
-    {
-        $metadata = [];
-        for ($i = 1; $i <= 10; $i++) {
-            $metadata['set' . $i] = 'v';
-        }
-        for ($i = 1; $i <= 5; $i++) {
-            $metadata['del' . $i] = null;
-        }
-        $client = $this->client([self::json(['data' => ['uuid' => self::UUID]])]);
-
-        $client->updateVideo(self::UUID, ['metadata' => $metadata]);
-
-        self::assertCount(15, json_decode((string)$this->history[0]['request']->getBody(), true)['metadata']);
-    }
-
-    #[Test]
     public function getVideoFreshBypassesTheCache(): void
     {
         $client = $this->client([
@@ -222,7 +205,7 @@ final class VideoOptimizerClientTest extends TestCase
     #[Test]
     public function initiatesAPosterUpload(): void
     {
-        $client = $this->client([self::json(['data' => ['key' => 'posters/x.jpg', 'uploadUrl' => 'https://s3.example.com/put?sig=1']])]);
+        $client = $this->client([self::json(['data' => ['key' => 'posters/x.jpg', 'uploadUrl' => 'https://object-storage.scale.sc/put?sig=1']])]);
 
         $session = $client->initiatePosterUpload(self::UUID, 'image/png', 1234);
 
@@ -284,7 +267,7 @@ final class VideoOptimizerClientTest extends TestCase
 
                 return new Response(200);
             }]);
-            $client->putToPresignedUrl('https://s3.example.com/put?sig=1', $file, 'image/jpeg');
+            $client->putToPresignedUrl('https://object-storage.scale.sc/put?sig=1', $file, 'image/jpeg');
         } finally {
             @unlink($file);
         }
@@ -310,13 +293,51 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function storageUploadsRefuseOtherPublicHosts(): void
+    {
+        $file = tempnam(sys_get_temp_dir(), 'vo_test_');
+        file_put_contents($file, 'IMG');
+        try {
+            $this->expectException(\ScaleCommerce\VideoOptimizer\Api\InvalidArgumentException::class);
+            $this->client([])->putToPresignedUrl('https://s3.example.com/put?sig=1', $file, 'image/jpeg');
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    #[Test]
+    public function theStorageOriginDefaultsToTheProductionStorage(): void
+    {
+        self::assertSame('https://object-storage.scale.sc', $this->client([])->getStorageOrigin());
+    }
+
+    #[Test]
+    public function metadataRemovalsDoNotCountTowardsTheKeyLimit(): void
+    {
+        $metadata = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $metadata['set' . $i] = 'v';
+        }
+        for ($i = 1; $i <= 5; $i++) {
+            $metadata['del' . $i] = null;
+        }
+        $client = $this->client([self::json(['data' => ['uuid' => self::UUID]])]);
+
+        $client->updateVideo(self::UUID, ['metadata' => $metadata]);
+
+        $sent = json_decode((string)$this->history[0]['request']->getBody(), true)['metadata'];
+        self::assertCount(10, array_filter($sent, static fn($v) => $v !== null));
+        self::assertCount(5, array_filter($sent, static fn($v) => $v === null));
+    }
+
+    #[Test]
     public function storageUploadFailuresAreApiErrors(): void
     {
         $file = tempnam(sys_get_temp_dir(), 'vo_test_');
         file_put_contents($file, 'IMG');
         try {
             $this->expectException(ApiErrorException::class);
-            $this->client([new Response(403)])->putToPresignedUrl('https://s3.example.com/put', $file, 'image/jpeg');
+            $this->client([new Response(403)])->putToPresignedUrl('https://object-storage.scale.sc/put', $file, 'image/jpeg');
         } finally {
             @unlink($file);
         }

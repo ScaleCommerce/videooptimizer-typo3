@@ -37,7 +37,7 @@ final class UploadControllerTest extends TestCase
     {
         $user = $this->createStub(BackendUserAuthentication::class);
         $user->method('isAdmin')->willReturn($admin);
-        $user->method('check')->willReturn(false);
+        $user->method('check')->willReturn($admin);
         $GLOBALS['BE_USER'] = $user;
 
         $language = $this->createStub(LanguageService::class);
@@ -70,7 +70,7 @@ final class UploadControllerTest extends TestCase
     }
 
     /** @return array<string, mixed> */
-    private static function session(string $partUrl = 'https://storage.videooptimizer.eu/part1?sig=abc'): array
+    private static function session(string $partUrl = 'https://object-storage.scale.sc/part1?sig=abc'): array
     {
         return ['data' => [
             'uuid' => self::UUID, 'key' => 'uploads/x.mp4', 'uploadId' => 'up1', 'partSize' => 8388608, 'partCount' => 1,
@@ -93,7 +93,7 @@ final class UploadControllerTest extends TestCase
         self::assertSame(200, $response->getStatusCode());
         $data = self::data($response);
         self::assertSame(self::UUID, $data['uuid']);
-        self::assertSame('https://storage.videooptimizer.eu/part1?sig=abc', $data['parts'][0]['url']);
+        self::assertSame('https://object-storage.scale.sc/part1?sig=abc', $data['parts'][0]['url']);
         self::assertSame(8388608, $data['partSize']);
         self::assertStringNotContainsString('test-token', (string)$response->getBody());
         // The token went to the API, in the header of the API call only.
@@ -136,6 +136,63 @@ final class UploadControllerTest extends TestCase
         self::assertSame(400, $response->getStatusCode());
         self::assertSame('flash.upload.badType', self::data($response)['code']);
         self::assertSame([], $this->history);
+    }
+
+    #[Test]
+    public function initiateRefusesPresignedUrlsOutsideTheStorage(): void
+    {
+        $controller = $this->controller([
+            self::json(['data' => ['id' => self::LIBRARY, 'media_managed' => true]]),
+            self::json(self::session('https://evil.example.com/part?sig=abc')),
+        ]);
+
+        self::assertSame(502, $controller->initiateAction(self::post(self::INITIATE))->getStatusCode());
+    }
+
+    #[Test]
+    public function ourOwnValidationErrorsAre400(): void
+    {
+        $controller = $this->controller([]);
+
+        $response = $controller->posterCompleteAction(self::post(['uuid' => self::UUID, 'key' => "bad\x01key"]));
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame('invalid_request', self::data($response)['code']);
+    }
+
+    #[Test]
+    public function mutationsNeedModuleAccessAndTheOption(): void
+    {
+        $user = $this->createStub(BackendUserAuthentication::class);
+        $user->method('isAdmin')->willReturn(false);
+        $user->method('check')->willReturnCallback(static fn(string $type, string $value): bool => $type === 'custom_options');
+        $controller = $this->controller([self::json(['data' => ['success' => true]])]);
+        $GLOBALS['BE_USER'] = $user;
+
+        self::assertSame(403, $controller->posterRemoveAction(self::post(['uuid' => self::UUID]))->getStatusCode());
+        self::assertSame([], $this->history);
+    }
+
+    #[Test]
+    public function selectsThePosterSource(): void
+    {
+        $controller = $this->controller([self::json(['data' => ['success' => true]])]);
+
+        self::assertSame(200, $controller->posterSelectAction(self::post(['uuid' => self::UUID, 'source' => 'custom']))->getStatusCode());
+        self::assertSame(['source' => 'custom'], json_decode((string)$this->history[0]['request']->getBody(), true));
+        self::assertSame('/api/v1/videos/' . self::UUID . '/poster/select', $this->history[0]['request']->getUri()->getPath());
+    }
+
+    #[Test]
+    public function unexpectedErrorsAreJson500(): void
+    {
+        $controller = $this->controller([static fn() => throw new \LogicException('boom')]);
+
+        $response = $controller->posterRemoveAction(self::post(['uuid' => self::UUID]));
+
+        self::assertSame(500, $response->getStatusCode());
+        self::assertSame('internal_error', self::data($response)['code']);
+        self::assertStringNotContainsString('boom', (string)$response->getBody());
     }
 
     #[Test]
@@ -243,13 +300,13 @@ final class UploadControllerTest extends TestCase
     public function posterFlowInitiatesCompletesAndRemoves(): void
     {
         $controller = $this->controller([
-            self::json(['data' => ['key' => 'posters/p.png', 'uploadUrl' => 'https://storage.videooptimizer.eu/put?sig=1']]),
+            self::json(['data' => ['key' => 'posters/p.png', 'uploadUrl' => 'https://object-storage.scale.sc/put?sig=1']]),
             self::json(['data' => ['success' => true]]),
             self::json(['data' => ['success' => true]]),
         ]);
 
         $init = self::data($controller->posterInitiateAction(self::post(['uuid' => self::UUID, 'contentType' => 'image/png', 'fileSize' => 2000])));
-        self::assertSame('https://storage.videooptimizer.eu/put?sig=1', $init['uploadUrl']);
+        self::assertSame('https://object-storage.scale.sc/put?sig=1', $init['uploadUrl']);
         self::assertSame(200, $controller->posterCompleteAction(self::post(['uuid' => self::UUID, 'key' => 'posters/p.png']))->getStatusCode());
         self::assertSame(200, $controller->posterRemoveAction(self::post(['uuid' => self::UUID]))->getStatusCode());
         self::assertSame(['POST', 'POST', 'DELETE'], array_map(fn(array $h): string => $h['request']->getMethod(), $this->history));
