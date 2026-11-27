@@ -627,6 +627,26 @@
                 <source>%s (add-on, not unlocked)</source>
                 <target>%s (Add-on, nicht freigeschaltet)</target>
             </trans-unit>
+            <trans-unit id="list.quality.performance">
+                <source>Performance (compact files, fast start)</source>
+                <target>Performance (kompakte Dateien, schneller Start)</target>
+            </trans-unit>
+            <trans-unit id="list.quality.quality">
+                <source>Quality (finer detail, larger files)</source>
+                <target>Qualität (mehr Detailtreue, größere Dateien)</target>
+            </trans-unit>
+            <trans-unit id="list.edit.quality">
+                <source>Encoding quality</source>
+                <target>Encodierqualität</target>
+            </trans-unit>
+            <trans-unit id="list.create.quality">
+                <source>Encoding quality</source>
+                <target>Encodierqualität</target>
+            </trans-unit>
+            <trans-unit id="list.reprocess.force">
+                <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
+                <target>Auch fertige Varianten neu encodieren (nach Änderung der Encodierqualität erforderlich)</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

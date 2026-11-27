@@ -433,7 +433,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     /**
      * Create a library. `name` is required; the other keys are optional.
      *
-     * @param array{name: string, description?: string, resolutions?: string, codec?: string} $data
+     * @param array{name: string, description?: string, resolutions?: string, codec?: string, encoding_quality?: string} $data
      * @return array<string, mixed> the created library
      */
     public function createLibrary(array $data): array
@@ -449,9 +449,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
-     * Update name/description/codec/resolutions of a library.
+     * Update name/description/codec/resolutions/encoding quality of a library.
      *
-     * @param array{name?: string, description?: string, codec?: string, resolutions?: string} $data
+     * @param array{name?: string, description?: string, codec?: string, resolutions?: string, encoding_quality?: string} $data
      * @return array<string, mixed> the updated library
      */
     public function updateLibrary(string $id, array $data): array
@@ -475,14 +475,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
-     * Re-queue encoding for every video in the library.
+     * Re-queue encoding for the videos of the library. Finished renditions are kept unless
+     * $force is set (needed after changing `encoding_quality`; the API limits this to 5 calls/hour).
      *
      * @return array<string, mixed>
      */
-    public function reprocessLibrary(string $id): array
+    public function reprocessLibrary(string $id, bool $force = false): array
     {
         $id = $this->assertLibraryId($id);
-        $body = $this->request('POST', '/libraries/' . rawurlencode($id) . '/reprocess', retry: false);
+        $options = $force ? ['json' => ['force' => true]] : [];
+        $body = $this->request('POST', '/libraries/' . rawurlencode($id) . '/reprocess', $options, retry: false);
         $this->flushTags('vo_library_' . $id, 'vo_lists');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];

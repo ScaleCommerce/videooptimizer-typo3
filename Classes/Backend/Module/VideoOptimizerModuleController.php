@@ -41,6 +41,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
     private const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi', 'mpeg', 'mpg'];
     private const MAX_SOURCE_URL_LENGTH = 2048;
+    private const ENCODING_QUALITIES = ['performance', 'quality'];
 
     private const LLL = 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:';
 
@@ -103,6 +104,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 'name' => (string)($library['name'] ?? ''),
                 'description' => (string)($library['description'] ?? ''),
                 'codec' => (string)($library['codec'] ?? ''),
+                'encodingQuality' => in_array($library['encoding_quality'] ?? '', self::ENCODING_QUALITIES, true) ? (string)$library['encoding_quality'] : '',
                 'resolutions' => implode(', ', $resolutionKeys),
                 'resolutionKeys' => $resolutionKeys,
                 'resolutionOptions' => $resolutionOptions,
@@ -140,6 +142,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $description = '',
         array $resolutions = [],
         string $codec = '',
+        string $encodingQuality = '',
     ): ResponseInterface {
         if (($denied = $this->guardMutation('manage', 'list', [])) !== null) {
             return $denied;
@@ -164,6 +167,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
                     $payload[$key] = $value;
                 }
             }
+            if (in_array($encodingQuality, self::ENCODING_QUALITIES, true)) {
+                $payload['encoding_quality'] = $encodingQuality;
+            }
 
             $library = $this->client->createLibrary($payload);
             $id = substr((string)($library['id'] ?? ''), 0, 8);
@@ -185,6 +191,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $description = '',
         array $resolutions = [],
         string $codec = '',
+        string $encodingQuality = '',
     ): ResponseInterface {
         if (($denied = $this->guardMutation('manage', 'list', [])) !== null) {
             return $denied;
@@ -201,6 +208,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 if ($value !== '') {
                     $payload[$key] = $value;
                 }
+            }
+            if (in_array($encodingQuality, self::ENCODING_QUALITIES, true)) {
+                $payload['encoding_quality'] = $encodingQuality;
             }
             // The description is optional, so a submitted empty field means "clear it".
             $parsedBody = $this->request->getParsedBody();
@@ -243,7 +253,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         return $this->redirect('list');
     }
 
-    public function reprocessLibraryAction(string $libraryId = '', string $formToken = ''): ResponseInterface
+    public function reprocessLibraryAction(string $libraryId = '', string $formToken = '', string $force = ''): ResponseInterface
     {
         if (($denied = $this->guardMutation('delete', 'list', [])) !== null) {
             return $denied;
@@ -261,7 +271,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         try {
-            $result = $this->client->reprocessLibrary($libraryId);
+            $result = $this->client->reprocessLibrary($libraryId, $force === '1');
             $queued = (int)($result['queued'] ?? 0);
             if ($queued > 0) {
                 $this->flash('flash.library.reprocessQueued', ContextualFeedbackSeverity::OK, [$queued]);

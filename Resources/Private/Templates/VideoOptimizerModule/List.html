@@ -63,7 +63,12 @@
                             </f:if>
                         </td>
                         <td>{library.video_count}</td>
-                        <td>{library.codec}</td>
+                        <td>
+                            {library.codec}
+                            <f:if condition="{library.encodingQuality}">
+                                <div class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.{library.encodingQuality}" /></div>
+                            </f:if>
+                        </td>
                         <td>{library.resolutions}</td>
                         <td>
                             <f:if condition="{library.media_managed}">
@@ -110,6 +115,14 @@
                                                 </f:for>
                                             </select>
                                         </div>
+                                        <div class="col-md-3">
+                                            <label for="vo-edit-quality-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.quality" /></label>
+                                            <select id="vo-edit-quality-{library.id}" name="encodingQuality" class="form-select">
+                                                <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
+                                                <option value="performance"{f:if(condition: '{library.encodingQuality} == \'performance\'', then: ' selected')}><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.performance" /></option>
+                                                <option value="quality"{f:if(condition: '{library.encodingQuality} == \'quality\'', then: ' selected')}><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.quality" /></option>
+                                            </select>
+                                        </div>
                                         <div class="col-12 d-flex flex-wrap align-items-center gap-3">
                                             <button type="submit" class="btn btn-primary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.submit" /></button>
                                             <span class="small text-body-secondary"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.hint" /></span>
@@ -122,6 +135,10 @@
                                         <form action="{library.reprocessUrl}" method="post" data-vo-confirm="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.confirm')}" data-vo-confirm-title="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:confirm.title')}">
                                             <input type="hidden" name="libraryId" value="{library.id}">
                                             <input type="hidden" name="formToken" value="{library.reprocessToken}">
+                                            <div class="form-check form-check-inline">
+                                                <input type="checkbox" id="vo-force-{library.id}" name="force" value="1" class="form-check-input">
+                                                <label for="vo-force-{library.id}" class="form-check-label small"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.force" /></label>
+                                            </div>
                                             <button type="submit" class="btn btn-warning btn-sm"><core:icon identifier="actions-refresh" size="small" /> <f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.reprocess.submit" /></button>
                                         </form>
                                     </f:if>
@@ -171,6 +188,14 @@
                     <f:for each="{encodings.resolutions}" as="resolution">
                         <option value="{resolution.key}"{f:if(condition: '{resolution.available} == 0', then: ' disabled')}>{resolution.label}</option>
                     </f:for>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="vo-lib-quality" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.quality" /></label>
+                <select id="vo-lib-quality" name="encodingQuality" class="form-select">
+                    <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
+                    <option value="performance"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.performance" /></option>
+                    <option value="quality"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.quality.quality" /></option>
                 </select>
             </div>
             <div class="col-12">

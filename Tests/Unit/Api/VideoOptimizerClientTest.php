@@ -87,6 +87,30 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function reprocessSendsForceOnlyWhenRequested(): void
+    {
+        $client = $this->client([self::json(['data' => ['queued' => 2]]), self::json(['data' => ['queued' => 2]])]);
+
+        $client->reprocessLibrary(self::UUID);
+        $client->reprocessLibrary(self::UUID, true);
+
+        self::assertSame('', (string)$this->history[0]['request']->getBody());
+        self::assertSame(['force' => true], json_decode((string)$this->history[1]['request']->getBody(), true));
+        self::assertSame('/api/v1/libraries/' . self::UUID . '/reprocess', $this->history[1]['request']->getUri()->getPath());
+    }
+
+    #[Test]
+    public function libraryPayloadKeepsEncodingQuality(): void
+    {
+        $client = $this->client([self::json(['data' => ['id' => self::UUID, 'encoding_quality' => 'quality']])]);
+
+        $client->updateLibrary(self::UUID, ['encoding_quality' => 'quality']);
+
+        self::assertSame(['encoding_quality' => 'quality'], json_decode((string)$this->history[0]['request']->getBody(), true));
+        self::assertSame('PATCH', $this->history[0]['request']->getMethod());
+    }
+
+    #[Test]
     public function readsTheFailureReasonOfAVideo(): void
     {
         self::assertSame('Download failed: HTTP 404', VideoOptimizerClient::errorReason(['status' => 'failed', 'error' => ' Download failed: HTTP 404 ']));

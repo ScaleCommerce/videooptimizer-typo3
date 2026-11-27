@@ -472,6 +472,21 @@
             <trans-unit id="list.encoding.locked">
                 <source>%s (add-on, not unlocked)</source>
             </trans-unit>
+            <trans-unit id="list.quality.performance">
+                <source>Performance (compact files, fast start)</source>
+            </trans-unit>
+            <trans-unit id="list.quality.quality">
+                <source>Quality (finer detail, larger files)</source>
+            </trans-unit>
+            <trans-unit id="list.edit.quality">
+                <source>Encoding quality</source>
+            </trans-unit>
+            <trans-unit id="list.create.quality">
+                <source>Encoding quality</source>
+            </trans-unit>
+            <trans-unit id="list.reprocess.force">
+                <source>Also re-encode finished renditions (required after changing the encoding quality)</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
