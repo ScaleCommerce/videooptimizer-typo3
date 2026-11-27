@@ -6,6 +6,8 @@ namespace ScaleCommerce\VideoOptimizer\Tests\Unit\Controller;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
+use ScaleCommerce\VideoOptimizer\Api\NetworkException;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Controller\AbstractVideoController;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
@@ -59,6 +61,10 @@ final class VideoControllerHelpersTest extends TestCase
             protected function embedConfig(string $uuid): ?array
             {
                 return $this->embed;
+            }
+
+            protected function prefetchEmbeds(array $uuids): void
+            {
             }
 
             protected function unavailableLabel(): string
@@ -364,5 +370,107 @@ final class VideoControllerHelpersTest extends TestCase
 
         self::assertSame('', $this->controller([], 300, $embed)->call('buildSurface', self::VIDEO)['posterSrcset']);
         self::assertSame('', $this->controller(['vo_presentation' => 'facade'], 300, null)->call('buildSurface', self::VIDEO)['posterSrcset']);
+    }
+
+    /**
+     * @param list<\Throwable|array<string, mixed>> $results one entry per loadEmbed() call
+     */
+    private function brokenEmbedController(array $results): object
+    {
+        $controller = new class ((new \ReflectionClass(VideoOptimizerClient::class))->newInstanceWithoutConstructor()) extends AbstractVideoController {
+            /** @var list<\Throwable|array<string, mixed>> */
+            public array $results = [];
+            /** @var list<string> */
+            public array $calls = [];
+            /** @var list<list<string>> */
+            public array $prefetched = [];
+
+            protected function currentRecord(): array
+            {
+                return ['vo_player_mode' => 'native'];
+            }
+
+            protected function loadEmbed(string $uuid): array
+            {
+                $this->calls[] = $uuid;
+                $result = array_shift($this->results) ?? [];
+                if ($result instanceof \Throwable) {
+                    throw $result;
+                }
+
+                return $result;
+            }
+
+            protected function prefetchEmbeds(array $uuids): void
+            {
+                $this->prefetched[] = $uuids;
+            }
+
+            protected function unavailableLabel(): string
+            {
+                return '';
+            }
+
+            public function call(string $method, mixed ...$arguments): mixed
+            {
+                return $this->$method(...$arguments);
+            }
+
+            /**
+             * @return array{calls: list<string>, prefetched: list<list<string>>}
+             */
+            public function state(): array
+            {
+                return ['calls' => $this->calls, 'prefetched' => $this->prefetched];
+            }
+        };
+        $controller->results = $results;
+
+        return $controller;
+    }
+
+    #[Test]
+    public function afterOneTransportErrorTheRestOfTheRequestSkipsEmbedLookups(): void
+    {
+        $controller = $this->brokenEmbedController([new NetworkException('down')]);
+
+        self::assertNull($controller->call('embedConfig', 'a'));
+        self::assertNull($controller->call('embedConfig', 'b'));
+        self::assertNull($controller->call('embedConfig', 'c'));
+        self::assertSame(['a'], $controller->state()['calls']);
+    }
+
+    #[Test]
+    public function rateLimitsAndServerErrorsBreakTheRequestButAMissingVideoDoesNot(): void
+    {
+        foreach ([429, 500, 503] as $status) {
+            $controller = $this->brokenEmbedController([new ApiErrorException('x', $status)]);
+            $controller->call('embedConfig', 'a');
+            $controller->call('embedConfig', 'b');
+            self::assertSame(['a'], $controller->state()['calls'], (string)$status);
+        }
+
+        $controller = $this->brokenEmbedController([new ApiErrorException('nope', 404), self::EMBED]);
+        self::assertNull($controller->call('embedConfig', 'a'));
+        self::assertNotNull($controller->call('embedConfig', 'b'));
+        self::assertSame(['a', 'b'], $controller->state()['calls']);
+    }
+
+    #[Test]
+    public function nativeCardsPrefetchTheirEmbedsOnceAndFallBackToHostedAfterAFailure(): void
+    {
+        $controller = $this->brokenEmbedController([new NetworkException('down')]);
+        $videos = [
+            ['uuid' => 'a', 'processing' => false, 'title_label' => 'A'],
+            ['uuid' => 'b', 'processing' => true, 'title_label' => 'B'],
+            ['uuid' => 'c', 'processing' => false, 'title_label' => 'C'],
+            ['uuid' => 'd', 'processing' => false, 'title_label' => 'D'],
+        ];
+
+        $cards = $controller->call('withNativeCards', $videos);
+
+        self::assertSame([['a', 'c', 'd']], $controller->state()['prefetched']);
+        self::assertSame(['a'], $controller->state()['calls'], 'one failed lookup, then no more');
+        self::assertSame(['', '', '', ''], array_column($cards, 'native_json'));
     }
 }

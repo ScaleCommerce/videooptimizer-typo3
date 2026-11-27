@@ -7,6 +7,8 @@ namespace ScaleCommerce\VideoOptimizer\Controller;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
+use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
+use ScaleCommerce\VideoOptimizer\Api\NetworkException;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
@@ -44,6 +46,9 @@ abstract class AbstractVideoController extends ActionController
 
     /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
     private array $uploadDates = [];
+
+    /** Set after the first /embed failure of this request (see embedConfig()). */
+    private bool $embedBroken = false;
 
     public function __construct(
         protected readonly VideoOptimizerClient $client,
@@ -306,14 +311,47 @@ abstract class AbstractVideoController extends ActionController
      */
     protected function embedConfig(string $uuid): ?array
     {
+        // After the first transport error / 429 / 5xx the rest of the request does not try again:
+        // every further element falls back to the hosted player at once.
+        if ($this->embedBroken) {
+            return null;
+        }
         try {
-            $config = $this->client->getEmbed($uuid);
-        } catch (VideoOptimizerException|\InvalidArgumentException) {
+            $config = $this->loadEmbed($uuid);
+        } catch (VideoOptimizerException|\InvalidArgumentException $exception) {
+            if ($exception instanceof NetworkException
+                || ($exception instanceof ApiErrorException && ($exception->getHttpStatus() === 429 || $exception->getHttpStatus() >= 500))
+            ) {
+                $this->embedBroken = true;
+            }
+
             return null;
         }
         $this->rememberUploadDate($uuid, $config);
 
         return $config !== [] ? $config : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function loadEmbed(string $uuid): array
+    {
+        return $this->client->getEmbed($uuid);
+    }
+
+    /**
+     * Loads the embed configs of many videos in parallel before they are read one by one.
+     *
+     * @param list<string> $uuids
+     */
+    protected function prefetchEmbeds(array $uuids): void
+    {
+        try {
+            $this->client->prefetchEmbeds($uuids);
+        } catch (\Throwable) {
+            // The single lookups report the problem.
+        }
     }
 
     /** `sizes` of posters in the column width of single/detail elements and full-bleed heroes. */
@@ -390,6 +428,10 @@ abstract class AbstractVideoController extends ActionController
         if ($this->playerMode() !== 'native') {
             return $videos;
         }
+        $this->prefetchEmbeds(array_values(array_filter(array_map(
+            static fn (array $video): string => ($video['processing'] ?? true) === false ? (string)($video['uuid'] ?? '') : '',
+            $videos
+        ))));
         foreach ($videos as &$video) {
             $video['native_json'] = $this->buildNative($video)['json'] ?? '';
         }

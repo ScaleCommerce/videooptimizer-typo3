@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ScaleCommerce\VideoOptimizer\Security\PublicHttpsUrl;
 use ScaleCommerce\VideoOptimizer\Security\StorageOrigin;
@@ -30,6 +31,11 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     private const RETRY_ATTEMPTS = 3;
     private const RETRY_BASE_DELAY_MS = 250;
     private const FRONTEND_RETRY_ATTEMPTS = 2;
+
+    /** /embed is read while a page renders: short timeouts, no retry (see getEmbed()). */
+    private const EMBED_REQUEST_OPTIONS = ['timeout' => 4, 'connect_timeout' => 2];
+    private const EMBED_FAILFAST_SECONDS = 60;
+    private const EMBED_PARALLEL = 8;
     /** Max total sleep between attempts in a frontend request (seconds). */
     private const FRONTEND_MAX_SLEEP = 1.0;
     private const BACKEND_MAX_RETRY_AFTER = 30.0;
@@ -276,17 +282,113 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $uuid = $this->assertUuid($uuid, 'video ID');
 
         return $this->remember('embed:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
+            if ($this->embedFailFast()) {
+                throw new NetworkException('VideoOptimizer embed requests are paused for a minute after an error.');
+            }
             try {
-                $body = $this->request('GET', '/embed/' . rawurlencode($uuid));
+                // Public endpoint, no retry: a page must not wait for a flaky API (callers fall back).
+                $body = $this->request('GET', '/embed/' . rawurlencode($uuid), self::EMBED_REQUEST_OPTIONS, false);
             } catch (ApiErrorException $exception) {
                 if ($exception->getHttpStatus() === 404) {
                     return [];
                 }
+                if ($exception->getHttpStatus() === 429 || $exception->getHttpStatus() >= 500) {
+                    $this->markEmbedFailure();
+                }
+                throw $exception;
+            } catch (NetworkException $exception) {
+                $this->markEmbedFailure();
                 throw $exception;
             }
 
             return is_array($body['data'] ?? null) ? $body['data'] : [];
         });
+    }
+
+    /** True for a minute after a transport error, 429 or 5xx on /embed (service-wide, shared by all requests). */
+    public function embedFailFast(): bool
+    {
+        try {
+            return $this->getCache()->has($this->key('embed-failfast'));
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private function markEmbedFailure(): void
+    {
+        $this->getCache()->set($this->key('embed-failfast'), 1, [], self::EMBED_FAILFAST_SECONDS);
+    }
+
+    /**
+     * Loads the embed configs that are not cached yet in parallel (at most 8 at a time) into the cache,
+     * so that a grid of native players waits once instead of once per card. Stops at the first
+     * transport error, 429 or 5xx (and pauses /embed for a minute); the later getEmbed() calls then
+     * fail fast and the cards fall back to the hosted player.
+     *
+     * @param list<string> $uuids
+     */
+    public function prefetchEmbeds(array $uuids): void
+    {
+        if ($this->token() === '' || $this->embedFailFast()) {
+            return;
+        }
+        $cache = $this->getCache();
+        $pending = [];
+        foreach (array_unique($uuids) as $uuid) {
+            if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid) !== 1) {
+                continue;
+            }
+            $entry = $cache->get($this->key('embed:' . $uuid));
+            $fresh = is_array($entry) && is_int($entry['fetchedAt'] ?? null) && (
+                (array_key_exists('payload', $entry) && time() - $entry['fetchedAt'] < (is_int($entry['ttl'] ?? null) ? $entry['ttl'] : $this->softTtl()))
+                || (is_array($entry['failure'] ?? null) && time() - $entry['fetchedAt'] < self::NEGATIVE_TTL)
+            );
+            if (!$fresh) {
+                $pending[] = $uuid;
+            }
+        }
+
+        $options = self::EMBED_REQUEST_OPTIONS + [
+            'http_errors' => false,
+            'allow_redirects' => false,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token(),
+                'User-Agent' => $this->userAgent->get(),
+            ],
+        ];
+        foreach (array_chunk($pending, self::EMBED_PARALLEL) as $chunk) {
+            $promises = [];
+            foreach ($chunk as $uuid) {
+                $promises[$uuid] = $this->client()->requestAsync('GET', self::BASE_URL . '/embed/' . rawurlencode($uuid), $options);
+            }
+            $failed = false;
+            foreach (\GuzzleHttp\Promise\Utils::settle($promises)->wait() as $uuid => $result) {
+                $response = $result['value'] ?? null;
+                if (!$response instanceof ResponseInterface) {
+                    $failed = true;
+                    continue;
+                }
+                $status = $response->getStatusCode();
+                $body = json_decode((string)$response->getBody(), true);
+                if ($status === 429 || $status >= 500) {
+                    $failed = true;
+                } elseif ($status === 404 || ($status < 400 && is_array($body))) {
+                    $payload = $status < 400 && is_array($body['data'] ?? null) ? $body['data'] : [];
+                    $envelope = ['payload' => $payload, 'fetchedAt' => time(), 'tags' => ['vo_video_' . $uuid]];
+                    if ($payload === []) {
+                        $envelope['ttl'] = self::NEGATIVE_TTL;
+                    }
+                    $cache->set($this->key('embed:' . $uuid), $envelope, $envelope['tags'], self::CACHE_LIFETIME);
+                }
+            }
+            if ($failed) {
+                $this->markEmbedFailure();
+
+                return;
+            }
+        }
     }
 
     /**
