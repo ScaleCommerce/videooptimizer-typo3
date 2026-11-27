@@ -51,6 +51,14 @@ class DemoCommand extends Command
                 'vo_presentation' => 'facade',
             ],
         ],
+        [
+            'ctype' => 'videooptimizer_videochapters', 'header' => '7) Video with chapters (native)', 'sorting' => 1792, 'videoUuid' => true,
+            'fields' => ['vo_player_mode' => 'native', 'vo_scene_count' => 5, 'vo_scene_titles' => "Intro\nThe problem\nThe idea\nThe result\nOutro"],
+        ],
+        [
+            'ctype' => 'videooptimizer_videochapters', 'header' => '8) Video with chapters (hosted)', 'sorting' => 2048, 'videoUuid' => true,
+            'fields' => ['vo_scene_count' => 4],
+        ],
     ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int

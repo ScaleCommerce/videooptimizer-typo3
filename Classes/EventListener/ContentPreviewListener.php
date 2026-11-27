@@ -32,6 +32,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
         'videooptimizer_videodetail',
         'videooptimizer_videosplit',
         'videooptimizer_videospotlight',
+        'videooptimizer_videochapters',
     ];
     private const COLLECTION_TYPES = ['videooptimizer_videogrid', 'videooptimizer_videolist'];
     private const TEMPLATE = 'EXT:videooptimizer/Resources/Private/Templates/Backend/ContentPreview.html';

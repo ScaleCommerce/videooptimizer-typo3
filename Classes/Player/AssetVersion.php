@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
  */
 final class AssetVersion
 {
-    private const FILES = ['videooptimizer.js', 'video-source.js', 'native-config.js'];
+    private const FILES = ['videooptimizer.js', 'video-source.js', 'native-config.js', 'chapters.js'];
 
     private static ?string $cached = null;
 

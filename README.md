@@ -198,6 +198,7 @@ Good to know:
 | **Video Single** | A responsive player with title | one video |
 | **Video Split** | The video next to eyebrow, headline, rich text and an optional button; the video can sit left or right | one video |
 | **Video Spotlight** | One prominent, centered video with eyebrow, headline and caption | one video |
+| **Video Chapters** | The player with a row of scene previews (3-10, optional titles) below; a click jumps to the scene and plays | one video |
 | **Video Grid** | A grid of up to 12 videos; click opens a lightbox | a library or all libraries |
 | **Video List** | A paginated list (24 per page) with duration and views | a library or all libraries |
 | **Video Detail** | Player plus metadata (duration, resolution, views, date) | one video |

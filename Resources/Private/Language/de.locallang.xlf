@@ -274,6 +274,26 @@
                 <source>Button link</source>
                 <target>Button-Link</target>
             </trans-unit>
+            <trans-unit id="vo_ct.videochapters.label">
+                <source>Video Chapters</source>
+                <target>Video mit Kapiteln</target>
+            </trans-unit>
+            <trans-unit id="vo_ct.videochapters.description">
+                <source>The video with a row of scene previews; a click jumps to the scene.</source>
+                <target>Das Video mit einer Reihe von Szenenvorschauen; ein Klick springt zur Szene.</target>
+            </trans-unit>
+            <trans-unit id="vo_scene_count.label">
+                <source>Number of scenes (3-10)</source>
+                <target>Anzahl der Szenen (3-10)</target>
+            </trans-unit>
+            <trans-unit id="vo_scene_titles.label">
+                <source>Scene titles</source>
+                <target>Szenentitel</target>
+            </trans-unit>
+            <trans-unit id="vo_scene_titles.description">
+                <source>One title per line, in the order of the scenes. Empty lines keep "Scene n".</source>
+                <target>Ein Titel pro Zeile, in der Reihenfolge der Szenen. Leere Zeilen behalten „Szene n“.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

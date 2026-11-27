@@ -54,7 +54,9 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::ImgSrc,
             new UriValue('https://poster.videooptimizer.eu'),
-            new UriValue('https://*.cdn.videooptimizer.eu')
+            new UriValue('https://*.cdn.videooptimizer.eu'),
+            // Scene previews of the chapters element: the API redirects /videos/{uuid}/thumbnails/{i} to the CDN.
+            new UriValue('https://api.videooptimizer.eu')
         ),
         new Mutation(
             MutationMode::Extend,

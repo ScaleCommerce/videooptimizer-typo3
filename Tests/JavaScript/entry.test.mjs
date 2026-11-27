@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import * as nativeConfig from '../../Resources/Public/Js/native-config.js';
+import * as chapters from '../../Resources/Public/Js/chapters.js';
 import * as videoSource from '../../Resources/Public/Js/video-source.js';
 
 // The entry module needs a DOM and cannot be imported here; this guards its import list instead
@@ -10,7 +11,7 @@ const entry = readFileSync(new URL('../../Resources/Public/Js/videooptimizer.js'
 const importList = entry.slice(entry.indexOf('const [') , entry.indexOf('] = await Promise.all'));
 
 test('the entry imports every sub-module function it calls', () => {
-    for (const name of [...Object.keys(videoSource), ...Object.keys(nativeConfig)]) {
+    for (const name of [...Object.keys(videoSource), ...Object.keys(nativeConfig), ...Object.keys(chapters)]) {
         const used = new RegExp(`(?<![.\\w])${name}\\(`).test(entry.slice(entry.indexOf('] = await Promise.all')));
         if (used) {
             assert.match(importList, new RegExp(`\\b${name}\\b`), `${name} is used but not imported`);
@@ -19,7 +20,7 @@ test('the entry imports every sub-module function it calls', () => {
 });
 
 test('the entry imports only what the sub-modules export', () => {
-    const exported = new Set([...Object.keys(videoSource), ...Object.keys(nativeConfig)]);
+    const exported = new Set([...Object.keys(videoSource), ...Object.keys(nativeConfig), ...Object.keys(chapters)]);
     const names = importList.replace(/[\[\]{}\s]/g, ' ').split(/[\s,]+/).filter((n) => /^\w+$/.test(n) && n !== 'const');
     for (const name of names) {
         assert.ok(exported.has(name), `${name} is imported but not exported`);
@@ -31,4 +32,5 @@ test('the sub-modules are imported with the server version stamp, falling back t
     assert.match(entry, /new URL\(import\.meta\.url\)\.search/);
     assert.match(entry, /import\('\.\/video-source\.js' \+ version\)/);
     assert.match(entry, /import\('\.\/native-config\.js' \+ version\)/);
+    assert.match(entry, /import\('\.\/chapters\.js' \+ version\)/);
 });

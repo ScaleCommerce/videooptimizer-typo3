@@ -457,9 +457,11 @@ abstract class AbstractVideoController extends ActionController
     /**
      * Loads the element's video and assigns video, embed, surface and error to the view: the shared
      * data of every element that shows one video through the Surface partial (single, media split,
-     * spotlight, detail).
+     * spotlight, detail, chapters).
+     *
+     * @return array<string, mixed>|null the shaped video
      */
-    protected function assignVideoSurface(): void
+    protected function assignVideoSurface(): ?array
     {
         $video = null;
         $embed = null;
@@ -488,6 +490,8 @@ abstract class AbstractVideoController extends ActionController
             $errorCode !== '' ? $errorCode : ($video === null ? $this->missingTokenCode() : ''),
             $errorDetail
         ));
+
+        return $video;
     }
 
     /**

@@ -20,7 +20,12 @@ const [
         observeVisibility,
     },
     { parseConfig, safeUrl },
-] = await Promise.all([import('./video-source.js' + version), import('./native-config.js' + version)]);
+    { initChapters },
+] = await Promise.all([
+    import('./video-source.js' + version),
+    import('./native-config.js' + version),
+    import('./chapters.js' + version),
+]);
 
 const IFRAME_ALLOW = 'autoplay; fullscreen; picture-in-picture';
 
@@ -330,14 +335,18 @@ function initDirect(wrap) {
     }
     wrap.setAttribute('data-vo-ready', '');
     const button = wrap.querySelector('[data-vo-toggle]');
-    const setUp = () => (cfg.autoplay ? setUpAutoplaying(video, wrap, cfg, button) : setUpVideo(video, wrap, cfg));
+    let state = null;
+    const setUp = () => (state ??= cfg.autoplay ? setUpAutoplaying(video, wrap, cfg, button) : setUpVideo(video, wrap, cfg));
+    // Other modules (chapters) attach the source on demand through this.
+    wrap.__voStart = setUp;
     // The source is attached shortly before the player scrolls into view, so hls.js is only
     // downloaded when a player is (nearly) visible.
-    const stop = observeVisibility(
+    let stop = null;
+    stop = observeVisibility(
         wrap,
         (visible) => {
             if (visible) {
-                stop();
+                stop?.();
                 setUp();
             }
         },
@@ -385,6 +394,7 @@ function init() {
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
     document.querySelectorAll('iframe[data-vo-src]').forEach(initHostedHero);
+    document.querySelectorAll('[data-vo-chapters]').forEach((root) => initChapters(root, safeUrl));
 }
 
 if (document.readyState === 'loading') {

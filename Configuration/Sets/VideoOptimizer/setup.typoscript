@@ -9,12 +9,17 @@ tt_content.videooptimizer_videohero {
     templateRootPaths.20 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
 }
 
-# Split and spotlight render their own eyebrow and headline, like the hero: no frame header.
+# Split, spotlight and chapters render their own headline, like the hero: no frame header.
 tt_content.videooptimizer_videosplit {
     templateName = ContentElementHero
     templateRootPaths.20 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
 }
 tt_content.videooptimizer_videospotlight {
+    templateName = ContentElementHero
+    templateRootPaths.20 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
+}
+
+tt_content.videooptimizer_videochapters {
     templateName = ContentElementHero
     templateRootPaths.20 = EXT:videooptimizer/Resources/Private/FrontendTemplates/
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use ScaleCommerce\VideoOptimizer\Controller\VideoChaptersController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoDetailController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoGridController;
 use ScaleCommerce\VideoOptimizer\Controller\VideoHeroController;
@@ -40,6 +41,9 @@ $plugins = [
     ],
     'VideoSplit' => [
         'actions' => [VideoSplitController::class => 'split'],
+    ],
+    'VideoChapters' => [
+        'actions' => [VideoChaptersController::class => 'chapters'],
     ],
     'VideoSpotlight' => [
         'actions' => [VideoSpotlightController::class => 'spotlight'],

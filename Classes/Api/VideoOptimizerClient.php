@@ -25,7 +25,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const BASE_URL = 'https://api.videooptimizer.eu/api/v1';
+    public const BASE_URL = 'https://api.videooptimizer.eu/api/v1';
     private const PAGE_LIMIT = 100;
     private const MAX_PAGES = 20;
     private const RETRY_ATTEMPTS = 3;

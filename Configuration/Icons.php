@@ -33,6 +33,10 @@ return [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:videooptimizer/Resources/Public/Icons/videospotlight.svg',
     ],
+    'videooptimizer-videochapters' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:videooptimizer/Resources/Public/Icons/videochapters.svg',
+    ],
     'videooptimizer-module' => [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:videooptimizer/Resources/Public/Icons/module.svg',

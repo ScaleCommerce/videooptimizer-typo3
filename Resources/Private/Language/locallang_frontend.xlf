@@ -81,6 +81,12 @@
             <trans-unit id="video.play">
                 <source>Play video</source>
             </trans-unit>
+            <trans-unit id="scene.label">
+                <source>Scene %d</source>
+            </trans-unit>
+            <trans-unit id="scenes.aria">
+                <source>Scenes</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -5,9 +5,12 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 ### Upgrade
-- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`), then `cache:flush`.
+- Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` is a new sub-module of `Js/videooptimizer.js` (copy it along when you serve the JavaScript yourself).
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`), then `cache:flush`.
 
 ### Added
+- Content element "Video Chapters": the player with a row of scene previews (3-10 of the video's ten thumbnails, optional titles); a click jumps to the scene and plays, native and hosted ([#19](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/19)).
+- Frontend CSP: `img-src https://api.videooptimizer.eu` for the scene previews, which the API redirects to `*.cdn.videooptimizer.eu` ([#19](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/19)).
 - Content elements "Video Split" (video next to eyebrow, headline, rich text and button, left or right) and "Video Spotlight" (centered video with eyebrow, headline and caption) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
 
 ## [2.1.0] - 2026-11-28

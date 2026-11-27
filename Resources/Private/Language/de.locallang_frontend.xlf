@@ -107,6 +107,14 @@
                 <source>Play video</source>
                 <target>Video abspielen</target>
             </trans-unit>
+            <trans-unit id="scene.label">
+                <source>Scene %d</source>
+                <target>Szene %d</target>
+            </trans-unit>
+            <trans-unit id="scenes.aria">
+                <source>Scenes</source>
+                <target>Szenen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

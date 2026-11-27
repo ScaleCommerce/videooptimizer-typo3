@@ -41,6 +41,23 @@ ExtensionManagementUtility::addTCAcolumns('tt_content', [
             'default' => 'left',
         ],
     ],
+    'vo_scene_count' => [
+        'label' => $lll . 'vo_scene_count.label',
+        'config' => [
+            'type' => 'number',
+            'default' => 5,
+            'range' => ['lower' => 3, 'upper' => 10],
+        ],
+    ],
+    'vo_scene_titles' => [
+        'label' => $lll . 'vo_scene_titles.label',
+        'description' => $lll . 'vo_scene_titles.description',
+        'config' => [
+            'type' => 'text',
+            'rows' => 5,
+            'default' => '',
+        ],
+    ],
     'vo_cta_label' => [
         'label' => $lll . 'vo_cta_label.label',
         'config' => [
@@ -89,11 +106,25 @@ $showItemSpotlight = "
     --div--;core.form.tabs:categories,
     categories";
 
+$showItemChapters = "
+    --palette--;;headers,
+    vo_scene_count,
+    vo_scene_titles,
+    vo_library_id,
+    vo_video_uuid,
+    --div--;{$lll}vo_player.div,
+    vo_player_mode, vo_autoplay, vo_loop, vo_muted, vo_controls, vo_start_time, vo_subtitle_lang,
+    --div--;core.form.tabs:appearance,
+    --palette--;;frames,
+    --div--;core.form.tabs:categories,
+    categories";
+
 $recordTypes = [
     ['value' => 'videooptimizer_videosplit', 'icon' => 'videooptimizer-videosplit', 'label' => 'vo_ct.videosplit', 'showItem' => $showItemSplit,
         // The text is edited with the rich text editor of the site.
         'additional' => ['columnsOverrides' => ['bodytext' => ['config' => ['enableRichtext' => true]]]]],
     ['value' => 'videooptimizer_videospotlight', 'icon' => 'videooptimizer-videospotlight', 'label' => 'vo_ct.videospotlight', 'showItem' => $showItemSpotlight, 'additional' => []],
+    ['value' => 'videooptimizer_videochapters', 'icon' => 'videooptimizer-videochapters', 'label' => 'vo_ct.videochapters', 'showItem' => $showItemChapters, 'additional' => []],
 ];
 
 foreach ($recordTypes as $type) {
