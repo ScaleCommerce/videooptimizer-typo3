@@ -171,7 +171,7 @@
         <div class="row g-4 mt-2">
             <div class="col-lg-6">
                 <h2 class="h4"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:videos.upload.title" /></h2>
-                <form action="{uploadUrl}" method="post" enctype="multipart/form-data" class="card card-body bg-body-tertiary vstack gap-3">
+                <form action="{uploadUrl}" method="post" enctype="multipart/form-data" class="card card-body bg-body-tertiary vstack gap-3" data-vo-upload="{uploadConfig}">
                     <input type="hidden" name="libraryId" value="{libraryId}">
                     <input type="hidden" name="formToken" value="{uploadToken}">
                     <div>

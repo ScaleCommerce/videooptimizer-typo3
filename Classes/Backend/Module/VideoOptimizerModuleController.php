@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace ScaleCommerce\VideoOptimizer\Backend\Module;
 
 use ScaleCommerce\VideoOptimizer\Backend\Http\SubtitleDownload;
+use ScaleCommerce\VideoOptimizer\Backend\Input\UploadRequest;
 use ScaleCommerce\VideoOptimizer\Backend\Input\VideoInput;
 use ScaleCommerce\VideoOptimizer\Backend\Input\VideoPaging;
+use ScaleCommerce\VideoOptimizer\Backend\Security\ModuleAccess;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
+use ScaleCommerce\VideoOptimizer\Security\PublicHttpsUrl;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -21,7 +24,6 @@ use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
-use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
@@ -41,11 +43,16 @@ final class VideoOptimizerModuleController extends ActionController implements L
     private const MODULE_IDENTIFIER = 'system_videooptimizer';
     private const CONTROLLER_ALIAS = 'VideoOptimizerModule';
 
-    private const MAX_VIDEO_BYTES = 5 * 1024 * 1024 * 1024;
+    private const MAX_VIDEO_BYTES = UploadRequest::MAX_VIDEO_BYTES;
     private const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
-    private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi', 'mpeg', 'mpg'];
-    private const MAX_SOURCE_URL_LENGTH = 2048;
+    private const VIDEO_EXTENSIONS = UploadRequest::VIDEO_EXTENSIONS;
     private const ENCODING_QUALITIES = ['performance', 'quality'];
+
+    /** Label names (after the prefix) the browser script needs. */
+    private const JS_LABELS = [
+        'js.upload.' => ['preparing', 'progress', 'retry', 'finishing', 'processing', 'ready', 'failed', 'failedNoReason', 'error', 'cancel', 'cancelled', 'noEtag', 'serverFallback', 'showList', 'pollLost', 'noFile'],
+        'js.poster.' => ['badType', 'uploading', 'processing', 'ready', 'failed', 'error', 'removeConfirm', 'removed', 'filesTitle', 'filesEmpty', 'filesUp', 'filesRoot', 'filesError'],
+    ];
 
     private const LLL = 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:';
 
@@ -357,6 +364,11 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('ingestUrl', $this->moduleUrl('ingest', ['libraryId' => $libraryId]));
         $view->assign('uploadToken', $this->formToken('upload', $libraryId));
         $view->assign('ingestToken', $this->formToken('ingest', $libraryId));
+        $view->assign('uploadConfig', $this->browserConfig($libraryId, '', [
+            'initiate' => 'videooptimizer_upload_initiate',
+            'complete' => 'videooptimizer_upload_complete',
+            'status' => 'videooptimizer_video_status',
+        ], 'js.upload.'));
 
         $this->addBackButton($view, $this->moduleUrl('list'), 'nav.backToLibraries');
         return $this->renderView($view, 'Videos', 'list.title', (string)($library['name'] ?? ''));
@@ -653,6 +665,19 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('backUrl', $this->moduleUrl('videos', ['libraryId' => $libraryId]));
         $view->assign('setThumbnailUrl', $this->moduleUrl('setThumbnail', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('setThumbnailToken', $this->formToken('setThumbnail', $videoUuid));
+        $poster = is_array($video['poster'] ?? null) ? $video['poster'] : [];
+        $customStatus = in_array($poster['custom_status'] ?? '', ['none', 'processing', 'ready', 'failed'], true) ? (string)$poster['custom_status'] : 'none';
+        $view->assign('posterManaged', $video !== [] && $this->isMediaManaged((string)($video['library_id'] ?? '') ?: $libraryId));
+        $view->assign('posterCustomStatus', $customStatus);
+        $view->assign('posterStatusLabel', $this->label('poster.status.' . $customStatus));
+        $view->assign('posterConfig', $this->browserConfig($libraryId, $videoUuid, [
+            'initiate' => 'videooptimizer_poster_initiate',
+            'complete' => 'videooptimizer_poster_complete',
+            'remove' => 'videooptimizer_poster_remove',
+            'status' => 'videooptimizer_video_status',
+            'files' => 'videooptimizer_poster_files',
+            'fromFile' => 'videooptimizer_poster_from_file',
+        ], 'js.poster.', ['customStatus' => $customStatus, 'source' => (string)($poster['source'] ?? '')]));
 
         $this->addBackButton($view, $this->moduleUrl('videos', ['libraryId' => $libraryId]), 'nav.backToVideos');
         return $this->renderView($view, 'Thumbnail', 'thumbnail.docTitle', $videoTitle);
@@ -926,8 +951,37 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->setTitle($this->label($titleKey), $titleContext);
         $this->pageRenderer->addCssFile('EXT:videooptimizer/Resources/Public/Css/backend-module.css');
         $this->pageRenderer->loadJavaScriptModule('@scalecommerce/videooptimizer/backend-module.js');
+        $this->pageRenderer->loadJavaScriptModule('@scalecommerce/videooptimizer/upload.js');
 
         return $view->renderResponse('VideoOptimizerModule/' . $template);
+    }
+
+    /**
+     * JSON for the browser upload / poster script (data attribute): AJAX URLs (with TYPO3's route
+     * token), ids, and the translated labels (`js.upload.*` / `js.poster.*`). No secrets.
+     *
+     * @param array<string, string> $routes key => AJAX route name
+     * @param array<string, mixed> $state
+     */
+    private function browserConfig(string $libraryId, string $videoUuid, array $routes, string $labelPrefix, array $state = []): string
+    {
+        $uriBuilder = GeneralUtility::makeInstance(BackendUriBuilder::class);
+        $urls = [];
+        foreach ($routes as $key => $route) {
+            $urls[$key] = (string)$uriBuilder->buildUriFromRoute('ajax_' . $route);
+        }
+        $labels = [];
+        foreach (self::JS_LABELS[$labelPrefix] ?? [] as $name) {
+            $labels[$name] = $this->label($labelPrefix . $name);
+        }
+
+        return (string)json_encode([
+            'libraryId' => $libraryId,
+            'videoUuid' => $videoUuid,
+            'urls' => $urls,
+            'labels' => $labels,
+            'state' => $state,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     }
 
     private function addBackButton(ModuleTemplate $view, string $url, string $labelKey): void
@@ -979,9 +1033,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
             return $this->redirect($redirectAction, null, null, $redirectArguments);
         }
 
-        $backendUser = $GLOBALS['BE_USER'] ?? null;
-        $allowed = $backendUser instanceof BackendUserAuthentication
-            && ($backendUser->isAdmin() || $backendUser->check('custom_options', 'videooptimizer:' . $permission));
+        $allowed = ModuleAccess::mayDo($GLOBALS['BE_USER'] ?? null, $permission);
         if (!$allowed) {
             $this->flash('flash.noPermission', ContextualFeedbackSeverity::ERROR);
 
@@ -1032,36 +1084,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
      */
     private function validateSourceUrl(string $url): ?string
     {
-        $message = $this->label('flash.ingest.invalidUrl');
-        if ($url === '' || strlen($url) > self::MAX_SOURCE_URL_LENGTH || preg_match('/[\x00-\x20\x7F]/', $url) === 1) {
-            return $message;
-        }
-        $parts = parse_url($url);
-        if ($parts === false || strtolower((string)($parts['scheme'] ?? '')) !== 'https'
-            || isset($parts['user']) || isset($parts['pass'])
-        ) {
-            return $message;
-        }
-        $host = strtolower(trim((string)($parts['host'] ?? ''), '[]'));
-        $host = rtrim($host, '.');
-        if ($host === '') {
-            return $message;
-        }
-        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
-            if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                return $message;
-            }
-        } elseif (preg_match('/(^|\.)(0x[0-9a-f]*|[0-9]+)$/', $host) === 1 || !str_contains($host, '.')) {
-            // Numeric/hex/octal IPv4 tricks and single-label intranet names.
-            return $message;
-        }
-        if ($host === 'localhost' || str_ends_with($host, '.localhost')
-            || str_ends_with($host, '.internal') || str_ends_with($host, '.local')
-        ) {
-            return $message;
-        }
-
-        return null;
+        return PublicHttpsUrl::isAllowed($url) ? null : $this->label('flash.ingest.invalidUrl');
     }
 
     /**

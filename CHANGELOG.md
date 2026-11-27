@@ -4,7 +4,13 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+### Upgrade
+- Run `cache:flush` after updating (new backend AJAX routes and a wider backend CSP). Browser uploads PUT straight to the platform's presigned storage URLs (CSP `connect-src https://*.videooptimizer.eu` is added); the server-side upload form stays as fallback.
+
 ### Added
+- Browser upload of videos in the module: presigned multipart straight to storage with progress, retry and cancel, token stays on the server ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
+- Status polling after upload until `ready` or `failed`, showing the API's `error` ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
+- Custom poster: upload an image, pick one from the TYPO3 file list, remove it ([#10](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/10)).
 - Subtitles can be downloaded as WebVTT in the module ([#8](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/8)).
 - Metadata of existing videos can be edited in the module; removing a line deletes its key ([#9](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/9)).
 
