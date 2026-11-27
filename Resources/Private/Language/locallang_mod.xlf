@@ -466,6 +466,12 @@
             <trans-unit id="format.thousandsSeparator">
                 <source>,</source>
             </trans-unit>
+            <trans-unit id="list.encoding.addon">
+                <source>%s (add-on)</source>
+            </trans-unit>
+            <trans-unit id="list.encoding.locked">
+                <source>%s (add-on, not unlocked)</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

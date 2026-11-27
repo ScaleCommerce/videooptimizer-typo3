@@ -619,6 +619,14 @@
                 <source>,</source>
                 <target>.</target>
             </trans-unit>
+            <trans-unit id="list.encoding.addon">
+                <source>%s (add-on)</source>
+                <target>%s (Add-on)</target>
+            </trans-unit>
+            <trans-unit id="list.encoding.locked">
+                <source>%s (add-on, not unlocked)</source>
+                <target>%s (Add-on, nicht freigeschaltet)</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

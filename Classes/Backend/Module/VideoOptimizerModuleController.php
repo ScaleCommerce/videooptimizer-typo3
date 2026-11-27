@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Http\Message\UploadedFileInterface;
+use ScaleCommerce\VideoOptimizer\Api\EncodingOptions;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
@@ -78,6 +79,10 @@ final class VideoOptimizerModuleController extends ActionController implements L
         } catch (VideoOptimizerException) {
             $encodings = ['codecs' => [], 'resolutions' => []];
         }
+        $encodingChoices = [
+            'codecs' => $this->encodingChoices($encodings['codecs']),
+            'resolutions' => $this->encodingChoices($encodings['resolutions']),
+        ];
 
         $libraryRows = [];
         foreach ($libraries as $library) {
@@ -118,7 +123,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view = $this->createView();
         $view->assign('libraryRows', $libraryRows);
         $view->assign('savings', $savings);
-        $view->assign('encodings', $encodings);
+        $view->assign('encodings', $encodingChoices);
         $view->assign('errorMessage', $errorMessage);
         $view->assign('createUrl', $this->moduleUrl('create'));
         $view->assign('createToken', $this->formToken('create'));
@@ -856,6 +861,28 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         return null;
+    }
+
+    /**
+     * Options for the create form: add-ons the organization has not unlocked stay visible but disabled.
+     *
+     * @param array<mixed> $options
+     * @return list<array{key: string, label: string, available: bool}>
+     */
+    private function encodingChoices(array $options): array
+    {
+        $choices = [];
+        foreach (EncodingOptions::normalize($options) as $option) {
+            $label = $option['label'];
+            if (!$option['available']) {
+                $label = $this->label('list.encoding.locked', [$label]);
+            } elseif ($option['addon']) {
+                $label = $this->label('list.encoding.addon', [$label]);
+            }
+            $choices[] = ['key' => $option['key'], 'label' => $label, 'available' => $option['available']];
+        }
+
+        return $choices;
     }
 
     /**

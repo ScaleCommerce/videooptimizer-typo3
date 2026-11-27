@@ -98,7 +98,7 @@
                                             <select id="vo-edit-codec-{library.id}" name="codec" class="form-select">
                                                 <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
                                                 <f:for each="{library.availableCodecs}" as="codecKey">
-                                                    <option value="{codecKey}" selected="{library.codec == codecKey ? 'selected' : ''}">{codecKey}</option>
+                                                    <option value="{codecKey}"{f:if(condition: '{library.codec} == {codecKey}', then: ' selected')}>{codecKey}</option>
                                                 </f:for>
                                             </select>
                                         </div>
@@ -106,7 +106,7 @@
                                             <label for="vo-edit-resolutions-{library.id}" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.edit.resolutions" /></label>
                                             <select id="vo-edit-resolutions-{library.id}" name="resolutions[]" multiple size="4" class="form-select">
                                                 <f:for each="{library.resolutionOptions}" as="resolutionOption">
-                                                    <option value="{resolutionOption.value}" selected="{resolutionOption.selected ? 'selected' : ''}">{resolutionOption.value}</option>
+                                                    <option value="{resolutionOption.value}"{f:if(condition: resolutionOption.selected, then: ' selected')}>{resolutionOption.value}</option>
                                                 </f:for>
                                             </select>
                                         </div>
@@ -161,7 +161,7 @@
                 <select id="vo-lib-codec" name="codec" class="form-select">
                     <option value=""><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.codecDefault" /></option>
                     <f:for each="{encodings.codecs}" as="encoding">
-                        <option value="{encoding.key}">{encoding.label}</option>
+                        <option value="{encoding.key}"{f:if(condition: '{encoding.available} == 0', then: ' disabled')}>{encoding.label}</option>
                     </f:for>
                 </select>
             </div>
@@ -169,7 +169,7 @@
                 <label for="vo-lib-resolutions" class="form-label"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:list.create.resolutions" /></label>
                 <select id="vo-lib-resolutions" name="resolutions[]" multiple size="4" class="form-select">
                     <f:for each="{encodings.resolutions}" as="resolution">
-                        <option value="{resolution.key}">{resolution.label}</option>
+                        <option value="{resolution.key}"{f:if(condition: '{resolution.available} == 0', then: ' disabled')}>{resolution.label}</option>
                     </f:for>
                 </select>
             </div>
