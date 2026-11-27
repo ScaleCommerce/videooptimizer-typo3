@@ -290,10 +290,11 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      * One page of videos (a single API request), optionally restricted to a library.
      *
      * @param list<string> $tags only videos carrying ALL of these tags
-     * @param bool $fresh bypass the cache (backend module: always current state, e.g. while encoding)
+     * @param bool $fresh bypass the cache (backend module: current state of the first page)
+     * @param int|null $cacheTtl lifetime in seconds of a cached page instead of the configured soft TTL
      * @return array{items: list<array<string, mixed>>, nextCursor: ?string}
      */
-    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null, array $tags = [], bool $fresh = false): array
+    public function listVideosPage(int $limit = 12, ?string $cursor = null, ?string $libraryId = null, array $tags = [], bool $fresh = false, ?int $cacheTtl = null): array
     {
         $limit = max(1, min(100, $limit));
         $query = ['limit' => $limit];
@@ -334,7 +335,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             ];
         };
 
-        return $fresh ? $load() : $this->remember('page|' . md5(serialize($query)), $cacheTags, $load);
+        return $fresh ? $load() : $this->remember('page|' . md5(serialize($query)), $cacheTags, $load, $cacheTtl);
     }
 
     /**
@@ -1360,7 +1361,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      * @param list<string> $tags
      * @param callable(): mixed $loader
      */
-    private function remember(string $suffix, array $tags, callable $loader): mixed
+    private function remember(string $suffix, array $tags, callable $loader, ?int $ttl = null): mixed
     {
         $cache = $this->getCache();
         $key = $this->key($suffix);
@@ -1419,6 +1420,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         $envelope = ['payload' => $payload, 'fetchedAt' => $now, 'tags' => $tags];
+        if ($ttl !== null) {
+            $envelope['ttl'] = $ttl;
+        }
         if ($payload === []) {
             // Empty results (e.g. unknown IDs) are only remembered briefly.
             $envelope['ttl'] = self::NEGATIVE_TTL;

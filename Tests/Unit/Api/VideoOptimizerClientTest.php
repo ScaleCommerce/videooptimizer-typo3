@@ -190,6 +190,18 @@ final class VideoOptimizerClientTest extends TestCase
     }
 
     #[Test]
+    public function laterPagesUseTheirOwnShortTtl(): void
+    {
+        $body = ['data' => [['uuid' => self::UUID]], 'pagination' => ['has_more' => false]];
+        $client = $this->client([self::json($body)]);
+
+        $client->listVideosPage(60, 'cur1', null, [], false, 30);
+
+        $entry = array_values($this->store->entries)[0];
+        self::assertSame(30, $entry['ttl']);
+    }
+
+    #[Test]
     public function cachedVideoPagesAreKeyedByTheirFilters(): void
     {
         $body = ['data' => [['uuid' => self::UUID]], 'pagination' => ['has_more' => false]];

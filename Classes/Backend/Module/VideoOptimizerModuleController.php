@@ -312,9 +312,10 @@ final class VideoOptimizerModuleController extends ActionController implements L
         try {
             $library = $this->client->getLibrary($libraryId);
             $filterTags = VideoInput::parseTags($tagFilter);
-            // Always the current state (no cache): the list shows encoding progress.
+            // The first page is always current (it shows new uploads and encoding state); later pages
+            // come from a short-lived cache so "Load more" and edits do not re-read everything.
             $result = VideoPaging::load(
-                fn(?string $cursor): array => $this->client->listVideosPage(VideoPaging::PAGE_SIZE, $cursor, $libraryId, $filterTags, true),
+                fn(?string $cursor): array => $this->client->listVideosPage(VideoPaging::PAGE_SIZE, $cursor, $libraryId, $filterTags, $cursor === null, VideoPaging::LATER_PAGES_TTL),
                 $pages,
             );
             $videos = $result['items'];
@@ -354,7 +355,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('tagFilter', $tagFilter);
         $view->assign('allTags', array_map(static fn(array $t) => (string)($t['name'] ?? ''), array_filter($allTags, 'is_array')));
         $view->assign('hasProcessing', $hasProcessing);
-        $view->assign('autoRefreshUrl', $hasProcessing ? $this->moduleUrl('videos', ['libraryId' => $libraryId, 'tagFilter' => $tagFilter, 'pages' => $loadedPages]) : '');
+        // Only the encoding videos are polled (one status call each); the list reloads once one finished.
+        $view->assign('statusUrl', $hasProcessing ? (string)GeneralUtility::makeInstance(BackendUriBuilder::class)->buildUriFromRoute('ajax_videooptimizer_video_status') : '');
         $view->assign('backUrl', $this->moduleUrl('list'));
         $view->assign('videosUrl', $this->moduleUrl('videos', ['libraryId' => $libraryId]));
         // A GET form drops the action URL's query string, so carry the route token as a hidden field.
@@ -1127,6 +1129,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 'title' => trim((string)($video['title'] ?? '')) !== ''
                     ? (string)$video['title']
                     : $this->label('videos.fallbackTitle', [substr($uuid, 0, 8)]),
+                'isProcessing' => $status === 'processing',
                 'status' => $statusLabel,
                 'statusClass' => $statusClass,
                 'errorReason' => VideoOptimizerClient::errorReason($video),

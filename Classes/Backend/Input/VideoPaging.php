@@ -12,6 +12,8 @@ final class VideoPaging
 {
     public const PAGE_SIZE = 60;
     public const MAX_PAGES = 20;
+    /** Seconds later pages stay cached (the first page is always read fresh). */
+    public const LATER_PAGES_TTL = 30;
 
     public static function clampPages(int $pages): int
     {

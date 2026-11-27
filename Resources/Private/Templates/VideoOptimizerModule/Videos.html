@@ -7,7 +7,7 @@
 <f:layout name="Module" />
 
 <f:section name="Content">
-    <div{f:if(condition: hasProcessing, then: ' data-vo-auto-refresh="1"')}>
+    <div{f:if(condition: hasProcessing, then: ' data-vo-auto-refresh="{statusUrl}"')}>
         <h1>
             {library.name}
             <f:if condition="{hasProcessing}">
@@ -60,7 +60,7 @@
                 </thead>
                 <tbody>
                     <f:for each="{videoRows}" as="video">
-                        <tr>
+                        <tr{f:if(condition: video.isProcessing, then: ' data-vo-processing="{video.uuid}"')}>
                             <td class="vo-thumb-cell">
                                 <f:if condition="{video.thumbnailUrl}">
                                     <img src="{video.thumbnailUrl}" alt="" class="img-fluid rounded" loading="lazy">
