@@ -9,8 +9,10 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 - `Js/videooptimizer.js` is an ES module now: custom templates that load it must add `type="module"` (`<f:asset.script ... type="module" />`).
 
 ### Added
+- Responsive posters: `posterSrcset` as `srcset` + `sizes` on the hero and facade poster; the hero preloads its poster with `fetchpriority="high"` ([#16](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/16)).
+- JSON-LD `uploadDate` from the embed config when it was loaded for the element, else `created_at` ([#16](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/16)).
 - Subtitle tracks of the video as `<track>` elements (language, label, kind; `default` from the API or the element's subtitle language) with `crossorigin="anonymous"` on the native player ([#15](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/15)).
-- Player theme from `GET /embed` applied to the native player: control bar, autoplay (muted), loop, preload and accent color as `--vo-accent`; options set on the element win ([#14](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/14)).
+- Player theme from `GET /embed` applied to the native player: control bar, autoplay (muted), loop, preload (`auto` capped at `metadata`) and accent color as `--vo-accent`; options set on the element win ([#14](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/14)).
 - Native player per content element (`<video>`, hls.js light loaded only when needed, native HLS on Safari, MP4 fallback that keeps position and playing state) next to the hosted iframe ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
 - Presentation of single/detail elements: direct, click-to-play facade or lightbox; grid, list and the hero button open the native player in the lightbox ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).
 - Native hero: background `<video>` that plays only while visible ([#13](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/13)).

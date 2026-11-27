@@ -328,4 +328,33 @@ final class VideoControllerHelpersTest extends TestCase
         $missing = $this->controller(['vo_player_mode' => 'native'], 300, null)->call('withNativeCards', $videos);
         self::assertSame('', $missing[0]['native_json']);
     }
+
+    #[Test]
+    public function jsonLdUsesTheEmbedUploadDateWhenLoadedAndCreatedAtOtherwise(): void
+    {
+        $controller = $this->controller();
+        $video = self::VIDEO + ['created_at' => '2026-01-02T03:04:05+00:00', 'ready' => true];
+
+        self::assertSame('2026-01-02T03:04:05+00:00', $controller->call('videoObjectData', $video, '')['uploadDate']);
+
+        $controller->call('rememberUploadDate', self::VIDEO['uuid'], ['uploadDate' => '2025-12-01T10:00:00Z']);
+        self::assertSame('2025-12-01T10:00:00+00:00', $controller->call('videoObjectData', $video, '')['uploadDate']);
+
+        $other = $this->controller();
+        $other->call('rememberUploadDate', self::VIDEO['uuid'], ['uploadDate' => null]);
+        self::assertSame('2026-01-02T03:04:05+00:00', $other->call('videoObjectData', $video, '')['uploadDate']);
+    }
+
+    #[Test]
+    public function facadePostersCarryTheSrcsetOnlyBehindAClick(): void
+    {
+        $embed = self::EMBED + ['posterSrcset' => [['width' => 480, 'url' => 'https://poster.videooptimizer.eu/p/poster_480.jpg']]];
+
+        $facade = $this->controller(['vo_presentation' => 'facade'], 300, $embed)->call('buildSurface', self::VIDEO);
+        self::assertSame('https://poster.videooptimizer.eu/p/poster_480.jpg 480w', $facade['posterSrcset']);
+        self::assertNotSame('', $facade['posterSizes']);
+
+        self::assertSame('', $this->controller([], 300, $embed)->call('buildSurface', self::VIDEO)['posterSrcset']);
+        self::assertSame('', $this->controller(['vo_presentation' => 'facade'], 300, null)->call('buildSurface', self::VIDEO)['posterSrcset']);
+    }
 }

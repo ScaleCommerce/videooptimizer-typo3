@@ -25,8 +25,8 @@
                 <button type="button" class="vo-facade" data-vo-play=""
                         aria-label="{f:translate(key: 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_frontend.xlf:facade.play', arguments: {0: surface.title})}">
                     <f:if condition="{surface.native.poster}">
-                        <f:then><img src="{surface.native.poster}" alt="" loading="lazy" decoding="async" /></f:then>
-                        <f:else><f:if condition="{surface.poster}"><img src="{surface.poster}" alt="" loading="lazy" decoding="async" /></f:if></f:else>
+                        <f:then><img src="{surface.native.poster}"<f:if condition="{surface.posterSrcset}"> srcset="{surface.posterSrcset}" sizes="{surface.posterSizes}"</f:if> alt="" loading="lazy" decoding="async" /></f:then>
+                        <f:else><f:if condition="{surface.poster}"><img src="{surface.poster}"<f:if condition="{surface.posterSrcset}"> srcset="{surface.posterSrcset}" sizes="{surface.posterSizes}"</f:if> alt="" loading="lazy" decoding="async" /></f:if></f:else>
                     </f:if>
                     <span class="vo-facade__play" aria-hidden="true">&#9654;</span>
                 </button>

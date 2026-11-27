@@ -205,7 +205,7 @@ Good to know:
 - **Player options** tab: player (*hosted* iframe — the default — or *native* `<video>`), presentation
   of single/detail (*direct* — the default —, *facade* with poster and play button, or *lightbox*),
   autoplay (muted), loop, muted, controls, start position, cover fit, subtitle language. The native player
-  takes the video's player theme (control bar, autoplay, loop, preload, accent color) and loads hls.js only when needed (bundled hls.js light, Apache-2.0, see
+  takes the video's player theme (control bar, autoplay, loop, accent color; preload is capped at `metadata`, so no video data is fetched before playback) and loads hls.js only when needed (bundled hls.js light, Apache-2.0, see
   `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4.
   With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
   `poster.videooptimizer.eu` for media, images and connections.

@@ -60,7 +60,9 @@ final class NativePlayerConfig
         $autoplay = $settings['autoplay'] || $themeFlag('autoplay');
         $muted = $settings['muted'] || $themeFlag('mutedStart') || $autoplay;
         $loop = $settings['loop'] || $themeFlag('loopButton');
-        $preload = in_array($theme['preload'] ?? null, ['auto', 'metadata', 'none'], true) ? $theme['preload'] : 'metadata';
+        // The organization theme defaults to "auto"; the native player never loads segments before
+        // playback, so "auto" is capped at "metadata" ("none" stays).
+        $preload = ($theme['preload'] ?? null) === 'none' ? 'none' : 'metadata';
         $accent = self::cssColor($theme['accentColor'] ?? null);
         $tracks = $background ? [] : self::tracks($embed['tracks'] ?? [], $settings['subtitle_lang']);
         $options = [
@@ -89,6 +91,30 @@ final class NativePlayerConfig
             'options' => $options,
             'json' => json_encode($options, self::JSON_FLAGS),
         ];
+    }
+
+    /**
+     * `srcset` value of the responsive poster sizes (`posterSrcset` of the embed config): "url 480w, ...",
+     * every URL on the allowlist, sorted by width. '' when there is none.
+     */
+    public static function posterSrcset(mixed $raw): string
+    {
+        $candidates = [];
+        foreach (is_array($raw) ? $raw : [] as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $url = MediaUrl::safe($entry['url'] ?? '');
+            $width = $entry['width'] ?? null;
+            // srcset is comma separated: a URL containing a comma would split into two candidates.
+            if ($url === '' || str_contains($url, ',') || !is_int($width) || $width < 1 || $width > 10000) {
+                continue;
+            }
+            $candidates[$width] = $url . ' ' . $width . 'w';
+        }
+        ksort($candidates);
+
+        return implode(', ', $candidates);
     }
 
     /**

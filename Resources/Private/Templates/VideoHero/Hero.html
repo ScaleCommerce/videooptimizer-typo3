@@ -8,7 +8,7 @@
     <f:if condition="{video}">
         <section class="vo-hero vo-hero--overlay-{hero.overlay} vo-hero--height-{hero.height} vo-hero--align-{hero.align}" aria-labelledby="vo-hero-title-{elementUid}">
             <f:if condition="{video.poster_src}">
-                <img class="vo-hero__poster" src="{video.poster_src}" alt="" aria-hidden="true" fetchpriority="high"
+                <img class="vo-hero__poster" src="{video.poster_src}"<f:if condition="{posterSrcset}"> srcset="{posterSrcset}" sizes="{posterSizes}"</f:if> alt="" aria-hidden="true" fetchpriority="high"
                      <f:if condition="{video.dimensions}">width="{video.dimensions.width}" height="{video.dimensions.height}"</f:if> />
             </f:if>
             <f:if condition="{native}">

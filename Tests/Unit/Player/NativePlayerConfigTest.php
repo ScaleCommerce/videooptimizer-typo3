@@ -125,11 +125,28 @@ final class NativePlayerConfigTest extends TestCase
     }
 
     #[Test]
+    public function posterSrcsetKeepsAllowedUrlsSortedByWidth(): void
+    {
+        $srcset = NativePlayerConfig::posterSrcset([
+            ['width' => 1280, 'height' => 720, 'url' => 'https://poster.videooptimizer.eu/p/poster_1280.jpg'],
+            ['width' => 480, 'height' => 270, 'url' => 'https://poster.videooptimizer.eu/p/poster_480.jpg'],
+            ['width' => 640, 'height' => 360, 'url' => 'https://evil.example/t.jpg'],
+            ['width' => 800, 'url' => 'https://poster.videooptimizer.eu/a,b.jpg'],
+            ['width' => '900', 'url' => 'https://poster.videooptimizer.eu/s.jpg'],
+            'junk',
+        ]);
+
+        self::assertSame('https://poster.videooptimizer.eu/p/poster_480.jpg 480w, https://poster.videooptimizer.eu/p/poster_1280.jpg 1280w', $srcset);
+        self::assertSame('', NativePlayerConfig::posterSrcset('x'));
+        self::assertSame('', NativePlayerConfig::posterSrcset([]));
+    }
+
+    #[Test]
     public function theThemeSuppliesDefaultsForPreloadAndAccent(): void
     {
         $options = self::options([]);
 
-        self::assertSame('auto', $options['preload']);
+        self::assertSame('metadata', $options['preload'], '"auto" is capped at "metadata"');
         self::assertSame('#C72876', $options['accent']);
         self::assertTrue($options['controls']);
         self::assertFalse($options['autoplay']);
@@ -178,7 +195,7 @@ final class NativePlayerConfigTest extends TestCase
         self::assertFalse($options['loop']);
         self::assertFalse($options['muted']);
         self::assertFalse($options['controls']);
-        self::assertSame('auto', $options['preload']);
+        self::assertSame('metadata', $options['preload']);
         self::assertSame('#C72876', $options['accent']);
 
         self::assertTrue(self::options(['controls' => false], [], true)['controls'], 'theme controls do not apply to the background');
@@ -194,6 +211,7 @@ final class NativePlayerConfigTest extends TestCase
             self::assertSame('', NativePlayerConfig::cssColor($color), var_export($color, true));
         }
         self::assertSame('metadata', self::options(['preload' => 'bogus'])['preload']);
+        self::assertSame('none', self::options(['preload' => 'none'])['preload']);
     }
 
     /**

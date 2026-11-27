@@ -42,6 +42,9 @@ abstract class AbstractVideoController extends ActionController
 
     protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=.:-]{1,512}$/';
 
+    /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
+    private array $uploadDates = [];
+
     public function __construct(
         protected readonly VideoOptimizerClient $client,
     ) {
@@ -308,8 +311,37 @@ abstract class AbstractVideoController extends ActionController
         } catch (VideoOptimizerException|\InvalidArgumentException) {
             return null;
         }
+        $this->rememberUploadDate($uuid, $config);
 
         return $config !== [] ? $config : null;
+    }
+
+    /** `sizes` of posters in the column width of single/detail elements and full-bleed heroes. */
+    protected const POSTER_SIZES_CONTENT = '(min-width: 1080px) 1032px, 100vw';
+    protected const POSTER_SIZES_FULL = '100vw';
+
+    /**
+     * Remembers the embed config's `uploadDate` for the JSON-LD of this request (no extra API call).
+     *
+     * @param array<string, mixed> $config
+     */
+    protected function rememberUploadDate(string $uuid, array $config): void
+    {
+        if (is_string($config['uploadDate'] ?? null) && trim($config['uploadDate']) !== '') {
+            $this->uploadDates[$uuid] = $config['uploadDate'];
+        }
+    }
+
+    /**
+     * Responsive poster candidates of a video (`posterSrcset` of the embed config) for the <img> of
+     * facade and hero. '' when the video has none or the embed config cannot be loaded; the plain
+     * poster stays the fallback.
+     */
+    protected function posterSrcset(string $uuid): string
+    {
+        $embed = $this->embedConfig($uuid);
+
+        return $embed === null ? '' : NativePlayerConfig::posterSrcset($embed['posterSrcset'] ?? []);
     }
 
     /**
@@ -369,7 +401,7 @@ abstract class AbstractVideoController extends ActionController
      * Everything the Surface partial needs for single/detail.
      *
      * @param array<string, mixed> $video shaped video
-     * @return array{presentation: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
+     * @return array{presentation: string, posterSrcset: string, posterSizes: string, aspect: string, style: string, title: string, poster: string, clickSrc: string, embed: array{src: string, title: string, aspect: string}|null, native: array<string, mixed>|null}
      */
     protected function buildSurface(array $video): array
     {
@@ -382,8 +414,13 @@ abstract class AbstractVideoController extends ActionController
             ($native['options']['accent'] ?? '') !== '' ? '--vo-accent: ' . $native['options']['accent'] : '',
         ]));
 
+        $presentation = $this->presentation();
+
         return [
-            'presentation' => $this->presentation(),
+            'presentation' => $presentation,
+            // The poster of the facade only; direct players show no poster image.
+            'posterSrcset' => $presentation !== 'direct' ? $this->posterSrcset((string)($video['uuid'] ?? '')) : '',
+            'posterSizes' => self::POSTER_SIZES_CONTENT,
             'aspect' => $aspect,
             'style' => $style,
             'title' => (string)($video['title_label'] ?? ''),
@@ -654,7 +691,7 @@ abstract class AbstractVideoController extends ActionController
      * @param array<string, mixed> $video
      * @return array<string, mixed>|null
      */
-    private function videoObjectData(array $video, string $fallbackDescription): ?array
+    protected function videoObjectData(array $video, string $fallbackDescription): ?array
     {
         $uuid = (string)($video['uuid'] ?? '');
         if (preg_match('/^[A-Za-z0-9-]{1,64}$/', $uuid) !== 1 || ($video['processing'] ?? true) !== false) {
@@ -685,7 +722,10 @@ abstract class AbstractVideoController extends ActionController
         if ($thumbnails !== []) {
             $object['thumbnailUrl'] = count($thumbnails) === 1 ? $thumbnails[0] : $thumbnails;
         }
-        $uploadDate = $this->isoDate($video['created_at'] ?? null);
+        $uploadDate = $this->isoDate($this->uploadDates[$uuid] ?? null);
+        if ($uploadDate === '') {
+            $uploadDate = $this->isoDate($video['created_at'] ?? null);
+        }
         if ($uploadDate !== '') {
             $object['uploadDate'] = $uploadDate;
         }
