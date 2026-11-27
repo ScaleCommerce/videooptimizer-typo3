@@ -9,6 +9,7 @@ const [
         attachVideoSource,
         applyTracks,
         autoplayWhileVisible,
+        bindHostedToggle,
         bindPlaybackToggle,
         destroyVideoSource,
         markUnavailable,
@@ -40,7 +41,7 @@ function applyStartTime(video, start) {
  * lightbox): playback starts at once and with sound, otherwise autoplay is muted and only while the
  * video is visible. Returns a function that tears everything down.
  */
-function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false, still = false, onUnplayable = null } = {}) {
+function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false, still = false, skipAutoplay = () => false, onUnplayable = null } = {}) {
     video.controls = cfg.controls;
     video.loop = cfg.loop;
     video.muted = click ? false : cfg.muted || cfg.autoplay;
@@ -74,7 +75,7 @@ function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false,
     // With reduced motion / data saver nothing starts by itself (`still`).
     if (!click && !still && cfg.autoplay) {
         attached.then(() => {
-            if (!gone) {
+            if (!gone && !skipAutoplay()) {
                 stopAutoplay = autoplayWhileVisible(video, wrap);
             }
         });
@@ -288,6 +289,36 @@ document.addEventListener('click', (event) => {
 // Native players in the page: directly shown elements and the hero background
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * A native player that starts by itself (autoplay): reduced motion / data saver keep it still (poster,
+ * the visitor starts it), and the pause/play button (WCAG 2.2.2) is wired to it.
+ */
+function setUpAutoplaying(video, wrap, cfg, button, onUnplayable = null) {
+    const still = motionReduced();
+    let toggle = null;
+    const teardown = setUpVideo(video, wrap, cfg, {
+        still,
+        // A click on the button before the source is ready is honoured once it is ...
+        shouldPlay: () => toggle?.shouldPlay() ?? false,
+        // ... and a pause before the attach is not overridden by autoplay.
+        skipAutoplay: () => toggle?.wantsPause() ?? false,
+        onUnplayable,
+    });
+    if (button) {
+        toggle = bindPlaybackToggle(
+            video,
+            button,
+            teardown.attached,
+            {
+                play: button.getAttribute('data-vo-label-play') || 'Play video',
+                pause: button.getAttribute('data-vo-label-pause') || 'Pause video',
+            },
+            cfg.autoplay && !still
+        );
+    }
+    return teardown;
+}
+
 function initDirect(wrap) {
     const cfg = parseConfig(wrap.getAttribute('data-vo-native'));
     const video = wrap.querySelector('video');
@@ -295,6 +326,8 @@ function initDirect(wrap) {
         return;
     }
     wrap.setAttribute('data-vo-ready', '');
+    const button = wrap.querySelector('[data-vo-toggle]');
+    const setUp = () => (cfg.autoplay ? setUpAutoplaying(video, wrap, cfg, button) : setUpVideo(video, wrap, cfg));
     // The source is attached shortly before the player scrolls into view, so hls.js is only
     // downloaded when a player is (nearly) visible.
     const stop = observeVisibility(
@@ -302,7 +335,7 @@ function initDirect(wrap) {
         (visible) => {
             if (visible) {
                 stop();
-                setUpVideo(video, wrap, cfg);
+                setUp();
             }
         },
         '300px',
@@ -319,41 +352,36 @@ function initHero(video) {
     cfg.controls = false;
     const section = video.closest('.vo-hero');
     const button = section?.querySelector('[data-vo-toggle]');
-    const still = motionReduced();
-    let toggle = null;
-    const teardown = setUpVideo(video, section ?? video, cfg, {
-        still,
-        // A click on the button before the source is ready is honoured once it is.
-        shouldPlay: () => toggle?.shouldPlay() ?? false,
-        onUnplayable: () => {
-            video.removeAttribute('src');
-            button?.setAttribute('hidden', '');
-        },
+    setUpAutoplaying(video, section ?? video, cfg, button, () => {
+        video.removeAttribute('src');
+        button?.setAttribute('hidden', '');
     });
-    if (button) {
-        toggle = bindPlaybackToggle(video, button, teardown.attached, {
-            play: button.getAttribute('data-vo-label-play') || 'Play background video',
-            pause: button.getAttribute('data-vo-label-pause') || 'Pause background video',
-        });
-    }
 }
 
-// Hosted hero with reduced motion: the iframe would autoplay a looping video, so it is swapped for
-// the still (autoplay off) player URL the server rendered next to it.
+// Hosted hero: the iframe is only loaded here (reduced motion / data saver: not before the visitor
+// presses play, so no autoplay video is fetched first). The button swaps it for the poster.
 function initHostedHero(frame) {
-    if (!motionReduced()) {
+    const src = safeUrl(frame.getAttribute('data-vo-src') || '');
+    if (!src || !frame.parentNode) {
         return;
     }
-    const still = safeUrl(frame.getAttribute('data-vo-still') || '');
-    if (still) {
-        frame.src = still;
-    }
+    const button = frame.closest('.vo-hero')?.querySelector('[data-vo-toggle]');
+    bindHostedToggle(
+        frame,
+        button,
+        src,
+        {
+            play: button?.getAttribute('data-vo-label-play') || 'Play background video',
+            pause: button?.getAttribute('data-vo-label-pause') || 'Pause background video',
+        },
+        !button || !motionReduced()
+    );
 }
 
 function init() {
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
-    document.querySelectorAll('iframe[data-vo-still]').forEach(initHostedHero);
+    document.querySelectorAll('iframe[data-vo-src]').forEach(initHostedHero);
 }
 
 if (document.readyState === 'loading') {

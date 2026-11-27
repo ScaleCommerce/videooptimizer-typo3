@@ -34,11 +34,8 @@ class VideoHeroController extends AbstractVideoController
         $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
 
         $embedUrl = '';
-        $stillUrl = '';
         if (is_array($video) && !$video['processing']) {
             $embedUrl = $this->embedUrlWithParams((string)$video['embed_src'], $this->playerQueryParams(heroMode: true));
-            // Shown instead with prefers-reduced-motion (swapped in by the frontend script).
-            $stillUrl = $this->embedUrlWithParams($embedUrl, ['autoplay' => '0', 'loop' => '0']);
         }
 
         $native = is_array($video) ? $this->buildNative($video, heroMode: true) : null;
@@ -48,7 +45,7 @@ class VideoHeroController extends AbstractVideoController
             $this->preloadPoster((string)$video['poster_src'], $posterSrcset);
         }
 
-        $this->view->assign('stillUrl', $stillUrl);
+        $this->view->assign('heroAutoplay', $native !== null ? (bool)$native['options']['autoplay'] : ($this->playerQueryParams(heroMode: true)['autoplay'] ?? '0') === '1');
         $this->view->assign('native', $native);
         $this->view->assign('posterSrcset', $posterSrcset);
         $this->view->assign('posterSizes', self::POSTER_SIZES_FULL);

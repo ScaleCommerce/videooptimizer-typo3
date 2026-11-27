@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
-import { applyTracks, attachVideoSource, bindPlaybackToggle, destroyVideoSource, motionReduced, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
+import { applyTracks, attachVideoSource, bindHostedToggle, bindPlaybackToggle, destroyVideoSource, motionReduced, setHlsLoader } from '../../Resources/Public/Js/video-source.js';
 import { parseConfig, safeUrl } from '../../Resources/Public/Js/native-config.js';
 
 globalThis.window = globalThis;
@@ -357,4 +357,116 @@ test('motionReduced follows prefers-reduced-motion and data saver', () => {
     assert.equal(motionReduced(win(false, true)), true);
     assert.equal(motionReduced(win(false, false)), false);
     assert.equal(motionReduced({}), false);
+});
+
+test('an autoplaying video shows the pause state from the start; a pause before the attach sticks', async () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    let resolve;
+    const toggle = bindPlaybackToggle(video, button, new Promise((r) => (resolve = r)), labels, true);
+
+    assert.equal(button.attributes['aria-label'], 'Pause');
+    assert.equal(button.classes.has('is-paused'), false);
+    assert.equal(toggle.wantsPause(), false);
+
+    button.click();
+    assert.equal(button.attributes['aria-label'], 'Play');
+    assert.equal(toggle.wantsPause(), true, 'the caller must not start autoplay');
+    assert.equal(toggle.shouldPlay(), false);
+    assert.equal(video.plays, 0);
+
+    resolve();
+    await Promise.resolve();
+    button.click();
+    assert.equal(video.plays, 1, 'after the attach the button plays');
+});
+
+test('two clicks before the attach cancel each other and autoplay proceeds', () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    const toggle = bindPlaybackToggle(video, button, new Promise(() => {}), labels, true);
+    button.click();
+    button.click();
+    assert.equal(toggle.wantsPause(), false);
+    assert.equal(button.attributes['aria-label'], 'Pause');
+});
+
+test('after the attach the button state follows play and pause events, also those not caused by the button', async () => {
+    const video = new FakeVideo();
+    const button = new FakeButton();
+    bindPlaybackToggle(video, button, Promise.resolve(), labels, true);
+    await Promise.resolve();
+
+    video.paused = true;
+    video.dispatchEvent(new Event('pause'));
+    assert.equal(button.attributes['aria-label'], 'Play', 'scrolled out of view or paused by the keyboard');
+    video.paused = false;
+    video.dispatchEvent(new Event('play'));
+    assert.equal(button.attributes['aria-label'], 'Pause');
+});
+
+class FakeFrame {
+    attrs = {};
+    parentNode = null;
+    setAttribute(name, value) {
+        this.attrs[name] = value;
+    }
+    removeAttribute(name) {
+        delete this.attrs[name];
+    }
+    remove() {
+        this.parentNode.children = this.parentNode.children.filter((child) => child !== this);
+    }
+}
+function fakeHeroDom() {
+    const parent = {
+        children: [],
+        insertBefore(node, ref) {
+            this.children.splice(this.children.indexOf(ref), 0, node);
+        },
+    };
+    const frame = new FakeFrame();
+    frame.parentNode = parent;
+    parent.children.push(frame);
+    const doc = {
+        createComment: () => ({
+            after(node) {
+                node.parentNode = parent;
+                parent.children.splice(parent.children.indexOf(this) + 1, 0, node);
+            },
+        }),
+    };
+    return { parent, frame, doc };
+}
+
+test('hosted hero: the pause button swaps the iframe for the poster, play puts it back', () => {
+    const { parent, frame, doc } = fakeHeroDom();
+    const button = new FakeButton();
+    bindHostedToggle(frame, button, 'https://player.videooptimizer.eu/embed/x?autoplay=1', labels, true, doc);
+
+    assert.equal(frame.attrs.src, 'https://player.videooptimizer.eu/embed/x?autoplay=1');
+    assert.ok(parent.children.includes(frame));
+    assert.equal(button.attributes['aria-label'], 'Pause');
+    assert.equal('hidden' in button.attributes, false);
+
+    button.click();
+    assert.equal(parent.children.includes(frame), false, 'iframe removed');
+    assert.equal('src' in frame.attrs, false, 'and its source cleared, so nothing plays');
+    assert.equal(button.attributes['aria-label'], 'Play');
+
+    button.click();
+    assert.ok(parent.children.includes(frame));
+    assert.equal(frame.attrs.src, 'https://player.videooptimizer.eu/embed/x?autoplay=1');
+});
+
+test('hosted hero with reduced motion never loads the iframe before play', () => {
+    const { parent, frame, doc } = fakeHeroDom();
+    const button = new FakeButton();
+    bindHostedToggle(frame, button, 'https://player.videooptimizer.eu/embed/x', labels, false, doc);
+
+    assert.equal(parent.children.includes(frame), false);
+    assert.equal('src' in frame.attrs, false);
+    assert.equal(button.attributes['aria-label'], 'Play');
+    button.click();
+    assert.equal(frame.attrs.src, 'https://player.videooptimizer.eu/embed/x');
 });

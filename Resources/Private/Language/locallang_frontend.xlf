@@ -75,6 +75,12 @@
             <trans-unit id="hero.play">
                 <source>Play background video</source>
             </trans-unit>
+            <trans-unit id="video.pause">
+                <source>Pause video</source>
+            </trans-unit>
+            <trans-unit id="video.play">
+                <source>Play video</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

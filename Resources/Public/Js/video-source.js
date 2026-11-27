@@ -259,54 +259,98 @@ export function motionReduced(win = window) {
 }
 
 /**
- * Pause/play button for a background video (WCAG 2.2.2). The button follows the video's state
- * (aria-label, title, `is-paused`). Until the source is attached (hls.js may still be loading) a
- * click cannot play anything; it is remembered and honoured once `attached` resolves. Returns
- * `{ shouldPlay, unbind }`: `shouldPlay()` is for attachVideoSource (consumed once).
+ * Pause/play button for a video that plays by itself (WCAG 2.2.2). `initialPlaying` says whether it is
+ * meant to start playing on its own (autoplay without reduced motion).
+ *
+ * Until the source is attached (hls.js may still be loading) a click only changes the intent, and the
+ * button shows it: `shouldPlay()` (for attachVideoSource, consumed once) is true when the visitor asked
+ * for play on a video that would not start by itself, `wantsPause()` is true when the visitor paused one
+ * that would - the caller then skips autoplay, so a pause before the attach sticks. After the attach the
+ * button follows the video's play/pause events.
  */
-export function bindPlaybackToggle(video, button, attached, labels) {
+export function bindPlaybackToggle(video, button, attached, labels, initialPlaying = false) {
     let ready = false;
-    let playRequested = false;
-    const update = (paused) => {
-        const label = paused ? labels.play : labels.pause;
+    let intent = initialPlaying;
+    let consumed = false;
+    const update = (playing) => {
+        const label = playing ? labels.pause : labels.play;
         button.setAttribute('aria-label', label);
         button.setAttribute('title', label);
-        button.classList.toggle('is-paused', paused);
+        button.classList.toggle('is-paused', !playing);
     };
     const onClick = () => {
         if (!ready) {
-            playRequested = !playRequested;
-            update(!playRequested);
+            intent = !intent;
+            update(intent);
             return;
         }
-        // From here on the video's own state is the truth.
-        playRequested = false;
         if (video.paused) {
             video.play().catch(() => {});
         } else {
             video.pause();
         }
     };
-    const sync = () => update(video.paused);
+    const sync = () => {
+        if (ready) {
+            update(!video.paused);
+        }
+    };
     button.addEventListener('click', onClick);
     video.addEventListener('play', sync);
     video.addEventListener('pause', sync);
-    update(true);
+    update(intent);
     button.removeAttribute('hidden');
     attached.then(() => {
         ready = true;
+        // Autoplay may be refused or wait for the video to scroll into view: show the truth.
+        setTimeout(sync, 1000);
     });
 
     return {
         shouldPlay: () => {
-            const requested = playRequested;
-            playRequested = false;
-            return requested;
+            if (consumed) {
+                return false;
+            }
+            consumed = true;
+            return !initialPlaying && intent;
         },
+        wantsPause: () => initialPlaying && !intent,
         unbind: () => {
             button.removeEventListener('click', onClick);
             video.removeEventListener('play', sync);
             video.removeEventListener('pause', sync);
         },
     };
+}
+
+/**
+ * Pause/play for a hosted (iframe) background player: pausing swaps the iframe for the poster behind
+ * it (the iframe is removed and its source cleared), playing puts it back. With `start: false`
+ * (reduced motion) the iframe is not loaded at all until the visitor presses play.
+ */
+export function bindHostedToggle(frame, button, src, labels, start, doc = document) {
+    const marker = doc.createComment('vo-hero-player');
+    frame.parentNode.insertBefore(marker, frame);
+    let playing = false;
+    const set = (on) => {
+        playing = on;
+        if (on) {
+            frame.setAttribute('src', src);
+            marker.after(frame);
+        } else {
+            frame.removeAttribute('src');
+            frame.remove();
+        }
+        if (button) {
+            const label = on ? labels.pause : labels.play;
+            button.setAttribute('aria-label', label);
+            button.setAttribute('title', label);
+            button.classList.toggle('is-paused', !on);
+        }
+    };
+    set(start);
+    if (button) {
+        button.addEventListener('click', () => set(!playing));
+        button.removeAttribute('hidden');
+    }
 }
