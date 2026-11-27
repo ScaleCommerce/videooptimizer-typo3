@@ -1,0 +1,13 @@
+# Static analysis: `composer install && vendor/bin/phpstan analyse` inside the extension directory.
+# The baseline holds the findings that predate the check (defensive is_array()/?? guards on API data);
+# new code has to pass without extending it.
+includes:
+    - phpstan-baseline.neon
+parameters:
+    level: 6
+    paths:
+        - Classes
+        - Configuration
+    excludePaths:
+        - Configuration/TCA
+        - Configuration/Sets

@@ -1069,6 +1069,8 @@ final class VideoOptimizerClient implements LoggerAwareInterface
      *
      * @param array<string, mixed> $session the initiate response data
      * @param list<array{partNumber: int, etag: string}> $parts
+     * @param list<string> $tags
+     * @param array<string, string|null> $metadata
      * @return array<string, mixed>
      */
     public function completeUpload(string $libraryId, array $session, ?string $title, array $parts, array $tags = [], array $metadata = []): array

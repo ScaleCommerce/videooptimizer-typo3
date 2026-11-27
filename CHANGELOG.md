@@ -18,6 +18,10 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 - The module's video list loads 60 videos per page with "Load more" instead of at most 20 pages of 100; loaded pages survive edits ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
 - The module's tag filter runs on the API: several tags now match videos carrying ALL of them (was: any of them) ([#11](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/11)).
 
+### Quality
+- GitHub Actions: PHP syntax, XLF parity, PHPStan (level 6 with baseline) and PHPUnit on PHP 8.4/8.5, JavaScript syntax and unit tests ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
+- Unit tests for the module's AJAX endpoints, webhook receiver, `MediaUrl` and the content element controllers; 40 to 176 PHP tests plus 13 JavaScript tests ([#12](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/12)).
+
 ## [1.0.5] - 2026-11-27
 
 ### Fixed

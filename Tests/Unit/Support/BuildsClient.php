@@ -26,6 +26,8 @@ trait BuildsClient
     /** @var list<array{request: \Psr\Http\Message\RequestInterface}> */
     private array $history = [];
 
+    private CacheManager $cacheManager;
+
     /** In-memory stand-in for the extension cache. */
     private \stdClass $store;
 
@@ -57,13 +59,14 @@ trait BuildsClient
             $store->entries[$id] = $data;
             $store->tagsOf[preg_replace('/^.*?(video_.*)$/', '$1', $id) ?? $id] = $tags;
         });
+        $cache->method('has')->willReturnCallback(static fn(string $id): bool => isset($store->entries[$id]));
         $cache->method('flushByTag')->willReturnCallback(static function (string $tag) use ($store): void {
             $store->flushed[] = $tag;
         });
         $cache->method('flushByTags')->willReturnCallback(static function (array $tags) use ($store): void {
             array_push($store->flushed, ...$tags);
         });
-        $cacheManager = $this->createStub(CacheManager::class);
+        $cacheManager = $this->cacheManager = $this->createStub(CacheManager::class);
         $cacheManager->method('getCache')->willReturn($cache);
         $cacheManager->method('flushCachesInGroupByTags')->willReturnCallback(static function (string $group, array $tags) use ($store): void {
             $store->pageFlushed[] = [$group, $tags];
