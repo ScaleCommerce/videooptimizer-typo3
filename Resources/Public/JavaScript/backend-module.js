@@ -14,7 +14,8 @@ document.addEventListener('submit', (event) => {
     }
     event.preventDefault();
 
-    const modal = Modal.confirm(form.dataset.voConfirmTitle ?? '', form.dataset.voConfirm, SeverityEnum.warning);
+    const forced = form.dataset.voConfirmForce && form.querySelector('input[name="force"]:checked') !== null;
+    const modal = Modal.confirm(form.dataset.voConfirmTitle ?? '', forced ? form.dataset.voConfirmForce : form.dataset.voConfirm, SeverityEnum.warning);
     modal.addEventListener('confirm.button.cancel', () => {
         modal.hideModal();
     });

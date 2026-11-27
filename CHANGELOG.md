@@ -4,6 +4,19 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-27
+
+### Added
+- Library encoding quality (performance/quality) and forced reprocess ([#4](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/4)).
+- Subtitle languages can be deleted ([#5](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/5)).
+- Failure reason of failed videos and URL imports in the module, pickers and page previews ([#2](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/2)).
+
+### Fixed
+- Thumbnail picker lists the frames of a video ([#1](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/1)).
+- Create-library form disables add-on encodings that are not unlocked ([#3](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/3)).
+- Library edit form keeps active resolutions that are no longer offered and preselects only the library's own codec and resolutions ([#3](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/3)).
+- URL import explains rejected video platform links such as YouTube ([#6](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/6)).
+
 ## [1.0.3] - 2026-11-27
 
 ### Changed

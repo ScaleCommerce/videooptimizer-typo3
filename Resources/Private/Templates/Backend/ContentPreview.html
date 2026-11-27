@@ -14,8 +14,9 @@
                                 </f:if>
                                 <div class="vo-pv__body">
                                     <div class="vo-pv__title"><strong>{video.title}</strong>
-                                        <f:if condition="{video.badge}"><span class="badge badge-{video.badgeClass}"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:status.{video.badge}"/></span></f:if>
+                                        <f:if condition="{video.badge}"><span class="badge badge-{video.badgeClass}" title="{video.reason}"><f:translate key="LLL:EXT:videooptimizer/Resources/Private/Language/locallang_preview.xlf:status.{video.badge}"/></span></f:if>
                                     </div>
+                                    <f:if condition="{video.reason}"><div class="vo-pv__note vo-pv__note--error">{video.reason}</div></f:if>
                                     <div class="vo-pv__meta">
                                         <f:if condition="{video.duration}"><span>{video.duration}</span></f:if>
                                         <f:if condition="{video.library}"><span>{video.library}</span></f:if>

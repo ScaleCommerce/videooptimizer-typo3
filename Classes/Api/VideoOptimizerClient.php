@@ -43,6 +43,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     /** Lifetime of negative entries (remembered failures / empty results). */
     private const NEGATIVE_TTL = 30;
     private const MAX_ERROR_MESSAGE_LENGTH = 200;
+    private const MAX_FAILURE_REASON_LENGTH = 300;
 
     /**
      * Files at or above this size use the presigned multipart flow
@@ -432,7 +433,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     /**
      * Create a library. `name` is required; the other keys are optional.
      *
-     * @param array{name: string, description?: string, resolutions?: string, codec?: string} $data
+     * @param array{name: string, description?: string, resolutions?: string, codec?: string, encoding_quality?: string} $data
      * @return array<string, mixed> the created library
      */
     public function createLibrary(array $data): array
@@ -448,9 +449,9 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
-     * Update name/description/codec/resolutions of a library.
+     * Update name/description/codec/resolutions/encoding quality of a library.
      *
-     * @param array{name?: string, description?: string, codec?: string, resolutions?: string} $data
+     * @param array{name?: string, description?: string, codec?: string, resolutions?: string, encoding_quality?: string} $data
      * @return array<string, mixed> the updated library
      */
     public function updateLibrary(string $id, array $data): array
@@ -474,14 +475,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
-     * Re-queue encoding for every video in the library.
+     * Re-queue encoding for the videos of the library. Finished renditions are kept unless
+     * $force is set (needed after changing `encoding_quality`; the API limits this to 5 calls/hour).
      *
      * @return array<string, mixed>
      */
-    public function reprocessLibrary(string $id): array
+    public function reprocessLibrary(string $id, bool $force = false): array
     {
         $id = $this->assertLibraryId($id);
-        $body = $this->request('POST', '/libraries/' . rawurlencode($id) . '/reprocess', retry: false);
+        $options = $force ? ['json' => ['force' => true]] : [];
+        $body = $this->request('POST', '/libraries/' . rawurlencode($id) . '/reprocess', $options, retry: false);
         $this->flushTags('vo_library_' . $id, 'vo_lists');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
@@ -549,6 +552,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $this->flushTags('vo_sublangs');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
+    }
+
+    /**
+     * Remove a subtitle language of the organization (409 `subtitle_language_in_use` while videos still have it).
+     */
+    public function deleteSubtitleLanguage(string $code): void
+    {
+        $code = $this->assertLanguageCode($code);
+        $this->request('DELETE', '/subtitle-languages/' . rawurlencode($code), retry: false);
+        $this->flushTags('vo_sublangs');
     }
 
     // ------------------------------------------------------------------
@@ -645,6 +658,23 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     }
 
     /**
+     * Readable failure reason of a failed video (`error` string of `GET /videos/{uuid}`), '' when there is none.
+     *
+     * @param array<string, mixed> $video
+     */
+    public static function errorReason(array $video): string
+    {
+        $error = $video['error'] ?? null;
+        if (!is_string($error)) {
+            return '';
+        }
+        // No strip_tags (it would cut "file <2GB"): the output is always escaped by Fluid / textContent.
+        $text = preg_replace('/[\x00-\x1F\x7F\s]+/u', ' ', $error) ?? '';
+
+        return mb_substr(trim($text), 0, self::MAX_FAILURE_REASON_LENGTH);
+    }
+
+    /**
      * Auto-generated thumbnail frames of a ready video.
      *
      * @return list<array{index: int, url: string}>
@@ -653,7 +683,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
     {
         $uuid = $this->assertUuid($uuid, 'video ID');
 
-        return $this->remember('thumbs:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
+        return $this->remember('thumbs2:' . $uuid, ['vo_video_' . $uuid], function () use ($uuid): array {
             try {
                 $body = $this->request('GET', '/videos/' . rawurlencode($uuid) . '/thumbnails');
             } catch (ApiErrorException $exception) {
@@ -663,7 +693,10 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 throw $exception;
             }
 
-            return is_array($body['data'] ?? null) ? array_values(array_filter($body['data'], 'is_array')) : [];
+            // Documented shape: {data: {thumbnails: [{index, url}]}}.
+            $thumbnails = is_array($body['data'] ?? null) ? ($body['data']['thumbnails'] ?? null) : null;
+
+            return is_array($thumbnails) ? array_values(array_filter($thumbnails, 'is_array')) : [];
         });
     }
 
@@ -749,7 +782,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
             }
         }
 
-        $this->flushTags('vo_video_' . $uuid);
+        $this->flushTags('vo_video_' . $uuid, 'vo_sublangs');
 
         return is_array($body['data'] ?? null) ? $body['data'] : [];
     }
@@ -759,7 +792,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         $uuid = $this->assertUuid($uuid, 'video ID');
         $language = $this->assertLanguageCode($language);
         $this->request('DELETE', '/videos/' . rawurlencode($uuid) . '/subtitles/' . rawurlencode($language));
-        $this->flushTags('vo_video_' . $uuid);
+        $this->flushTags('vo_video_' . $uuid, 'vo_sublangs');
     }
 
     // ------------------------------------------------------------------
@@ -1191,6 +1224,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                         'network' => $exception instanceof NetworkException,
                         'status' => $exception instanceof ApiErrorException ? $exception->getHttpStatus() : 0,
                         'message' => $exception->getMessage(),
+                        'code' => $exception instanceof ApiErrorException ? $exception->getApiCode() : null,
                     ],
                 ], [], self::NEGATIVE_TTL);
             }
@@ -1216,7 +1250,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
 
         return ($failure['network'] ?? false) === true
             ? new NetworkException($message)
-            : new ApiErrorException($message, (int)($failure['status'] ?? 0));
+            : new ApiErrorException($message, (int)($failure['status'] ?? 0), null, is_string($failure['code'] ?? null) ? $failure['code'] : null);
     }
 
     private function flushTags(string ...$tags): void
@@ -1428,7 +1462,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
                 }
             }
 
-            throw new ApiErrorException($message, $status);
+            throw new ApiErrorException($message, $status, null, $this->extractErrorCode($body));
         }
 
         throw new NetworkException(
@@ -1462,6 +1496,16 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
 
         return trim($raw) === '' ? 'empty response' : 'unexpected response';
+    }
+
+    /**
+     * Machine-readable error code (`data.code`, e.g. `source_url_video_platform`) or null.
+     */
+    private function extractErrorCode(mixed $decoded): ?string
+    {
+        $code = is_array($decoded) && is_array($decoded['data'] ?? null) ? ($decoded['data']['code'] ?? null) : null;
+
+        return is_string($code) && preg_match('/^[a-z0-9_.-]{1,64}$/i', $code) === 1 ? $code : null;
     }
 
     private function cleanText(string $text, int $maxLength): string

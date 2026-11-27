@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Http\Message\UploadedFileInterface;
+use ScaleCommerce\VideoOptimizer\Api\ApiErrorException;
+use ScaleCommerce\VideoOptimizer\Api\EncodingOptions;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
@@ -40,6 +42,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
     private const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
     private const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'webm', 'mkv', 'avi', 'mpeg', 'mpg'];
     private const MAX_SOURCE_URL_LENGTH = 2048;
+    private const ENCODING_QUALITIES = ['performance', 'quality'];
 
     private const LLL = 'LLL:EXT:videooptimizer/Resources/Private/Language/locallang_mod.xlf:';
 
@@ -78,6 +81,10 @@ final class VideoOptimizerModuleController extends ActionController implements L
         } catch (VideoOptimizerException) {
             $encodings = ['codecs' => [], 'resolutions' => []];
         }
+        $encodingChoices = [
+            'codecs' => $this->encodingChoices($encodings['codecs']),
+            'resolutions' => $this->encodingChoices($encodings['resolutions']),
+        ];
 
         $libraryRows = [];
         foreach ($libraries as $library) {
@@ -86,18 +93,13 @@ final class VideoOptimizerModuleController extends ActionController implements L
             }
             $id = (string)($library['id'] ?? '');
             $resolutionKeys = array_values(array_filter(array_map('trim', explode(',', (string)($library['resolutions'] ?? '')))));
-            $resolutionOptions = [];
-            foreach (array_map('strval', (array)($library['available_resolutions'] ?? [])) as $availableResolution) {
-                $resolutionOptions[] = [
-                    'value' => $availableResolution,
-                    'selected' => in_array($availableResolution, $resolutionKeys, true),
-                ];
-            }
+            $resolutionOptions = EncodingOptions::editChoices((array)($library['available_resolutions'] ?? []), $resolutionKeys);
             $libraryRows[] = [
                 'id' => $id,
                 'name' => (string)($library['name'] ?? ''),
                 'description' => (string)($library['description'] ?? ''),
                 'codec' => (string)($library['codec'] ?? ''),
+                'encodingQuality' => in_array($library['encoding_quality'] ?? '', self::ENCODING_QUALITIES, true) ? (string)$library['encoding_quality'] : '',
                 'resolutions' => implode(', ', $resolutionKeys),
                 'resolutionKeys' => $resolutionKeys,
                 'resolutionOptions' => $resolutionOptions,
@@ -118,7 +120,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view = $this->createView();
         $view->assign('libraryRows', $libraryRows);
         $view->assign('savings', $savings);
-        $view->assign('encodings', $encodings);
+        $view->assign('encodings', $encodingChoices);
         $view->assign('errorMessage', $errorMessage);
         $view->assign('createUrl', $this->moduleUrl('create'));
         $view->assign('createToken', $this->formToken('create'));
@@ -135,6 +137,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $description = '',
         array $resolutions = [],
         string $codec = '',
+        string $encodingQuality = '',
     ): ResponseInterface {
         if (($denied = $this->guardMutation('manage', 'list', [])) !== null) {
             return $denied;
@@ -159,6 +162,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
                     $payload[$key] = $value;
                 }
             }
+            if (in_array($encodingQuality, self::ENCODING_QUALITIES, true)) {
+                $payload['encoding_quality'] = $encodingQuality;
+            }
 
             $library = $this->client->createLibrary($payload);
             $id = substr((string)($library['id'] ?? ''), 0, 8);
@@ -180,6 +186,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         string $description = '',
         array $resolutions = [],
         string $codec = '',
+        string $encodingQuality = '',
     ): ResponseInterface {
         if (($denied = $this->guardMutation('manage', 'list', [])) !== null) {
             return $denied;
@@ -196,6 +203,9 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 if ($value !== '') {
                     $payload[$key] = $value;
                 }
+            }
+            if (in_array($encodingQuality, self::ENCODING_QUALITIES, true)) {
+                $payload['encoding_quality'] = $encodingQuality;
             }
             // The description is optional, so a submitted empty field means "clear it".
             $parsedBody = $this->request->getParsedBody();
@@ -238,7 +248,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         return $this->redirect('list');
     }
 
-    public function reprocessLibraryAction(string $libraryId = '', string $formToken = ''): ResponseInterface
+    public function reprocessLibraryAction(string $libraryId = '', string $formToken = '', string $force = ''): ResponseInterface
     {
         if (($denied = $this->guardMutation('delete', 'list', [])) !== null) {
             return $denied;
@@ -256,7 +266,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         try {
-            $result = $this->client->reprocessLibrary($libraryId);
+            $result = $this->client->reprocessLibrary($libraryId, $force === '1');
             $queued = (int)($result['queued'] ?? 0);
             if ($queued > 0) {
                 $this->flash('flash.library.reprocessQueued', ContextualFeedbackSeverity::OK, [$queued]);
@@ -468,6 +478,12 @@ final class VideoOptimizerModuleController extends ActionController implements L
                 $this->parseMetadata($metadata),
             );
             $this->flash('flash.ingest.done', ContextualFeedbackSeverity::OK, [substr((string)$result['uuid'], 0, 8)]);
+        } catch (ApiErrorException $exception) {
+            if ($exception->getApiCode() === 'source_url_video_platform') {
+                $this->flash('flash.ingest.videoPlatform', ContextualFeedbackSeverity::ERROR);
+            } else {
+                $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+            }
         } catch (VideoOptimizerException $exception) {
             $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
         }
@@ -664,7 +680,11 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('videoTitle', $videoTitle);
         $view->assign('tracks', array_values(array_filter($tracks, 'is_array')));
         $view->assign('languages', array_map(
-            static fn(array $l): array => ['code' => (string)($l['code'] ?? ''), 'label' => (string)($l['label'] ?? '')],
+            static fn(array $l): array => [
+                'code' => (string)($l['code'] ?? ''),
+                'label' => (string)($l['label'] ?? ''),
+                'videoCount' => (int)($l['video_count'] ?? 0),
+            ],
             array_filter($languages, 'is_array'),
         ));
         $view->assign('errorMessage', $errorMessage);
@@ -673,6 +693,8 @@ final class VideoOptimizerModuleController extends ActionController implements L
         $view->assign('deleteSubtitleUrl', $this->moduleUrl('deleteSubtitle', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
         $view->assign('uploadSubtitleToken', $this->formToken('uploadSubtitle', $videoUuid));
         $view->assign('deleteSubtitleToken', $this->formToken('deleteSubtitle', $videoUuid));
+        $view->assign('deleteLanguageUrl', $this->moduleUrl('deleteSubtitleLanguage', ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]));
+        $view->assign('deleteLanguageToken', $this->formToken('deleteSubtitleLanguage', $videoUuid));
 
         $this->addBackButton($view, $this->moduleUrl('videos', ['libraryId' => $libraryId]), 'nav.backToVideos');
         return $this->renderView($view, 'Subtitles', 'subtitles.docTitle', $videoTitle);
@@ -775,6 +797,48 @@ final class VideoOptimizerModuleController extends ActionController implements L
         return $this->redirect('subtitles', null, null, ['libraryId' => $libraryId, 'videoUuid' => $videoUuid]);
     }
 
+    /**
+     * Remove a subtitle language of the organization (refused by the API while videos still use it).
+     */
+    public function deleteSubtitleLanguageAction(
+        string $libraryId = '',
+        string $videoUuid = '',
+        string $formToken = '',
+        string $language = '',
+    ): ResponseInterface {
+        $redirectArguments = ['libraryId' => $libraryId, 'videoUuid' => $videoUuid];
+        if (($denied = $this->guardMutation('delete', 'subtitles', $redirectArguments)) !== null) {
+            return $denied;
+        }
+        if (!$this->validateFormToken($formToken, 'deleteSubtitleLanguage', $videoUuid)) {
+            $this->flash('flash.invalidToken', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, $redirectArguments);
+        }
+
+        $language = trim($language);
+        if ($language === '') {
+            $this->flash('flash.subtitle.languageMissing', ContextualFeedbackSeverity::ERROR);
+
+            return $this->redirect('subtitles', null, null, $redirectArguments);
+        }
+
+        try {
+            $this->client->deleteSubtitleLanguage($language);
+            $this->flash('flash.subtitleLanguage.deleted', ContextualFeedbackSeverity::OK, [$language]);
+        } catch (ApiErrorException $exception) {
+            if ($exception->getHttpStatus() === 409 || $exception->getApiCode() === 'subtitle_language_in_use') {
+                $this->flash('flash.subtitleLanguage.inUse', ContextualFeedbackSeverity::ERROR, [$language]);
+            } else {
+                $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+            }
+        } catch (VideoOptimizerException $exception) {
+            $this->flashText($exception->getMessage(), ContextualFeedbackSeverity::ERROR);
+        }
+
+        return $this->redirect('subtitles', null, null, $redirectArguments);
+    }
+
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
@@ -856,6 +920,28 @@ final class VideoOptimizerModuleController extends ActionController implements L
         }
 
         return null;
+    }
+
+    /**
+     * Options for the create form: add-ons the organization has not unlocked stay visible but disabled.
+     *
+     * @param array<mixed> $options
+     * @return list<array{key: string, label: string, available: bool}>
+     */
+    private function encodingChoices(array $options): array
+    {
+        $choices = [];
+        foreach (EncodingOptions::normalize($options) as $option) {
+            $label = $option['label'];
+            if (!$option['available']) {
+                $label = $this->label('list.encoding.locked', [$label]);
+            } elseif ($option['addon']) {
+                $label = $this->label('list.encoding.addon', [$label]);
+            }
+            $choices[] = ['key' => $option['key'], 'label' => $label, 'available' => $option['available']];
+        }
+
+        return $choices;
     }
 
     /**
@@ -943,6 +1029,7 @@ final class VideoOptimizerModuleController extends ActionController implements L
                     : $this->label('videos.fallbackTitle', [substr($uuid, 0, 8)]),
                 'status' => $statusLabel,
                 'statusClass' => $statusClass,
+                'errorReason' => VideoOptimizerClient::errorReason($video),
                 'duration' => $this->formatDuration($video['duration'] ?? 0),
                 'created' => (string)($video['created_at'] ?? ''),
                 'tags' => implode(', ', array_map('strval', (array)($video['tags'] ?? []))),

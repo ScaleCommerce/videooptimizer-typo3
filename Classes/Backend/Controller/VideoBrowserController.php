@@ -113,6 +113,7 @@ final class VideoBrowserController
             'duration' => is_numeric($duration) ? (float)$duration : null,
             'ready' => ($video['ready'] ?? true) !== false,
             'error' => !empty($video['error']),
+            'error_message' => VideoOptimizerClient::errorReason($video),
             'thumbnail_url' => $this->safeUrl($video['thumbnail_url'] ?? null),
             'poster_url' => $this->safeUrl($video['poster_url'] ?? null),
             'library_id' => $libraryId,
