@@ -2,7 +2,7 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning: [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [2.2.0] - 2026-11-28
 
 ### Upgrade
 - Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` and `Js/mini-player.js` are new sub-modules of `Js/videooptimizer.js` (copy them along when you serve the JavaScript yourself).
