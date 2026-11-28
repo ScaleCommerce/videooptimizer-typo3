@@ -45,7 +45,7 @@ abstract class AbstractVideoController extends ActionController
     protected const PAGE_CACHE_ERROR_LIFETIME = 60;
 
     /** Pagination cursor from the URL (and the API): charset and length are checked strictly. */
-    protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=.:-]{1,200}$/D';
+    protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=+\/.:-]{1,200}$/D';
 
     /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
     private array $uploadDates = [];

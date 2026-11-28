@@ -415,10 +415,11 @@ function initMini(media) {
 }
 
 function init() {
+    // First: the mini player wraps the video's play()/muted/currentTime before the players set up.
+    document.querySelectorAll('.vo-media[data-vo-mini]').forEach(initMini);
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
     document.querySelectorAll('iframe[data-vo-src]').forEach(initHostedHero);
-    document.querySelectorAll('.vo-media[data-vo-mini]').forEach(initMini);
     document.querySelectorAll('[data-vo-chapters]').forEach((root) => initChapters(root, safeUrl));
 }
 

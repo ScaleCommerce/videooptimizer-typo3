@@ -51,6 +51,14 @@ class FakeObserver {
 class FakeVideo extends FakeElement {
     paused = true;
     muted = false;
+    loop = false;
+    currentTime = 0;
+    play() {
+        // Like a browser: the play event follows a play() call that starts playback.
+        this.paused = false;
+        this.dispatchEvent(new Event('play'));
+        return Promise.resolve();
+    }
     focused = 0;
     focus() {
         this.focused += 1;
@@ -64,7 +72,7 @@ function press(box, type = 'pointerdown') {
     box.dispatchEvent(new Event(type));
 }
 
-function setUp({ withVideo = true, gesture = true } = {}) {
+function setUp({ withVideo = true, gesture = false } = {}) {
     const media = new FakeElement();
     const box = new FakeElement();
     const close = new FakeElement();
@@ -205,35 +213,63 @@ test('a hosted player counts as started when the iframe takes the focus; closing
     assert.equal(media.hasAttribute('data-vo-mini-dismissed'), false);
 });
 
-test('autoplay and play while scrolling do not count as the visitor starting playback, whatever the sound state', () => {
-    const { media, video } = setUp({ gesture: false });
-    video.muted = false; // an unmuted autoplay (theme) is still not a visitor start
-    video.dispatchEvent(new Event('play'));
+test('the plugin starting playback itself (autoplay, play while scrolling) never counts, whatever the sound state', () => {
+    const { media, video } = setUp();
+    video.muted = true; // the plugin mutes an autoplaying video
+    video.currentTime = 12; // and applies a start time
+    video.play();
     observer.report(0);
     assert.equal(media.classList.contains('vo-media--pinned'), false);
     assert.equal(media.hasAttribute('data-vo-mini-started'), false);
+    video.muted = false; // an unmuted theme autoplay is still not a visitor start
+    video.play();
+    assert.equal(media.hasAttribute('data-vo-mini-started'), false);
 });
 
-test('a keyboard or click gesture elsewhere on the page (page scrolling) does not count; one in the player does, even for a muted video', () => {
-    const { media, video, box } = setUp({ gesture: false });
-    video.muted = true; // muted by the editor
-    // A key press outside the box (e.g. Space to scroll) never reaches the box listeners.
-    video.dispatchEvent(new Event('play')); // autoplay arrives after the page scroll
-    observer.report(0);
-    assert.equal(media.classList.contains('vo-media--pinned'), false);
-
-    press(box, 'pointerdown'); // the visitor presses play in the controls
-    video.dispatchEvent(new Event('play'));
+test("the native control bar sends no page events: a play the plugin did not make is the visitor's, even for a muted video", () => {
+    const { media, video } = setUp();
+    video.muted = true; // editor-muted
+    clock += 5000;
+    video.dispatchEvent(new Event('play')); // the visitor presses the control bar's play button
     assert.equal(media.hasAttribute('data-vo-mini-started'), true);
     observer.report(0);
     assert.equal(media.classList.contains('vo-media--pinned'), true);
 });
 
-test('a keyboard press in the player counts, but not for long', () => {
-    const { media, video, box } = setUp({ gesture: false });
+test('an expected change only covers a short time: a later unmute is the visitor', () => {
+    const { media, video } = setUp();
+    video.play();
+    clock += 5000;
+    video.dispatchEvent(new Event('volumechange'));
+    assert.equal(media.hasAttribute('data-vo-mini-started'), true);
+});
+
+test('the looping restart of a video is not a visitor seek', () => {
+    const { media, video } = setUp();
+    video.loop = true;
+    video.currentTime = 0.1;
+    clock += 5000;
+    video.dispatchEvent(new Event('seeking'));
+    assert.equal(media.hasAttribute('data-vo-mini-started'), false);
+});
+
+test('a press in the player or on a scene button makes the following programmatic play the visitor\'s', () => {
+    const { media, video, box } = setUp();
+    press(box); // the plugin's own pause/play button
+    video.play();
+    assert.equal(media.hasAttribute('data-vo-mini-started'), true);
+
+    const scene = setUp();
+    scene.media.dispatchEvent(new Event('vo-gesture')); // a scene button seeks and plays through the plugin
+    scene.video.play();
+    assert.equal(scene.media.hasAttribute('data-vo-mini-started'), true);
+});
+
+test('a gesture expires', () => {
+    const { media, video, box } = setUp();
     press(box, 'keydown');
-    clock += 20000; // the autoplay play event comes long after
-    video.dispatchEvent(new Event('play'));
+    clock += 20000;
+    video.play();
     assert.equal(media.hasAttribute('data-vo-mini-started'), false);
 });
 
@@ -283,19 +319,28 @@ test('closing the mini player moves the focus to the video, or to the box for a 
     assert.equal(hosted.box.getAttribute('tabindex'), '-1');
 });
 
-test('unmuting or seeking an autoplaying video by hand is the visitor taking over, autoplay itself is not', () => {
+test('unmuting or seeking an autoplaying video by hand is the visitor taking over', () => {
     for (const event of ['volumechange', 'seeking']) {
-        const { media, video, box } = setUp({ gesture: false });
-        video.dispatchEvent(new Event('play')); // autoplay
-        video.dispatchEvent(new Event(event));
-        observer.report(0);
-        assert.equal(media.classList.contains('vo-media--pinned'), false, event + ' without a gesture');
+        const { media, video } = setUp();
+        video.play(); // autoplay
         assert.equal(media.hasAttribute('data-vo-mini-started'), false);
-
-        press(box);
-        video.dispatchEvent(new Event(event));
+        clock += 5000;
+        video.dispatchEvent(new Event(event)); // the control bar
         assert.equal(media.hasAttribute('data-vo-mini-started'), true, event);
         observer.report(0);
         assert.equal(media.classList.contains('vo-media--pinned'), true, event);
     }
+});
+
+test('opening a lightbox stops a pinned hosted player (no double audio) and restores it on return', () => {
+    const { media, frame } = setUp({ withVideo: false });
+    media.dispatchEvent(new Event('vo-start'));
+    observer.report(0);
+    assert.equal(media.classList.contains('vo-media--pinned'), true);
+
+    doc.dispatchEvent(new Event('vo:lightbox-open'));
+    assert.equal(media.classList.contains('vo-media--pinned'), false);
+    assert.equal(frame.hasAttribute('src'), false);
+    observer.report(0.8);
+    assert.equal(frame.hasAttribute('src'), true);
 });

@@ -421,6 +421,7 @@ final class VideoControllerHelpersTest extends TestCase
 
         self::assertSame(1, preg_match($pattern, str_repeat('a', 200)));
         self::assertSame(0, preg_match($pattern, str_repeat('a', 201)));
+        self::assertSame(1, preg_match($pattern, 'ab+/cd=='), 'base64 cursors');
         self::assertSame(0, preg_match($pattern, "abc\n"), 'no trailing newline');
         self::assertSame(0, preg_match($pattern, 'a b'));
         self::assertSame(0, preg_match($pattern, ''));

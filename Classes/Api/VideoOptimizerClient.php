@@ -450,7 +450,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
         $cursor = trim((string)$cursor);
         if ($cursor !== '') {
-            if (preg_match('/^[A-Za-z0-9_=.:-]{1,512}$/', $cursor) !== 1) {
+            if (preg_match('/^[A-Za-z0-9_=+\/.:-]{1,512}$/', $cursor) !== 1) {
                 throw new InvalidArgumentException('Invalid pagination cursor.');
             }
             $query['cursor'] = $cursor;

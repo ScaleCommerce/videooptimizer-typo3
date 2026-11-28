@@ -1,5 +1,5 @@
-// Floating mini player: once the visitor started playback (a press in the player or on a scene button;
-// not autoplay and not play while scrolling) and the player scrolls out of view, it is
+// Floating mini player: once the visitor started playback (any play, unmute or seek the plugin did not
+// make itself, or a press on a scene button; not autoplay and not play while scrolling) and the player scrolls out of view, it is
 // pinned bottom right with CSS only (class on the wrapper, a placeholder keeps the page height). The
 // video or iframe is never moved in the DOM (an iframe would reload). No imports (the entry loads this
 // with the version stamp); the DOM objects are passed in so the logic can be unit-tested with node.
@@ -30,8 +30,54 @@ export function keepsPlayingWhenHidden(media, win = window) {
     );
 }
 
-/** How long after a gesture in the player (or on a scene button) a play/unmute/seek counts as the visitor's. */
+/** How long after a press in the player (or on a scene button) a play/unmute/seek counts as the visitor's. */
 export const GESTURE_MS = 8000;
+/** How long a change the plugin made itself (play(), muted, currentTime) is expected to echo as an event. */
+export const EXPECT_MS = 1500;
+
+/**
+ * Wraps the video's own `play()` and its `muted` and `currentTime` setters so that every change the
+ * plugin makes through them is reported to `expect(type)`. Changes from the browser's control bar do
+ * not pass through these (and send no page events either), so the events they cause are the visitor's.
+ */
+function watchProgrammatic(video, expect) {
+    const play = video.play;
+    if (typeof play === 'function') {
+        video.play = function (...args) {
+            expect('play');
+            return play.apply(this, args);
+        };
+    }
+    for (const [name, type] of [['muted', 'volumechange'], ['currentTime', 'seeking']]) {
+        let descriptor = null;
+        for (let object = video; object && !descriptor; object = Object.getPrototypeOf(object)) {
+            descriptor = Object.getOwnPropertyDescriptor(object, name) ?? null;
+        }
+        if (!descriptor) {
+            continue;
+        }
+        if (descriptor.get && descriptor.set) {
+            Object.defineProperty(video, name, {
+                configurable: true,
+                get: () => descriptor.get.call(video),
+                set: (value) => {
+                    expect(type);
+                    descriptor.set.call(video, value);
+                },
+            });
+        } else if (descriptor.writable) {
+            let stored = descriptor.value;
+            Object.defineProperty(video, name, {
+                configurable: true,
+                get: () => stored,
+                set: (value) => {
+                    expect(type);
+                    stored = value;
+                },
+            });
+        }
+    }
+}
 
 /**
  * Wires one mini player wrapper (`.vo-media[data-vo-mini]` with `[data-vo-box]` around the player and a
@@ -116,17 +162,26 @@ export function bindMiniPlayer(media, { video = null, frame = null, hostedSrc = 
 
     // Playing, unmuting or seeking an autoplaying video by hand is the visitor taking over; autoplay
     // itself never counts.
-    // Only a pointer or key press inside the player box, or a scene button (`vo-gesture` on the wrapper),
-    // makes a following play/unmute/seek the visitor's: not browser-wide user activation (which any
-    // click or scroll key elsewhere keeps alive) and not the sound state.
+    // The native control bar sends no page events, so a visitor is recognized by exclusion: a play,
+    // unmute or seek the plugin made itself (autoplay, play while scrolling, start time) is expected and
+    // ignored; anything else is the visitor. A press in the player (the plugin's own pause/play button)
+    // or on a scene button (`vo-gesture`) makes even the plugin's play() the visitor's.
     let lastGesture = -Infinity;
+    const expectedUntil = {};
     const now = () => win.performance?.now?.() ?? Date.now();
     const onGesture = () => {
         lastGesture = now();
     };
-    const onInteraction = () => {
+    const onInteraction = (event) => {
+        const type = event.type;
         if (now() - lastGesture > GESTURE_MS) {
-            return;
+            if (now() < (expectedUntil[type] ?? -Infinity)) {
+                return;
+            }
+            // Looping restarts the video with a seek of its own.
+            if (type === 'seeking' && video.loop && video.currentTime < 0.5) {
+                return;
+            }
         }
         setStarted(true);
         setDismissed(false);
@@ -168,6 +223,11 @@ export function bindMiniPlayer(media, { video = null, frame = null, hostedSrc = 
     box.addEventListener('pointerdown', onGesture, true);
     box.addEventListener('keydown', onGesture, true);
     media.addEventListener('vo-gesture', onGesture);
+    if (video) {
+        watchProgrammatic(video, (type) => {
+            expectedUntil[type] = now() + EXPECT_MS;
+        });
+    }
     close?.addEventListener('click', onClose);
     media.addEventListener('vo-start', onStart);
     doc.addEventListener?.('vo:lightbox-open', onLightbox);
