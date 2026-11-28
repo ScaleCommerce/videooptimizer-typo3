@@ -1,6 +1,6 @@
 // Frontend of the VideoOptimizer content elements (ES module, loaded with type="module"):
 // native player (hls.js loaded only when needed), click-to-play facade, lightbox dialog and the
-// background video of the hero. The hosted player stays a plain iframe.
+// background video of the hero, chapters and the floating mini player. The hosted player stays a plain iframe.
 // The sub-modules are imported with a version stamp the server computes from all module files
 // (data-vo-version on this script's tag), so a browser cache that keeps JavaScript for a year, or a
 // TYPO3 that rewrites the entry's file name, cannot pair a new entry with an old sub-module. Without
@@ -20,7 +20,17 @@ const [
         observeVisibility,
     },
     { parseConfig, safeUrl },
-] = await Promise.all([import('./video-source.js' + version), import('./native-config.js' + version)]);
+    { initChapters },
+    { bindMiniPlayer, keepsPlayingWhenHidden },
+] = await Promise.all([
+    import('./video-source.js' + version),
+    import('./native-config.js' + version),
+    import('./chapters.js' + version),
+    import('./mini-player.js' + version),
+]);
+
+// Play while scrolling: start at this share of the player in view, pause below it.
+const SCROLL_THRESHOLD = 0.5;
 
 const IFRAME_ALLOW = 'autoplay; fullscreen; picture-in-picture';
 
@@ -79,7 +89,12 @@ function setUpVideo(video, wrap, cfg, { click = false, shouldPlay = () => false,
     if (!click && !still && cfg.autoplay) {
         attached.then(() => {
             if (!gone && !skipAutoplay()) {
-                stopAutoplay = autoplayWhileVisible(video, wrap);
+                stopAutoplay = autoplayWhileVisible(
+                    video,
+                    wrap,
+                    cfg.scroll ? SCROLL_THRESHOLD : undefined,
+                    () => !keepsPlayingWhenHidden(wrap.closest('[data-vo-mini]'))
+                );
             }
         });
     }
@@ -219,6 +234,8 @@ function openLightbox(player, title, closeLabel, trigger) {
     teardownPlayer = player.teardown;
     inertPage(el);
     document.addEventListener('keydown', onKeydown, true);
+    // The floating mini player steps aside while the lightbox is open.
+    document.dispatchEvent(new CustomEvent('vo:lightbox-open'));
     el.showModal();
     // Focus starts on the close button, not inside an iframe, so Escape works right away.
     closeBtn.focus();
@@ -330,19 +347,23 @@ function initDirect(wrap) {
     }
     wrap.setAttribute('data-vo-ready', '');
     const button = wrap.querySelector('[data-vo-toggle]');
-    const setUp = () => (cfg.autoplay ? setUpAutoplaying(video, wrap, cfg, button) : setUpVideo(video, wrap, cfg));
+    let state = null;
+    const setUp = () => (state ??= cfg.autoplay ? setUpAutoplaying(video, wrap, cfg, button) : setUpVideo(video, wrap, cfg));
+    // Other modules (chapters) attach the source on demand through this.
+    wrap.__voStart = setUp;
     // The source is attached shortly before the player scrolls into view, so hls.js is only
-    // downloaded when a player is (nearly) visible.
-    const stop = observeVisibility(
+    // downloaded when a player is (nearly) visible; play while scrolling waits until it is half in view.
+    let stop = null;
+    stop = observeVisibility(
         wrap,
         (visible) => {
             if (visible) {
-                stop();
+                stop?.();
                 setUp();
             }
         },
-        '300px',
-        0
+        cfg.scroll ? '0px' : '300px',
+        cfg.scroll ? SCROLL_THRESHOLD : 0
     );
 }
 
@@ -381,10 +402,25 @@ function initHostedHero(frame) {
     );
 }
 
+// Floating mini player of single/split/spotlight/chapters (direct presentation).
+function initMini(media) {
+    if (media.hasAttribute('data-vo-mini-ready')) {
+        return;
+    }
+    media.setAttribute('data-vo-mini-ready', '');
+    const video = media.querySelector('.vo-native video');
+    const frame = media.querySelector('iframe.vo-player');
+    const src = frame ? safeUrl(frame.getAttribute('src') || '') : '';
+    bindMiniPlayer(media, { video, frame: src ? frame : null, hostedSrc: src });
+}
+
 function init() {
+    // First: the mini player wraps the video's play()/muted/currentTime before the players set up.
+    document.querySelectorAll('.vo-media[data-vo-mini]').forEach(initMini);
     document.querySelectorAll('.vo-native[data-vo-native]').forEach(initDirect);
     document.querySelectorAll('video[data-vo-hero]').forEach(initHero);
     document.querySelectorAll('iframe[data-vo-src]').forEach(initHostedHero);
+    document.querySelectorAll('[data-vo-chapters]').forEach((root) => initChapters(root, safeUrl));
 }
 
 if (document.readyState === 'loading') {

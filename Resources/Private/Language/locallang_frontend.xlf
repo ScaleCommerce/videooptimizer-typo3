@@ -81,6 +81,21 @@
             <trans-unit id="video.play">
                 <source>Play video</source>
             </trans-unit>
+            <trans-unit id="scene.label">
+                <source>Scene %d</source>
+            </trans-unit>
+            <trans-unit id="scenes.aria">
+                <source>Scenes</source>
+            </trans-unit>
+            <trans-unit id="mini.close">
+                <source>Close mini player</source>
+            </trans-unit>
+            <trans-unit id="error.unavailable">
+                <source>The video is temporarily unavailable (VideoOptimizer could not be reached).</source>
+            </trans-unit>
+            <trans-unit id="error.not_found">
+                <source>The video was not found in VideoOptimizer.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -2,6 +2,27 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning: [SemVer](https://semver.org/).
 
+## [2.2.0] - 2026-11-28
+
+### Upgrade
+- Frontend CSP of the site: if you replaced the extension's CSP mutations, allow `img-src https://api.videooptimizer.eu`; `Js/chapters.js` and `Js/mini-player.js` are new sub-modules of `Js/videooptimizer.js` (copy them along when you serve the JavaScript yourself).
+- Run `extension:setup` (or System > Maintenance > Analyze Database Structure) for the new `tt_content` columns (`vo_eyebrow`, `vo_caption`, `vo_split_side`, `vo_cta_label`, `vo_cta_link`, `vo_scene_count`, `vo_scene_titles`, `vo_format`, `vo_focus_x`, `vo_focus_y`, `vo_scroll_play`, `vo_mini_player`), then `cache:flush`. New columns get 50 (focal point) and 5 (scenes) as default through `ext_tables.sql`. Re-run `extension:setup` if the Install Tool's database analyzer still lists the new columns.
+
+### Changed
+- Autoplaying native players (hero, single, ...) now pause once less than 25 % of them is visible (was: only when completely out of view) ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
+- The video list shows ready videos only and fills a page from up to three API calls (each asks only for the missing number), so it is never empty while older ready videos exist and never exceeds the page size; the cursor stays exact ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- The list cursor from the URL is validated strictly (base64 charset, at most 200 characters); an invalid one shows the first page ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- During an API outage elements say "temporarily unavailable" instead of "not found" (visible to developers and backend users) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+
+### Added
+- Floating mini player (single, split, spotlight, chapters; direct presentation): after the visitor started playback (any play, unmute or seek that the plugin did not make itself, which includes the native control bar, or a press on a scene button; never autoplay or play while scrolling) and the player scrolls out of view it is pinned bottom right (320 px, from 600 px viewport width) with a close button (Escape works too, focus returns to the player); it steps aside while a lightbox is open; native closing pauses, hosted closing stops the iframe and restores it on return; a placeholder keeps the page height and nothing is moved in the DOM; with play while scrolling the video is pinned instead of paused once the visitor took over ([#22](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/22)).
+- Play while scrolling (single, split, spotlight, chapters; native player shown directly): starts muted at 50 % visible, pauses below it, a pause by the visitor sticks, hls.js attaches only then; not with reduced motion or data saver ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
+- Format option (original, 16:9, 9:16, 1:1, 4:5, 21:9) with focal point on single, split and spotlight: the surface takes the ratio and the video/poster fills it (`object-fit: cover`, `object-position`; hosted `fit=cover`); 9:16 and 4:5 are capped at 420 px wide; with a format the player sits in a `.vo-media` wrapper ([#20](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/20)).
+- Split, spotlight and chapters follow the header palette of the record: header type (100 hides it), header link, sub header and position, like the core Header partials ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- Content element "Video Chapters": the player with a row of scene previews (3-10 of the video's ten thumbnails, start times from the exact duration, optional titles); a click jumps to the scene and plays, native and hosted ([#19](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/19)).
+- Frontend CSP: `img-src https://api.videooptimizer.eu` for the scene previews, which the API redirects to `*.cdn.videooptimizer.eu` ([#19](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/19)).
+- Content elements "Video Split" (video next to eyebrow, headline, rich text and button, left or right) and "Video Spotlight" (centered video with eyebrow, headline and caption) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+
 ## [2.1.0] - 2026-11-28
 
 ### Upgrade

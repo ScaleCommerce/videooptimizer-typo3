@@ -372,6 +372,72 @@ final class VideoControllerHelpersTest extends TestCase
         self::assertSame('', $this->controller(['vo_presentation' => 'facade'], 300, null)->call('buildSurface', self::VIDEO)['posterSrcset']);
     }
 
+    #[Test]
+    public function aFormatSetsTheAspectRatioFocalPointAndCoverFit(): void
+    {
+        $record = ['vo_format' => '9-16', 'vo_focus_x' => 30, 'vo_focus_y' => 70, 'vo_player_mode' => 'native'];
+        $surface = $this->controller($record, 300, self::EMBED)->call('buildSurface', self::VIDEO);
+
+        self::assertSame('9/16', $surface['aspect']);
+        self::assertStringContainsString('aspect-ratio: 9/16', $surface['style']);
+        self::assertStringContainsString('--vo-focus: 30% 70%', $surface['style']);
+        self::assertTrue($surface['native']['options']['cover']);
+        self::assertStringContainsString('vo-media--portrait', $surface['media']['class']);
+
+        $hosted = $this->controller(['vo_format' => '1-1'])->call('buildSurface', self::VIDEO);
+        self::assertSame('1/1', $hosted['embed']['aspect']);
+        self::assertStringContainsString('fit=cover', $hosted['embed']['src']);
+        self::assertStringNotContainsString('portrait', $hosted['media']['class']);
+    }
+
+    #[Test]
+    public function theOriginalFormatKeepsTheVideoRatioAndTheMarkup(): void
+    {
+        $surface = $this->controller([])->call('buildSurface', self::VIDEO);
+
+        self::assertSame('1920/1080', $surface['aspect']);
+        self::assertNull($surface['media']);
+        self::assertStringNotContainsString('--vo-focus', $surface['style']);
+    }
+
+    #[Test]
+    public function theMiniPlayerNeedsTheWrapperAndOnlyAppliesToDirectPlayers(): void
+    {
+        $direct = $this->controller(['vo_mini_player' => 1])->call('buildSurface', self::VIDEO);
+        self::assertTrue($direct['media']['mini']);
+        self::assertSame('vo-media', $direct['media']['class']);
+
+        $facade = $this->controller(['vo_mini_player' => 1, 'vo_presentation' => 'facade'])->call('buildSurface', self::VIDEO);
+        self::assertNull($facade['media']);
+
+        $formatOnly = $this->controller(['vo_format' => '1-1'])->call('buildSurface', self::VIDEO);
+        self::assertFalse($formatOnly['media']['mini']);
+    }
+
+    #[Test]
+    public function listCursorsAreValidatedStrictly(): void
+    {
+        $pattern = (new \ReflectionClassConstant(AbstractVideoController::class, 'VALIDATION_CURSOR'))->getValue();
+
+        self::assertSame(1, preg_match($pattern, str_repeat('a', 200)));
+        self::assertSame(0, preg_match($pattern, str_repeat('a', 201)));
+        self::assertSame(1, preg_match($pattern, 'ab+/cd=='), 'base64 cursors');
+        self::assertSame(0, preg_match($pattern, "abc\n"), 'no trailing newline');
+        self::assertSame(0, preg_match($pattern, 'a b'));
+        self::assertSame(0, preg_match($pattern, ''));
+    }
+
+    #[Test]
+    public function aLightboxKeepsTheVideoUncroppedAndOnlyTheFacadeTakesTheFormat(): void
+    {
+        $record = ['vo_format' => '9-16', 'vo_presentation' => 'lightbox', 'vo_player_mode' => 'native'];
+        $surface = $this->controller($record, 300, self::EMBED)->call('buildSurface', self::VIDEO);
+
+        self::assertSame('9/16', $surface['aspect']);
+        self::assertFalse($surface['native']['options']['cover']);
+        self::assertStringNotContainsString('fit=cover', $surface['clickSrc']);
+    }
+
     /**
      * @param list<\Throwable|array<string, mixed>> $results one entry per loadEmbed() call
      */

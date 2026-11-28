@@ -15,8 +15,8 @@
 
 ---
 
-Give your editors adaptive, CDN-streamed video without ever leaving TYPO3. This extension adds **five
-ready-to-use content elements** (hero, single video, grid, list, detail), a **visual library and video
+Give your editors adaptive, CDN-streamed video without ever leaving TYPO3. This extension adds **ready-to-use
+content elements** (hero, single video, video next to text, spotlight, video with chapters, grid, list, detail), a **visual library and video
 picker**, a **backend module** to manage libraries, videos, thumbnails and subtitles, and **previews in the
 page layout** — while the organization's API token stays on the server. Editors just pick a video and
 publish.
@@ -196,6 +196,9 @@ Good to know:
 |---|---|---|
 | **Video Hero** | Full-bleed section with a muted, looping background video, poster, eyebrow, title, subtitle and a button | one video |
 | **Video Single** | A responsive player with title | one video |
+| **Video Split** | The video next to eyebrow, headline, rich text and an optional button; the video can sit left or right | one video |
+| **Video Spotlight** | One prominent, centered video with eyebrow, headline and caption | one video |
+| **Video Chapters** | The player with a row of scene previews (3-10, optional titles) below; a click jumps to the scene and plays | one video |
 | **Video Grid** | A grid of up to 12 videos; click opens a lightbox | a library or all libraries |
 | **Video List** | A paginated list (24 per page) with duration and views | a library or all libraries |
 | **Video Detail** | Player plus metadata (duration, resolution, views, date) | one video |
@@ -209,6 +212,9 @@ Good to know:
   `Resources/Public/Js/vendor/hls.js.LICENSE.txt`), uses native HLS on Safari and falls back to MP4. The lightbox is a modal `<dialog>` (Escape closes it unless the focus sits inside a cross-origin iframe; close button and backdrop always work); the native hero has a pause button and does not autoplay with reduced motion.
   With the site's frontend CSP enabled the extension allows `*.cdn.videooptimizer.eu` and
   `poster.videooptimizer.eu` for media, images and connections.
+- **Format** (single, split, spotlight): *original* (default) or 16:9, 9:16, 1:1, 4:5, 21:9. The player area takes the ratio and the video and poster fill it (cropped); the focal point X/Y in percent decides which part stays visible (native player and poster; the hosted player centers). 9:16 and 4:5 are at most 420 px wide. In a lightbox only the poster takes the format.
+- **Play while scrolling** (single, split, spotlight, chapters; native player shown directly): the video starts muted when at least half of it is visible and pauses when it scrolls out of view; a pause by the visitor sticks. Reduced motion and data saver keep it still.
+- **Floating mini player** (single, split, spotlight, chapters; direct presentation): once the *visitor* started playback (any play, unmute or seek that the plugin did not make itself, which includes the native control bar, or a press on a scene button; never autoplay or play while scrolling) and the player scrolls out of view it is pinned bottom right (from 600 px viewport width) with a close button; scrolling back or closing unpins it, and it steps aside while a lightbox is open. A hosted player is detected as started when the visitor clicks into it or a scene. Combined with *play while scrolling* the player is pinned instead of paused once the visitor took over.
 - **Hero** tab: eyebrow, subtitle override, button label and action (*open player in a new tab* — the
   default —, lightbox, link to a page/URL, or no button), overlay strength, height (compact / default /
   full screen) and text alignment.

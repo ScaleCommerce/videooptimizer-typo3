@@ -162,7 +162,7 @@ export function destroyVideoSource(video) {
 }
 
 /**
- * Calls onChange(true|false) when the element enters or leaves the viewport (25 % visible). Returns
+ * Calls onChange(true|false) when the element enters or leaves the viewport (`threshold`, 25 % by default, visible). Returns
  * a function that stops observing. Without IntersectionObserver the element counts as visible.
  */
 export function observeVisibility(element, onChange, rootMargin = '0px', threshold = 0.25) {
@@ -171,7 +171,8 @@ export function observeVisibility(element, onChange, rootMargin = '0px', thresho
         return () => {};
     }
     const observer = new window.IntersectionObserver(
-        (entries) => entries.forEach((entry) => onChange(entry.isIntersecting)),
+        // isIntersecting is true for any overlap, also below the threshold: check the ratio too.
+        (entries) => entries.forEach((entry) => onChange(entry.isIntersecting && entry.intersectionRatio >= Math.min(threshold, 1) - 0.001)),
         { threshold, rootMargin }
     );
     observer.observe(element);
@@ -180,9 +181,11 @@ export function observeVisibility(element, onChange, rootMargin = '0px', thresho
 
 /**
  * Plays a muted, autoplaying video only while it is visible and pauses it when it scrolls out of
- * view. Once the visitor pauses it themselves it is not resumed automatically.
+ * view. Once the visitor pauses it themselves it is not resumed automatically. `threshold` is the
+ * share of the element that must be visible (play while scrolling uses 0.5); `canPause()` can veto the
+ * pause on leaving (the mini player pins the playing video instead).
  */
-export function autoplayWhileVisible(video, observed = video) {
+export function autoplayWhileVisible(video, observed = video, threshold = 0.25, canPause = () => true) {
     let pausedForViewport = false;
     let pausedByUser = false;
     const onPause = () => {
@@ -203,11 +206,11 @@ export function autoplayWhileVisible(video, observed = video) {
         // A finished non-looping video is not restarted when it scrolls back into view.
         if (visible && video.paused && !pausedByUser && !video.ended) {
             video.play().catch(() => {});
-        } else if (!visible && !video.paused) {
+        } else if (!visible && !video.paused && canPause()) {
             pausedForViewport = true;
             video.pause();
         }
-    });
+    }, '0px', threshold);
     return () => {
         stop();
         video.removeEventListener('pause', onPause);

@@ -1,0 +1,34 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>
+    Header and sub header of an element like the core Header partials render them: header type 1-6, link,
+    position class. headline comes from ElementOptions::headline(); class is the element's own class.
+</f:comment>
+<f:if condition="{headline}">
+    <f:if condition="{headline.header.text}">
+        <f:switch expression="{headline.header.level}">
+            <f:case value="1"><h1 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h1></f:case>
+            <f:case value="3"><h3 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h3></f:case>
+            <f:case value="4"><h4 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h4></f:case>
+            <f:case value="5"><h5 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h5></f:case>
+            <f:case value="6"><h6 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h6></f:case>
+            <f:defaultCase><h2 class="{class}<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>"><f:render section="Text" arguments="{headline: headline}" /></h2></f:defaultCase>
+        </f:switch>
+    </f:if>
+    <f:if condition="{headline.sub}">
+        <f:switch expression="{headline.sub.level}">
+            <f:case value="2"><h2 class="{class}-sub<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>">{headline.sub.text}</h2></f:case>
+            <f:case value="4"><h4 class="{class}-sub<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>">{headline.sub.text}</h4></f:case>
+            <f:case value="5"><h5 class="{class}-sub<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>">{headline.sub.text}</h5></f:case>
+            <f:case value="6"><h6 class="{class}-sub<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>">{headline.sub.text}</h6></f:case>
+            <f:defaultCase><h3 class="{class}-sub<f:if condition="{headline.header.position}"> ce-headline-{headline.header.position}</f:if>">{headline.sub.text}</h3></f:defaultCase>
+        </f:switch>
+    </f:if>
+</f:if>
+
+<f:section name="Text">
+    <f:if condition="{headline.header.link}">
+        <f:then><f:link.typolink parameter="{headline.header.link}">{headline.header.text}</f:link.typolink></f:then>
+        <f:else>{headline.header.text}</f:else>
+    </f:if>
+</f:section>
+</html>

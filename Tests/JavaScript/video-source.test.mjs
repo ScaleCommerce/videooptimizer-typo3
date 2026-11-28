@@ -202,7 +202,7 @@ test('parseConfig validates the server data', () => {
         { ...cfg },
         {
             hls: sources.hls, mp4: sources.mp4, poster: '', controls: false, autoplay: true, muted: true, loop: true,
-            start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876', tracks: [],
+            start: 12, cover: true, title: 'T', unavailable: 'U', preload: 'auto', accent: '#C72876', tracks: [], scroll: false,
         }
     );
     assert.equal(parseConfig(JSON.stringify({ mp4: sources.mp4, preload: 'x', accent: 'red;}</style>' })).preload, 'metadata');

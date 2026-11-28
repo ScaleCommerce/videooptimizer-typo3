@@ -1,0 +1,28 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <div class="vo-sample vo-sample--spotlight">
+        <f:render partial="Error" arguments="{error: error}" />
+
+        <f:if condition="{video}">
+            <div class="vo-spotlight">
+                <f:if condition="{spotlight.eyebrow}"><p class="vo-spotlight__eyebrow">{spotlight.eyebrow}</p></f:if>
+                <f:render partial="Headline" arguments="{headline: spotlight.headline, class: 'vo-spotlight__headline'}" />
+                <div class="vo-spotlight__media">
+                    <f:if condition="{video.processing}">
+                        <f:then><f:render partial="Processing" arguments="{video: video}" /></f:then>
+                        <f:else>
+                            <f:if condition="{surface}">
+                                <f:render partial="Surface" arguments="{surface: surface}" />
+                            </f:if>
+                        </f:else>
+                    </f:if>
+                </div>
+                <f:if condition="{spotlight.caption}"><p class="vo-spotlight__caption">{spotlight.caption}</p></f:if>
+            </div>
+        </f:if>
+    </div>
+</f:section>
+</html>

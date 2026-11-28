@@ -7,8 +7,10 @@ namespace ScaleCommerce\VideoOptimizer\Controller;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use ScaleCommerce\VideoOptimizer\Player\AssetVersion;
+use ScaleCommerce\VideoOptimizer\Player\ElementOptions;
 use ScaleCommerce\VideoOptimizer\Player\NativePlayerConfig;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
+use ScaleCommerce\VideoOptimizer\Api\FailureKind;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerClient;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 use TYPO3\CMS\Core\Cache\CacheDataCollectorInterface;
@@ -42,7 +44,8 @@ abstract class AbstractVideoController extends ActionController
     /** Page cache lifetime used when the API failed, so an outage is not frozen into the page cache. */
     protected const PAGE_CACHE_ERROR_LIFETIME = 60;
 
-    protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=.:-]{1,512}$/';
+    /** Pagination cursor from the URL (and the API): charset and length are checked strictly. */
+    protected const VALIDATION_CURSOR = '/^[A-Za-z0-9_=+\/.:-]{1,200}$/D';
 
     /** @var array<string, string> upload dates from loaded embed configs, by video UUID */
     private array $uploadDates = [];
@@ -155,13 +158,14 @@ abstract class AbstractVideoController extends ActionController
         try {
             $raw = $this->client->getVideo($uuid);
         } catch (VideoOptimizerException|\InvalidArgumentException $exception) {
-            $errorCode = 'api';
+            // An outage reads "temporarily unavailable", not "not found".
+            $errorCode = FailureKind::of($exception);
             $errorDetail = $exception->getMessage();
 
             return null;
         }
         if (trim((string)($raw['uuid'] ?? '')) === '') {
-            $errorCode = 'api';
+            $errorCode = 'not_found';
             $errorDetail = 'Video not found.';
 
             return null;
@@ -287,8 +291,21 @@ abstract class AbstractVideoController extends ActionController
         return [
             'src' => $src,
             'title' => (string)($video['title_label'] ?? ''),
-            'aspect' => $this->aspectRatioFromResolution((string)($video['resolution'] ?? '')),
+            'aspect' => $this->surfaceAspect($video),
         ];
+    }
+
+    /**
+     * Format of the video surface: the fixed ratio chosen on the element, or the video's own.
+     * Lightbox presentations show the video itself uncropped; only their poster takes the format.
+     *
+     * @param array<string, mixed> $video shaped video
+     */
+    protected function surfaceAspect(array $video): string
+    {
+        $format = ElementOptions::aspect(ElementOptions::format($this->currentRecord()));
+
+        return $format !== '' ? $format : $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
     }
 
     /**
@@ -455,6 +472,46 @@ abstract class AbstractVideoController extends ActionController
     }
 
     /**
+     * Loads the element's video and assigns video, embed, surface and error to the view: the shared
+     * data of every element that shows one video through the Surface partial (single, media split,
+     * spotlight, detail, chapters).
+     *
+     * @return array<string, mixed>|null the shaped video
+     */
+    protected function assignVideoSurface(): ?array
+    {
+        $video = null;
+        $embed = null;
+        $surface = null;
+        $errorCode = '';
+        $errorDetail = '';
+
+        $uuid = $this->configuredUuid();
+        if ($uuid !== '') {
+            $video = $this->fetchVideo($uuid, $errorCode, $errorDetail);
+            if (is_array($video) && !$video['processing']) {
+                $embed = $this->buildEmbed($video);
+                $surface = $this->buildSurface($video);
+            }
+        } else {
+            $errorCode = 'no_video';
+        }
+
+        $this->addVideoStructuredData($video);
+        $this->registerPageCache($uuid !== '' ? [$uuid] : [], false, $video === null, $this->libraryIdsOf($video));
+
+        $this->view->assign('video', $video);
+        $this->view->assign('embed', $embed);
+        $this->view->assign('surface', $surface);
+        $this->view->assign('error', $this->errorForTemplate(
+            $errorCode !== '' ? $errorCode : ($video === null ? $this->missingTokenCode() : ''),
+            $errorDetail
+        ));
+
+        return $video;
+    }
+
+    /**
      * Everything the Surface partial needs for single/detail.
      *
      * @param array<string, mixed> $video shaped video
@@ -464,10 +521,14 @@ abstract class AbstractVideoController extends ActionController
     {
         $embed = $this->buildEmbed($video);
         $native = $this->buildNative($video, false, $this->presentation() === 'direct');
-        $aspect = $this->aspectRatioFromResolution((string)($video['resolution'] ?? ''));
-        // Aspect ratio (digits only) and the theme's accent color (validated), for the style attribute.
+        $aspect = $this->surfaceAspect($video);
+        $format = ElementOptions::format($this->currentRecord());
+        $focal = ElementOptions::focal($this->currentRecord());
+        // Aspect ratio (digits only), the focal point (integers) and the theme's accent color
+        // (validated), for the style attribute.
         $style = implode('; ', array_filter([
             $aspect !== '' ? 'aspect-ratio: ' . $aspect : '',
+            $format !== 'original' ? sprintf('--vo-focus: %d%% %d%%', $focal['x'], $focal['y']) : '',
             ($native['options']['accent'] ?? '') !== '' ? '--vo-accent: ' . $native['options']['accent'] : '',
         ]));
 
@@ -487,6 +548,27 @@ abstract class AbstractVideoController extends ActionController
             'embed' => $embed,
             'native' => $native,
             'assetVersion' => AssetVersion::get(),
+            'media' => $this->mediaWrapper($format, $presentation === 'direct' && ElementOptions::miniPlayer($this->currentRecord())),
+        ];
+    }
+
+    /**
+     * Wrapper around the player for the options that need one (format, mini player);
+     * null keeps the markup of elements without such options.
+     *
+     * @return array{class: string, mini: bool}|null
+     */
+    protected function mediaWrapper(string $format, bool $mini = false): ?array
+    {
+        if ($format === 'original' && !$mini) {
+            return null;
+        }
+
+        return [
+            'class' => 'vo-media'
+                . ($format !== 'original' ? ' vo-media--format-' . $format : '')
+                . (ElementOptions::isPortrait($format) ? ' vo-media--portrait' : ''),
+            'mini' => $mini,
         ];
     }
 
@@ -555,7 +637,7 @@ abstract class AbstractVideoController extends ActionController
     /**
      * The element's player options; a hero whose options were never touched plays as a background video.
      *
-     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool}
      */
     protected function effectivePlayerSettings(bool $heroMode = false): array
     {
@@ -572,6 +654,7 @@ abstract class AbstractVideoController extends ActionController
                 'start_time' => 0,
                 'fit_cover' => true,
                 'subtitle_lang' => $settings['subtitle_lang'],
+                'scroll_play' => false,
             ];
         }
 
@@ -597,7 +680,7 @@ abstract class AbstractVideoController extends ActionController
      * The hosted player only overrides the video's theme for params that are present, so all four
      * playback flags are sent explicitly (deterministic output).
      *
-     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string} $settings
+     * @param array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool} $settings
      * @return array<string, string>
      */
     private function buildPlayerParams(array $settings): array
@@ -624,7 +707,7 @@ abstract class AbstractVideoController extends ActionController
     /**
      * The player options stored on the current content record (TCA vo_* fields), validated.
      *
-     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string}
+     * @return array{autoplay: bool, loop: bool, muted: bool, controls: bool, start_time: int, fit_cover: bool, subtitle_lang: string, scroll_play: bool}
      */
     protected function playerSettings(): array
     {
@@ -641,8 +724,11 @@ abstract class AbstractVideoController extends ActionController
             'muted' => (int)($row['vo_muted'] ?? 0) === 1,
             'controls' => !array_key_exists('vo_controls', $row) || (int)$row['vo_controls'] !== 0,
             'start_time' => max(0, min(86400, (int)($row['vo_start_time'] ?? 0))),
-            'fit_cover' => (int)($row['vo_fit_cover'] ?? 0) === 1,
+            // A fixed format crops the video to fill it (not in a lightbox, which shows the whole video).
+            'fit_cover' => (int)($row['vo_fit_cover'] ?? 0) === 1
+                || (ElementOptions::format($row) !== 'original' && $this->presentation() !== 'lightbox'),
             'subtitle_lang' => $lang,
+            'scroll_play' => (int)($row['vo_scroll_play'] ?? 0) === 1,
         ];
     }
 

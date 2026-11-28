@@ -1,0 +1,33 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css identifier="videooptimizer" href="EXT:videooptimizer/Resources/Public/Css/videooptimizer.css" />
+    <div class="vo-sample vo-sample--split">
+        <f:render partial="Error" arguments="{error: error}" />
+
+        <f:if condition="{video}">
+            <div class="vo-split<f:if condition="{split.side} == 'right'"> vo-split--reversed</f:if>">
+                <div class="vo-split__media">
+                    <f:if condition="{video.processing}">
+                        <f:then><f:render partial="Processing" arguments="{video: video}" /></f:then>
+                        <f:else>
+                            <f:if condition="{surface}">
+                                <f:render partial="Surface" arguments="{surface: surface}" />
+                            </f:if>
+                        </f:else>
+                    </f:if>
+                </div>
+                <div class="vo-split__text">
+                    <f:if condition="{split.eyebrow}"><p class="vo-split__eyebrow">{split.eyebrow}</p></f:if>
+                    <f:render partial="Headline" arguments="{headline: split.headline, class: 'vo-split__headline'}" />
+                    <f:if condition="{split.text}"><div class="vo-split__body"><f:format.html>{split.text}</f:format.html></div></f:if>
+                    <f:if condition="{split.cta}">
+                        <f:link.typolink parameter="{split.cta.link}" class="vo-split__cta">{split.cta.label}</f:link.typolink>
+                    </f:if>
+                </div>
+            </div>
+        </f:if>
+    </div>
+</f:section>
+</html>

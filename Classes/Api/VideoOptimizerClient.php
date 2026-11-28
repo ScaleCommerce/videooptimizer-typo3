@@ -25,7 +25,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const BASE_URL = 'https://api.videooptimizer.eu/api/v1';
+    public const BASE_URL = 'https://api.videooptimizer.eu/api/v1';
     private const PAGE_LIMIT = 100;
     private const MAX_PAGES = 20;
     private const RETRY_ATTEMPTS = 3;
@@ -450,7 +450,7 @@ final class VideoOptimizerClient implements LoggerAwareInterface
         }
         $cursor = trim((string)$cursor);
         if ($cursor !== '') {
-            if (preg_match('/^[A-Za-z0-9_=.:-]{1,512}$/', $cursor) !== 1) {
+            if (preg_match('/^[A-Za-z0-9_=+\/.:-]{1,512}$/', $cursor) !== 1) {
                 throw new InvalidArgumentException('Invalid pagination cursor.');
             }
             $query['cursor'] = $cursor;

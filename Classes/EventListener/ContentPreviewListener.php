@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScaleCommerce\VideoOptimizer\EventListener;
 
+use ScaleCommerce\VideoOptimizer\Player\Scenes;
 use ScaleCommerce\VideoOptimizer\Security\MediaUrl;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -16,7 +17,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 /**
- * Page module preview for the five VideoOptimizer content elements: thumbnail, title, duration,
+ * Page module preview for the VideoOptimizer content elements: thumbnail, title, duration,
  * library, status and the player options set on the record (hero/single/detail), or library name,
  * video count and the first thumbnails (grid/list). Uses the client's cached readers only and never
  * throws: on any failure a text-only preview is rendered.
@@ -26,7 +27,14 @@ final class ContentPreviewListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const VIDEO_TYPES = ['videooptimizer_videohero', 'videooptimizer_videosingle', 'videooptimizer_videodetail'];
+    private const VIDEO_TYPES = [
+        'videooptimizer_videohero',
+        'videooptimizer_videosingle',
+        'videooptimizer_videodetail',
+        'videooptimizer_videosplit',
+        'videooptimizer_videospotlight',
+        'videooptimizer_videochapters',
+    ];
     private const COLLECTION_TYPES = ['videooptimizer_videogrid', 'videooptimizer_videolist'];
     private const TEMPLATE = 'EXT:videooptimizer/Resources/Private/Templates/Backend/ContentPreview.html';
     private const CSS = 'EXT:videooptimizer/Resources/Public/Css/backend-preview.css';
@@ -49,7 +57,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
             $row = $event->getRecord()->toArray();
             $variables = in_array($type, self::COLLECTION_TYPES, true)
                 ? $this->collectionVariables($row)
-                : $this->videoVariables($row, $type === 'videooptimizer_videohero');
+                : $this->videoVariables($row, $type === 'videooptimizer_videohero', $type);
             $variables['error'] = $variables['error'] ?? false;
         } catch (\Throwable $exception) {
             $this->logger?->warning('VideoOptimizer page module preview failed.', ['error' => $exception->getMessage()]);
@@ -78,7 +86,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
      * @param array<string, mixed> $row
      * @return array<string, mixed>
      */
-    private function videoVariables(array $row, bool $hero): array
+    private function videoVariables(array $row, bool $hero, string $type = ''): array
     {
         $uuid = $this->scalar($row['vo_video_uuid'] ?? '');
         $demo = false;
@@ -90,7 +98,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
         $variables = [
             'mode' => 'video',
             'demo' => $demo,
-            'options' => $this->options($row),
+            'options' => $this->options($row, $type),
             'hero' => $hero ? $this->heroFields($row) : [],
             'video' => null,
         ];
@@ -199,7 +207,7 @@ final class ContentPreviewListener implements LoggerAwareInterface
      * @param array<string, mixed> $row
      * @return list<array{key: string, value: string}>
      */
-    private function options(array $row): array
+    private function options(array $row, string $type = ''): array
     {
         $options = [];
         foreach (['autoplay' => 'vo_autoplay', 'loop' => 'vo_loop', 'muted' => 'vo_muted', 'fit_cover' => 'vo_fit_cover'] as $key => $field) {
@@ -213,6 +221,18 @@ final class ContentPreviewListener implements LoggerAwareInterface
         $start = (int)$this->scalar($row['vo_start_time'] ?? 0);
         if ($start > 0) {
             $options[] = ['key' => 'start', 'value' => $this->duration($start)];
+        }
+        foreach (['scroll' => 'vo_scroll_play', 'mini' => 'vo_mini_player'] as $key => $field) {
+            if ((int)$this->scalar($row[$field] ?? 0) === 1) {
+                $options[] = ['key' => $key, 'value' => ''];
+            }
+        }
+        $format = $this->scalar($row['vo_format'] ?? '');
+        if ($format !== '' && $format !== 'original') {
+            $options[] = ['key' => 'format', 'value' => str_replace('-', ':', $format)];
+        }
+        if ($type === 'videooptimizer_videochapters') {
+            $options[] = ['key' => 'scenes', 'value' => (string)Scenes::count($row)];
         }
         $lang = $this->scalar($row['vo_subtitle_lang'] ?? '');
         if ($lang !== '') {

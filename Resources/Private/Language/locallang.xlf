@@ -178,6 +178,84 @@
             <trans-unit id="vo_presentation.lightbox">
                 <source>Lightbox (dialog)</source>
             </trans-unit>
+            <trans-unit id="vo_ct.videosplit.label">
+                <source>Video Split</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videosplit.description">
+                <source>Video next to text: eyebrow, headline, rich text and an optional button.</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.label">
+                <source>Video Spotlight</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videospotlight.description">
+                <source>One prominent, centered video with eyebrow, headline and caption.</source>
+            </trans-unit>
+            <trans-unit id="vo_eyebrow.label">
+                <source>Eyebrow</source>
+            </trans-unit>
+            <trans-unit id="vo_caption.label">
+                <source>Caption</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.label">
+                <source>Video position</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.left">
+                <source>Left of the text</source>
+            </trans-unit>
+            <trans-unit id="vo_split_side.right">
+                <source>Right of the text</source>
+            </trans-unit>
+            <trans-unit id="vo_cta_label.label">
+                <source>Button label</source>
+            </trans-unit>
+            <trans-unit id="vo_cta_link.label">
+                <source>Button link</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videochapters.label">
+                <source>Video Chapters</source>
+            </trans-unit>
+            <trans-unit id="vo_ct.videochapters.description">
+                <source>The video with a row of scene previews; a click jumps to the scene.</source>
+            </trans-unit>
+            <trans-unit id="vo_scene_count.label">
+                <source>Number of scenes (3-10)</source>
+            </trans-unit>
+            <trans-unit id="vo_scene_titles.label">
+                <source>Scene titles</source>
+            </trans-unit>
+            <trans-unit id="vo_scene_titles.description">
+                <source>One title per line, in the order of the scenes. Empty lines keep "Scene n".</source>
+            </trans-unit>
+            <trans-unit id="vo_format.label">
+                <source>Format</source>
+            </trans-unit>
+            <trans-unit id="vo_format.description">
+                <source>Crops the video to a fixed aspect ratio (the video fills it, native player and poster). In a lightbox only the poster takes the format. The hosted player ignores the focal point.</source>
+            </trans-unit>
+            <trans-unit id="vo_format.original">
+                <source>Original (video ratio)</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.label">
+                <source>Focal point X (%)</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_x.description">
+                <source>Which part stays visible when the format crops the video: 0 = left/top, 50 = center, 100 = right/bottom.</source>
+            </trans-unit>
+            <trans-unit id="vo_focus_y.label">
+                <source>Focal point Y (%)</source>
+            </trans-unit>
+            <trans-unit id="vo_scroll_play.label">
+                <source>Play while scrolling</source>
+            </trans-unit>
+            <trans-unit id="vo_scroll_play.description">
+                <source>Native player, shown directly: starts muted when at least half of it is visible and pauses when it scrolls out. A pause by the visitor sticks. Not with reduced motion or data saver.</source>
+            </trans-unit>
+            <trans-unit id="vo_mini_player.label">
+                <source>Floating mini player</source>
+            </trans-unit>
+            <trans-unit id="vo_mini_player.description">
+                <source>Direct presentation only: after the visitor started playback and the player scrolls out of view, it is pinned to the bottom right (from 600 px viewport width) until it is closed or scrolled back into view.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

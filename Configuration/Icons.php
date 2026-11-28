@@ -25,6 +25,18 @@ return [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:videooptimizer/Resources/Public/Icons/videodetail.svg',
     ],
+    'videooptimizer-videosplit' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:videooptimizer/Resources/Public/Icons/videosplit.svg',
+    ],
+    'videooptimizer-videospotlight' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:videooptimizer/Resources/Public/Icons/videospotlight.svg',
+    ],
+    'videooptimizer-videochapters' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:videooptimizer/Resources/Public/Icons/videochapters.svg',
+    ],
     'videooptimizer-module' => [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:videooptimizer/Resources/Public/Icons/module.svg',

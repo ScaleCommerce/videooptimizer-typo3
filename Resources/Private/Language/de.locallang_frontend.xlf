@@ -107,6 +107,26 @@
                 <source>Play video</source>
                 <target>Video abspielen</target>
             </trans-unit>
+            <trans-unit id="scene.label">
+                <source>Scene %d</source>
+                <target>Szene %d</target>
+            </trans-unit>
+            <trans-unit id="scenes.aria">
+                <source>Scenes</source>
+                <target>Szenen</target>
+            </trans-unit>
+            <trans-unit id="mini.close">
+                <source>Close mini player</source>
+                <target>Mini-Player schließen</target>
+            </trans-unit>
+            <trans-unit id="error.unavailable">
+                <source>The video is temporarily unavailable (VideoOptimizer could not be reached).</source>
+                <target>Das Video ist vorübergehend nicht verfügbar (VideoOptimizer ist nicht erreichbar).</target>
+            </trans-unit>
+            <trans-unit id="error.not_found">
+                <source>The video was not found in VideoOptimizer.</source>
+                <target>Das Video wurde in VideoOptimizer nicht gefunden.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
