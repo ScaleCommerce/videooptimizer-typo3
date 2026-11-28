@@ -10,7 +10,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ### Changed
 - Autoplaying native players (hero, single, ...) now pause once less than 25 % of them is visible (was: only when completely out of view) ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
-- The video list shows ready videos only and fills a page from up to three API pages, so it is never empty while older ready videos exist; the cursor continues after the last fetched API page ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- The video list shows ready videos only and fills a page from up to three API calls (each asks only for the missing number), so it is never empty while older ready videos exist and never exceeds the page size; the cursor stays exact ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
 - The list cursor from the URL is validated strictly (charset, at most 200 characters); an invalid one shows the first page ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
 - During an API outage elements say "temporarily unavailable" instead of "not found" (visible to developers and backend users) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
 

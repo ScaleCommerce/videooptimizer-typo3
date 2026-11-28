@@ -21,8 +21,10 @@ final class ReadyPagesTest extends TestCase
     {
         $log = new \stdClass();
         $log->cursors = [];
-        $fetch = static function (?string $cursor) use ($pages, $log): array {
+        $log->limits = [];
+        $fetch = static function (?string $cursor, int $limit) use ($pages, $log): array {
             $log->cursors[] = $cursor;
+            $log->limits[] = $limit;
 
             return $pages[count($log->cursors) - 1];
         };
@@ -65,8 +67,20 @@ final class ReadyPagesTest extends TestCase
         $result = ReadyPages::collect($fetch, 4, 'c1');
 
         self::assertSame(['c1', 'c2', 'c3'], $log->cursors);
+        self::assertSame([4, 4, 3], $log->limits, 'a follow-up asks only for the missing videos');
         self::assertCount(4, $result['items']);
         self::assertSame('c4', $result['nextCursor'], 'the cursor continues after the last fetched API page');
+    }
+
+    #[Test]
+    public function aPageNeverExceedsThePageSize(): void
+    {
+        // The API honors the requested limit, so the pages hold only what was asked for.
+        [$fetch] = self::api([self::page('a', 1, 2, 'c2'), self::page('b', 3, 0, 'c3')]);
+        $result = ReadyPages::collect($fetch, 4, null);
+
+        self::assertCount(4, $result['items']);
+        self::assertSame('c3', $result['nextCursor']);
     }
 
     #[Test]
@@ -99,7 +113,7 @@ final class ReadyPagesTest extends TestCase
     public function aFailingFurtherCallKeepsWhatWasLoadedAndTheCursorToRetry(): void
     {
         $calls = 0;
-        $fetch = static function (?string $cursor) use (&$calls): array {
+        $fetch = static function (?string $cursor, int $limit) use (&$calls): array {
             if (++$calls === 2) {
                 throw new NetworkException('down');
             }
@@ -112,7 +126,7 @@ final class ReadyPagesTest extends TestCase
         self::assertSame('c2', $result['nextCursor']);
 
         $this->expectException(NetworkException::class);
-        ReadyPages::collect(static fn (?string $cursor): array => throw new NetworkException('down'), 4, null);
+        ReadyPages::collect(static fn (?string $cursor, int $limit): array => throw new NetworkException('down'), 4, null);
     }
 
     #[Test]

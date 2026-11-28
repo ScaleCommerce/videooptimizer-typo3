@@ -31,7 +31,7 @@ class VideoListController extends AbstractVideoController
             $libraryId = $this->configuredLibraryId();
             // Ready videos only; further API pages (at most three calls) fill a page that has few.
             $page = ReadyPages::collect(
-                fn (?string $at): array => $this->client->listVideosPage(self::PAGE_SIZE, $at, $libraryId !== '' ? $libraryId : null),
+                fn (?string $at, int $limit): array => $this->client->listVideosPage($limit, $at, $libraryId !== '' ? $libraryId : null),
                 self::PAGE_SIZE,
                 $cursor
             );
