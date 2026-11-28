@@ -415,6 +415,18 @@ final class VideoControllerHelpersTest extends TestCase
     }
 
     #[Test]
+    public function listCursorsAreValidatedStrictly(): void
+    {
+        $pattern = (new \ReflectionClassConstant(AbstractVideoController::class, 'VALIDATION_CURSOR'))->getValue();
+
+        self::assertSame(1, preg_match($pattern, str_repeat('a', 200)));
+        self::assertSame(0, preg_match($pattern, str_repeat('a', 201)));
+        self::assertSame(0, preg_match($pattern, "abc\n"), 'no trailing newline');
+        self::assertSame(0, preg_match($pattern, 'a b'));
+        self::assertSame(0, preg_match($pattern, ''));
+    }
+
+    #[Test]
     public function aLightboxKeepsTheVideoUncroppedAndOnlyTheFacadeTakesTheFormat(): void
     {
         $record = ['vo_format' => '9-16', 'vo_presentation' => 'lightbox', 'vo_player_mode' => 'native'];

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ScaleCommerce\VideoOptimizer\Controller;
 
 use Psr\Http\Message\ResponseInterface;
+use ScaleCommerce\VideoOptimizer\Api\FailureKind;
+use ScaleCommerce\VideoOptimizer\Api\ReadyPages;
 use ScaleCommerce\VideoOptimizer\Api\VideoOptimizerException;
 
 class VideoListController extends AbstractVideoController
@@ -13,7 +15,8 @@ class VideoListController extends AbstractVideoController
 
     /**
      * The "cursor" request argument is part of the cHash (the link is generated via f:link.action),
-     * so every list page is cached separately. An invalid cursor falls back to the first page.
+     * so every list page is cached separately. An invalid cursor (charset, length up to 200) falls back to the first page; it is only ever passed to
+     * the list endpoint and never sets the service-wide embed fail-fast marker.
      */
     public function listAction(?string $cursor = null): ResponseInterface
     {
@@ -26,12 +29,17 @@ class VideoListController extends AbstractVideoController
 
         try {
             $libraryId = $this->configuredLibraryId();
-            $page = $this->client->listVideosPage(self::PAGE_SIZE, $cursor, $libraryId !== '' ? $libraryId : null);
+            // Ready videos only; further API pages (at most three calls) fill a page that has few.
+            $page = ReadyPages::collect(
+                fn (?string $at): array => $this->client->listVideosPage(self::PAGE_SIZE, $at, $libraryId !== '' ? $libraryId : null),
+                self::PAGE_SIZE,
+                $cursor
+            );
             $videos = is_array($page['items'] ?? null) ? $page['items'] : [];
             $next = $page['nextCursor'] ?? null;
             $nextCursor = is_string($next) && preg_match(self::VALIDATION_CURSOR, $next) === 1 ? $next : null;
         } catch (VideoOptimizerException|\InvalidArgumentException $exception) {
-            $errorCode = 'api';
+            $errorCode = FailureKind::of($exception);
             $errorDetail = $exception->getMessage();
         }
 

@@ -10,6 +10,9 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ### Changed
 - Autoplaying native players (hero, single, ...) now pause once less than 25 % of them is visible (was: only when completely out of view) ([#21](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/21)).
+- The video list shows ready videos only and fills a page from up to three API pages, so it is never empty while older ready videos exist; the cursor continues after the last fetched API page ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- The list cursor from the URL is validated strictly (charset, at most 200 characters); an invalid one shows the first page ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
+- During an API outage elements say "temporarily unavailable" instead of "not found" (visible to developers and backend users) ([#18](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/18)).
 
 ### Added
 - Floating mini player (single, split, spotlight, chapters; direct presentation): after the visitor started playback (a pointer or key press in the player or on a scene button followed by play, unmute or seek; never autoplay, play while scrolling or key presses elsewhere on the page) and the player scrolls out of view it is pinned bottom right (320 px, from 600 px viewport width) with a close button (Escape works too, focus returns to the player); it steps aside while a lightbox is open; native closing pauses, hosted closing stops the iframe and restores it on return; a placeholder keeps the page height and nothing is moved in the DOM; with play while scrolling the video is pinned instead of paused once the visitor took over ([#22](https://github.com/ScaleCommerce/videooptimizer-typo3/issues/22)).

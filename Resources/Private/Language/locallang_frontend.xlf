@@ -90,6 +90,12 @@
             <trans-unit id="mini.close">
                 <source>Close mini player</source>
             </trans-unit>
+            <trans-unit id="error.unavailable">
+                <source>The video is temporarily unavailable (VideoOptimizer could not be reached).</source>
+            </trans-unit>
+            <trans-unit id="error.not_found">
+                <source>The video was not found in VideoOptimizer.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
